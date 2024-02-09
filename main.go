@@ -77,26 +77,25 @@ func build() {
 
 	// render each source file and copy it over to target
 	filepath.WalkDir("src", func(path string, entry fs.DirEntry, err error) error {
-		subpath, _ := filepath.Rel("src", path)
-		targetSubpath := filepath.Join("target", subpath)
-
 		if entry.IsDir() {
+			subpath, _ := filepath.Rel("src", path)
+			targetSubpath := filepath.Join("target", subpath)
 			os.MkdirAll(targetSubpath, FILE_MODE)
 		} else {
 
 			// FIXME what if non text file?
-			data, err := render(path)
+			data, targetPath, err := render(path)
 
 			if err != nil {
-				panic(fmt.Sprintf("failed to load %s", targetSubpath))
+				panic(fmt.Sprintf("failed to load %s", targetPath))
 			}
 
 			// write the file contents over to target at the same location
-			err = os.WriteFile(targetSubpath, []byte(data), FILE_MODE)
+			err = os.WriteFile(targetPath, []byte(data), FILE_MODE)
 			if err != nil {
-				panic(fmt.Sprintf("failed to load %s", targetSubpath))
+				panic(fmt.Sprintf("failed to load %s", targetPath))
 			}
-			fmt.Printf("wrote %v\n", targetSubpath)
+			fmt.Printf("wrote %v\n", targetPath)
 		}
 
 		return nil
@@ -105,26 +104,33 @@ func build() {
 }
 
 // TODO move elsewhere?
-func render(path string) (string, error) {
-	file, err := os.Open(path)
+func render(sourcePath string) (string, string, error) {
+	subpath, _ := filepath.Rel("src", sourcePath)
+	targetPath := filepath.Join("target", subpath)
+	isOrgFile := filepath.Ext(sourcePath) == ".org"
+	if isOrgFile {
+		targetPath = strings.TrimSuffix(targetPath, "org") + "html"
+	}
+
+	file, err := os.Open(sourcePath)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer file.Close()
 
 	fileContent, _, err := extractFrontMatter(file)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("error in %s: %s", path, err))
+		return "", "", (fmt.Errorf("error in %s: %s", sourcePath, err))
 	}
 
 	var html string
 	// FIXME this should be renamed to .html
 	// (in general, the render process should be able to instruct a differnt target path)
-	if filepath.Ext(path) == ".org" {
-		doc := org.New().Parse(bytes.NewReader(fileContent), path)
+	if isOrgFile {
+		doc := org.New().Parse(bytes.NewReader(fileContent), sourcePath)
 		html, err = doc.Write(org.NewHTMLWriter())
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 
 	} else {
@@ -135,7 +141,7 @@ func render(path string) (string, error) {
 
 	// TODO minify
 
-	return html, nil
+	return html, targetPath, nil
 }
 
 func extractFrontMatter(file *os.File) ([]byte, map[string]interface{}, error) {
@@ -173,7 +179,7 @@ func extractFrontMatter(file *os.File) ([]byte, map[string]interface{}, error) {
 	if len(yamlContent) != 0 {
 		err := yaml.Unmarshal([]byte(yamlContent), &frontMatter)
 		if err != nil {
-			return nil, nil, errors.New(fmt.Sprint("invalid yaml: ", err))
+			return nil, nil, fmt.Errorf("invalid yaml: ", err)
 		}
 	}
 
