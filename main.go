@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -144,16 +145,18 @@ func extractFrontMatter(file *os.File) ([]byte, map[string]interface{}, error) {
 					closed = true
 					break
 				}
-				yamlContent = append(yamlContent, []byte("\n"+line)...)
+				yamlContent = append(yamlContent, []byte(line+"\n")...)
 			}
 			if !closed {
 				return nil, nil, errors.New("front matter not closed")
 			}
 		} else {
 			// non front matter/yaml content goes to the output slice
-			outContent = append(outContent, []byte(line)...)
+			outContent = append(outContent, []byte(line+"\n")...)
 		}
 	}
+	// drop the extraneous last line break
+	outContent = bytes.TrimRight(outContent, "\n")
 
 	var frontMatter map[string]interface{}
 	if len(yamlContent) != 0 {
