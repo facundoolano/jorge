@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/niklasfasching/go-org/org"
 	"gopkg.in/yaml.v3"
 )
 
@@ -83,6 +84,7 @@ func build() {
 			os.MkdirAll(targetSubpath, FILE_MODE)
 		} else {
 
+			// FIXME what if non text file?
 			data, err := render(path)
 
 			if err != nil {
@@ -90,7 +92,7 @@ func build() {
 			}
 
 			// write the file contents over to target at the same location
-			err = os.WriteFile(targetSubpath, data, FILE_MODE)
+			err = os.WriteFile(targetSubpath, []byte(data), FILE_MODE)
 			if err != nil {
 				panic(fmt.Sprintf("failed to load %s", targetSubpath))
 			}
@@ -103,28 +105,37 @@ func build() {
 }
 
 // TODO move elsewhere?
-func render(path string) ([]byte, error) {
+func render(path string) (string, error) {
 	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
 	defer file.Close()
 
-	fileContent, frontMatter, err := extractFrontMatter(file)
+	fileContent, _, err := extractFrontMatter(file)
 	if err != nil {
-		exit(fmt.Sprintf("error in %s: %s", path, err))
+		return "", errors.New(fmt.Sprintf("error in %s: %s", path, err))
 	}
 
-	if len(frontMatter) > 0 {
-		fmt.Println("Detected front matter:", frontMatter)
-	}
-
+	var html string
+	// FIXME this should be renamed to .html
+	// (in general, the render process should be able to instruct a differnt target path)
 	if filepath.Ext(path) == ".org" {
-		// TODO produce html from org
+		doc := org.New().Parse(bytes.NewReader(fileContent), path)
+		html, err = doc.Write(org.NewHTMLWriter())
+		if err != nil {
+			return "", err
+		}
+
 	} else {
 		// TODO render liquid template
 	}
 
+	// TODO if yaml contains layout, pass to parent
+
 	// TODO minify
 
-	return fileContent, err
+	return html, nil
 }
 
 func extractFrontMatter(file *os.File) ([]byte, map[string]interface{}, error) {
