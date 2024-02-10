@@ -1,3 +1,4 @@
+// TODO consider making this another package
 package commands
 
 import (
@@ -5,6 +6,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -56,7 +58,7 @@ func render(sourcePath string) (string, string, error) {
 	return html, targetPath, nil
 }
 
-func extractFrontMatter(file *os.File) ([]byte, map[string]interface{}, error) {
+func extractFrontMatter(file io.Reader) ([]byte, map[string]interface{}, error) {
 	const FM_SEPARATOR = "---"
 
 	var outContent, yamlContent []byte
@@ -91,7 +93,7 @@ func extractFrontMatter(file *os.File) ([]byte, map[string]interface{}, error) {
 	if len(yamlContent) != 0 {
 		err := yaml.Unmarshal([]byte(yamlContent), &frontMatter)
 		if err != nil {
-			return nil, nil, fmt.Errorf("invalid yaml: ", err)
+			return nil, nil, fmt.Errorf("invalid yaml: %s", err)
 		}
 	}
 
