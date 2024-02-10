@@ -49,6 +49,7 @@ func render(sourcePath string) (string, string, error) {
 
 	} else {
 		// TODO render liquid template
+		html = string(fileContent)
 	}
 
 	// TODO if yaml contains layout, pass to parent
