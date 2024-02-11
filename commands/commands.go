@@ -3,9 +3,13 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/facundoolano/blorg/templates"
 )
 
 func Init() error {
@@ -36,30 +40,62 @@ func Build() error {
 
 	// render each source file and copy it over to target
 	err = filepath.WalkDir("src", func(path string, entry fs.DirEntry, err error) error {
+		subpath, _ := filepath.Rel("src", path)
+		targetPath := filepath.Join("target", subpath)
+
 		if entry.IsDir() {
-			subpath, _ := filepath.Rel("src", path)
-			targetSubpath := filepath.Join("target", subpath)
-			os.MkdirAll(targetSubpath, FILE_MODE)
+			os.MkdirAll(targetPath, FILE_MODE)
 		} else {
-
-			// FIXME what if non text file?
-			data, targetPath, err := render(path)
+			template, err := templates.Parse(path)
 			if err != nil {
-				return fmt.Errorf("failed to render %s", path)
+				return err
 			}
 
-			// write the file contents over to target at the same location
-			err = os.WriteFile(targetPath, []byte(data), FILE_MODE)
-			if err != nil {
-				return fmt.Errorf("failed to load %s", targetPath)
+			if template != nil {
+				// if a template was found at source, render it
+				targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + template.Ext()
+
+				content, err := template.Render()
+				if err != nil {
+					return err
+				}
+
+				// write the file contents over to target at the same location
+				fmt.Println("writing ", targetPath)
+				return os.WriteFile(targetPath, content, FILE_MODE)
+			} else {
+				// if a non template was found, copy file as is
+				fmt.Println("writing ", targetPath)
+				return copyFile(path, targetPath)
 			}
-			fmt.Printf("wrote %v\n", targetPath)
 		}
 
 		return nil
 	})
 
 	return err
+}
+
+func copyFile(source string, target string) error {
+	// does this need to be so verbose?
+	srcFile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	targetFile, _ := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer targetFile.Close()
+
+	_, err = io.Copy(targetFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	return targetFile.Sync()
 }
 
 func New() error {

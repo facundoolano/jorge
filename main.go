@@ -32,17 +32,16 @@ func run(args []string) error {
 	switch os.Args[1] {
 	case "init":
 		initCmd.Parse(os.Args[2:])
-		commands.Init()
+		return commands.Init()
 	case "build":
-		commands.Build()
+		return commands.Build()
 	case "new":
 		newCmd.Parse(os.Args[2:])
-		commands.New()
+		return commands.New()
 	case "serve":
-		commands.Serve()
+		return commands.Serve()
 	default:
 		// TODO print usage
 		return errors.New("unknown subcommand")
 	}
-	return nil
 }
