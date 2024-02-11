@@ -65,7 +65,11 @@ func Parse(path string) (*Template, error) {
 }
 
 func (templ Template) Ext() string {
-	return filepath.Ext(templ.srcPath)
+	ext := filepath.Ext(templ.srcPath)
+	if ext == ".org" {
+		ext = ".html"
+	}
+	return ext
 }
 
 func (templ Template) Render() ([]byte, error) {
@@ -87,7 +91,7 @@ func (templ Template) Render() ([]byte, error) {
 		contents = append(contents, scanner.Text()+"\n"...)
 	}
 
-	if templ.Ext() == ".org" {
+	if strings.HasSuffix(templ.srcPath, ".org") {
 		// if it's an org file, convert to html
 		doc := org.New().Parse(bytes.NewReader(contents), templ.srcPath)
 		html, err := doc.Write(org.NewHTMLWriter())

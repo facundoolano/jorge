@@ -119,7 +119,47 @@ tags: ["software", "web"]
 }
 
 func TestRenderOrg(t *testing.T) {
-	// TODO
+	input := `---
+title: my new post
+subtitle: a blog post
+tags: ["software", "web"]
+---
+#+OPTIONS: toc:nil num:nil
+* My title
+** my Subtitle
+- list 1
+- list 2
+`
+
+	file := newFile("test*.org", input)
+	defer os.Remove(file.Name())
+
+	templ, err := Parse(file.Name())
+	assertEqual(t, err, nil)
+	assertEqual(t, templ.Ext(), ".html")
+
+	content, err := templ.Render()
+	assertEqual(t, err, nil)
+	expected := `<div id="outline-container-headline-1" class="outline-2">
+<h2 id="headline-1">
+My title
+</h2>
+<div id="outline-text-headline-1" class="outline-text-2">
+<div id="outline-container-headline-2" class="outline-3">
+<h3 id="headline-2">
+my Subtitle
+</h3>
+<div id="outline-text-headline-2" class="outline-text-3">
+<ul>
+<li>list 1</li>
+<li>list 2</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+`
+	assertEqual(t, string(content), expected)
 }
 
 func TestRenderLiquidLayout(t *testing.T) {
