@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/niklasfasching/go-org/org"
+	"gopkg.in/osteele/liquid.v1"
 	"gopkg.in/yaml.v3"
 )
 
@@ -96,7 +97,13 @@ func (templ Template) Render() ([]byte, error) {
 		}
 
 	} else {
-		// TODO for other file types, assume a liquid template
+		// for other file types, assume a liquid template
+		engine := liquid.NewEngine()
+		out, err := engine.ParseAndRenderString(string(contents), templ.Metadata)
+		if err != nil {
+			return nil, err
+		}
+		contents = []byte(out)
 	}
 
 	// TODO: if layout in metadata, pass the result to the rendered parent

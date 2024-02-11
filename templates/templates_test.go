@@ -89,10 +89,48 @@ tags: ["software", "web"]
 }
 
 func TestRenderLiquid(t *testing.T) {
-	// TODO
+	input := `---
+title: my new post
+subtitle: a blog post
+tags: ["software", "web"]
+---
+<h1>{{ title }}</h1>
+<h2>{{ subtitle }}</h2>
+<ul>{% for tag in tags %}
+<li>{{tag}}</li>{% endfor %}
+</ul>
+`
+
+	file := newFile("test*.html", input)
+	defer os.Remove(file.Name())
+
+	templ, err := Parse(file.Name())
+	assertEqual(t, err, nil)
+	content, err := templ.Render()
+	assertEqual(t, err, nil)
+	expected := `<h1>my new post</h1>
+<h2>a blog post</h2>
+<ul>
+<li>software</li>
+<li>web</li>
+</ul>
+`
+	assertEqual(t, string(content), expected)
 }
 
 func TestRenderOrg(t *testing.T) {
+	// TODO
+}
+
+func TestRenderLiquidLayout(t *testing.T) {
+	// TODO
+}
+
+func TestRenderOrgLayout(t *testing.T) {
+	// TODO
+}
+
+func TestRenderLayoutLayout(t *testing.T) {
 	// TODO
 }
 
