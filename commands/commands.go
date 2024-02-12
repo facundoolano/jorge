@@ -35,7 +35,8 @@ func Build() error {
 	}
 
 	site := Site{
-		layouts: make(map[string]templates.Template),
+		layouts:       make(map[string]templates.Template),
+		templateIndex: make(map[string]*templates.Template),
 	}
 
 	// FIXME these sound like they should be site methods too
@@ -100,6 +101,9 @@ func loadTemplates(site *Site) error {
 			} else {
 				site.pages = append(site.pages, *templ)
 			}
+			site.templateIndex[path] = templ
+
+			// TODO load tags
 		}
 		return nil
 	})
@@ -111,7 +115,6 @@ func writeTarget(site *Site) error {
 	os.Mkdir(TARGET_DIR, FILE_RW_MODE)
 
 	// walk the source directory, creating directories and files at the target dir
-	templIndex := site.templateIndex()
 	return filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
 		subpath, _ := filepath.Rel(SRC_DIR, path)
 		targetPath := filepath.Join(TARGET_DIR, subpath)
@@ -120,7 +123,7 @@ func writeTarget(site *Site) error {
 			os.MkdirAll(targetPath, FILE_RW_MODE)
 		} else {
 
-			if templ, ok := templIndex[path]; ok {
+			if templ, ok := site.templateIndex[path]; ok {
 				// if a template was found at source, render it
 				content, err := site.render(templ)
 				if err != nil {

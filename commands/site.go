@@ -15,7 +15,7 @@ type Site struct {
 	pages   []templates.Template
 	tags    map[string]*templates.Template
 
-	renderCache map[string]string
+	templateIndex map[string]*templates.Template
 }
 
 func (site Site) render(templ *templates.Template) (string, error) {
@@ -40,14 +40,6 @@ func (site Site) render(templ *templates.Template) (string, error) {
 	}
 
 	return content, err
-}
-
-func (site Site) templateIndex() map[string]*templates.Template {
-	templIndex := make(map[string]*templates.Template)
-	for _, templ := range append(site.posts, site.pages...) {
-		templIndex[templ.SrcPath] = &templ
-	}
-	return templIndex
 }
 
 func (site Site) baseContext() map[string]interface{} {
