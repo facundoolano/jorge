@@ -12,7 +12,7 @@ import (
 
 const SRC_DIR = "src"
 const TARGET_DIR = "target"
-const LAYOUT_DIR = "layouts"
+const LAYOUTS_DIR = "layouts"
 const FILE_RW_MODE = 0777
 
 func Init() error {
@@ -25,24 +25,13 @@ func Init() error {
 }
 
 // Read the files in src/ render them and copy the result to target/
-// FIXME pass src and target by arg
+// TODO add root dir override support
 func Build() error {
-	_, err := os.ReadDir(SRC_DIR)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("missing %s directory", SRC_DIR)
-	} else if err != nil {
-		return fmt.Errorf("couldn't read %s", SRC_DIR)
-	}
-
-	// TODO add dir override support
-	site, err := site.Load(".")
+	site, err := site.Load(SRC_DIR, LAYOUTS_DIR)
 	if err != nil {
 		return err
 	}
-	return writeTarget(site)
-}
 
-func writeTarget(site *site.Site) error {
 	// clear previous target contents
 	os.RemoveAll(TARGET_DIR)
 	os.Mkdir(TARGET_DIR, FILE_RW_MODE)
@@ -56,7 +45,6 @@ func writeTarget(site *site.Site) error {
 			os.MkdirAll(targetPath, FILE_RW_MODE)
 		} else {
 
-			// FIXME replace with method
 			if templ, ok := site.TemplateIndex[path]; ok {
 				// if a template was found at source, render it
 				content, err := site.Render(templ)
@@ -66,11 +54,11 @@ func writeTarget(site *site.Site) error {
 
 				// write the file contents over to target at the same location
 				targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
-				fmt.Println("writing ", targetPath)
+				fmt.Println("writing", targetPath)
 				return os.WriteFile(targetPath, []byte(content), FILE_RW_MODE)
 			} else {
 				// if a non template was found, copy file as is
-				fmt.Println("writing ", targetPath)
+				fmt.Println("writing", targetPath)
 				return copyFile(path, targetPath)
 			}
 		}

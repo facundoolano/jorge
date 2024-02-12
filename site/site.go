@@ -21,32 +21,27 @@ type Site struct {
 	TemplateIndex map[string]*templates.Template
 }
 
-func Load(rootDir string) (*Site, error) {
+func Load(srcDir string, layoutsDir string) (*Site, error) {
+	// TODO load config from config.yml
 	site := Site{
 		layouts:       make(map[string]templates.Template),
 		TemplateIndex: make(map[string]*templates.Template),
+		config:        make(map[string]string),
 	}
 
-	// TODO merge with contents of local config.yml file
-	site.config = map[string]string{
-		"src_dir":     filepath.Join(rootDir, "src"),
-		"target_dir":  filepath.Join(rootDir, "target"),
-		"layouts_dir": filepath.Join(rootDir, "layouts"),
-	}
-
-	if err := site.loadLayouts(); err != nil {
+	if err := site.loadLayouts(layoutsDir); err != nil {
 		return nil, err
 	}
 
-	if err := site.loadTemplates(); err != nil {
+	if err := site.loadTemplates(srcDir); err != nil {
 		return nil, err
 	}
 
 	return &site, nil
 }
 
-func (site *Site) loadLayouts() error {
-	files, err := os.ReadDir(site.config["layouts_dir"])
+func (site *Site) loadLayouts(layoutsDir string) error {
+	files, err := os.ReadDir(layoutsDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -57,7 +52,7 @@ func (site *Site) loadLayouts() error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(site.config["layouts_dir"], filename)
+			path := filepath.Join(layoutsDir, filename)
 			templ, err := templates.Parse(path)
 			if err != nil {
 				return err
@@ -71,8 +66,15 @@ func (site *Site) loadLayouts() error {
 	return nil
 }
 
-func (site *Site) loadTemplates() error {
-	return filepath.WalkDir(site.config["src_dir"], func(path string, entry fs.DirEntry, err error) error {
+func (site *Site) loadTemplates(srcDir string) error {
+	_, err := os.ReadDir(srcDir)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("missing %s directory", srcDir)
+	} else if err != nil {
+		return fmt.Errorf("couldn't read %s", srcDir)
+	}
+
+	return filepath.WalkDir(srcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := templates.Parse(path)
 			// if sometime fails or this is not a template, skip
