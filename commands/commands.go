@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"github.com/facundoolano/blorg/templates"
+	"github.com/facundoolano/blorg/site"
 	"io"
 	"io/fs"
 	"os"
@@ -34,82 +34,15 @@ func Build() error {
 		return fmt.Errorf("couldn't read %s", SRC_DIR)
 	}
 
-	site := Site{
-		layouts:       make(map[string]templates.Template),
-		templateIndex: make(map[string]*templates.Template),
-	}
-
-	// FIXME these sound like they should be site methods too
-	PHASES := []func(*Site) error{
-		loadConfig,
-		loadLayouts,
-		loadTemplates,
-		writeTarget,
-	}
-	for _, phaseFun := range PHASES {
-		if err := phaseFun(&site); err != nil {
-			return err
-		}
-	}
-
-	return err
-}
-
-func loadConfig(site *Site) error {
-	// context["config"]
-	return nil
-}
-
-func loadLayouts(site *Site) error {
-	files, err := os.ReadDir(LAYOUT_DIR)
-	if os.IsNotExist(err) {
-		return nil
-	} else if err != nil {
+	// TODO add dir override support
+	site, err := site.Load(".")
+	if err != nil {
 		return err
 	}
-
-	for _, entry := range files {
-		if !entry.IsDir() {
-			filename := entry.Name()
-			path := filepath.Join(LAYOUT_DIR, filename)
-			templ, err := templates.Parse(path)
-			if err != nil {
-				return err
-			}
-
-			layout_name := strings.TrimSuffix(filename, filepath.Ext(filename))
-			site.layouts[layout_name] = *templ
-		}
-	}
-
-	return nil
+	return writeTarget(site)
 }
 
-func loadTemplates(site *Site) error {
-	return filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
-		if !entry.IsDir() {
-			templ, err := templates.Parse(path)
-			// if sometime fails or this is not a template, skip
-			if err != nil || templ == nil {
-				return err
-			}
-
-			// posts are templates that can be chronologically sorted --that have a date.
-			// the rest are pages.
-			if _, ok := templ.Metadata["date"]; ok {
-				site.posts = append(site.posts, *templ)
-			} else {
-				site.pages = append(site.pages, *templ)
-			}
-			site.templateIndex[path] = templ
-
-			// TODO load tags
-		}
-		return nil
-	})
-}
-
-func writeTarget(site *Site) error {
+func writeTarget(site *site.Site) error {
 	// clear previous target contents
 	os.RemoveAll(TARGET_DIR)
 	os.Mkdir(TARGET_DIR, FILE_RW_MODE)
@@ -123,9 +56,10 @@ func writeTarget(site *Site) error {
 			os.MkdirAll(targetPath, FILE_RW_MODE)
 		} else {
 
-			if templ, ok := site.templateIndex[path]; ok {
+			// FIXME replace with method
+			if templ, ok := site.TemplateIndex[path]; ok {
 				// if a template was found at source, render it
-				content, err := site.render(templ)
+				content, err := site.Render(templ)
 				if err != nil {
 					return err
 				}
