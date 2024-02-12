@@ -3,7 +3,6 @@ package templates
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -17,11 +16,35 @@ import (
 
 const FM_SEPARATOR = "---"
 
+type Type string
+
+const (
+	// a file that doesn't have a front matter header, and thus is not renderable.
+	STATIC Type = "static"
+
+	// Templates in the root /layouts/ can be used to wrap around other template's content
+	// by setting the `layout` front matter field.
+	LAYOUT Type = "layout"
+
+	// A template that has a date, and thus can be ordered chronologically in a directory.
+	// They can thus be arranged in archives, feeds, etc.
+	// Posts are also assumed to have a title and can be excerpted.
+	POST Type = "post"
+
+	// The rest of the templates: no layout and no post
+	PAGE Type = "page"
+)
+
 type Template struct {
-	srcPath  string
+	Type     Type
+	SrcPath  string
 	Metadata map[string]interface{}
 }
 
+// TODO think about knowledge boundaries
+// should this know to tell if its a layout based on srcPath conventions?
+// should it be able to detect its own type? does it still make sense to track a template type,
+// separate from the site?
 func Parse(path string) (*Template, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -35,7 +58,7 @@ func Parse(path string) (*Template, error) {
 
 	// if the file doesn't start with a front matter delimiter, it's not a template
 	if strings.TrimSpace(line) != FM_SEPARATOR {
-		return nil, nil
+		return &Template{Type: STATIC}, nil
 	}
 
 	// read and parse the yaml from the front matter
@@ -61,19 +84,30 @@ func Parse(path string) (*Template, error) {
 		}
 	}
 
-	return &Template{srcPath: path, Metadata: metadata}, nil
+	templ := Template{SrcPath: path, Metadata: metadata}
+
+	// FIXME this also should check that it's in the root folder
+	if strings.HasSuffix(filepath.Dir(templ.SrcPath), "layouts") {
+		templ.Type = LAYOUT
+	} else if _, ok := metadata["date"]; ok {
+		templ.Type = POST
+	} else {
+		templ.Type = PAGE
+	}
+
+	return &templ, nil
 }
 
 func (templ Template) Ext() string {
-	ext := filepath.Ext(templ.srcPath)
+	ext := filepath.Ext(templ.SrcPath)
 	if ext == ".org" {
 		ext = ".html"
 	}
 	return ext
 }
 
-func (templ Template) Render() ([]byte, error) {
-	file, _ := os.Open(templ.srcPath)
+func (templ Template) Render(context map[string]interface{}) (string, error) {
+	file, _ := os.Open(templ.SrcPath)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 
@@ -86,31 +120,18 @@ func (templ Template) Render() ([]byte, error) {
 	}
 
 	// now read the proper template contents to memory
-	var contents []byte
+	contents := ""
 	for scanner.Scan() {
-		contents = append(contents, scanner.Text()+"\n"...)
+		contents += scanner.Text() + "\n"
 	}
 
-	if strings.HasSuffix(templ.srcPath, ".org") {
+	if strings.HasSuffix(templ.SrcPath, ".org") {
 		// if it's an org file, convert to html
-		doc := org.New().Parse(bytes.NewReader(contents), templ.srcPath)
-		html, err := doc.Write(org.NewHTMLWriter())
-		contents = []byte(html)
-		if err != nil {
-			return nil, err
-		}
-
-	} else {
-		// for other file types, assume a liquid template
-		engine := liquid.NewEngine()
-		out, err := engine.ParseAndRenderString(string(contents), templ.Metadata)
-		if err != nil {
-			return nil, err
-		}
-		contents = []byte(out)
+		doc := org.New().Parse(strings.NewReader(contents), templ.SrcPath)
+		return doc.Write(org.NewHTMLWriter())
 	}
 
-	// TODO: if layout in metadata, pass the result to the rendered parent
-
-	return contents, nil
+	// for other file types, assume a liquid template
+	engine := liquid.NewEngine()
+	return engine.ParseAndRenderString(contents, context)
 }

@@ -2,6 +2,7 @@ package templates
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -21,13 +22,14 @@ tags: ["software", "web"]
 	templ, err := Parse(file.Name())
 	assertEqual(t, err, nil)
 
+	assertEqual(t, templ.Type, PAGE)
 	assertEqual(t, templ.Ext(), ".html")
 	assertEqual(t, templ.Metadata["title"], "my new post")
 	assertEqual(t, templ.Metadata["subtitle"], "a blog post")
 	assertEqual(t, templ.Metadata["tags"].([]interface{})[0], "software")
 	assertEqual(t, templ.Metadata["tags"].([]interface{})[1], "web")
 
-	content, err := templ.Render()
+	content, err := templ.Render(nil)
 	assertEqual(t, err, nil)
 	assertEqual(t, string(content), "<p>Hello World!</p>\n")
 }
@@ -45,7 +47,7 @@ subtitle: a blog post
 
 	templ, err := Parse(file.Name())
 	assertEqual(t, err, nil)
-	assertEqual(t, templ, (*Template)(nil))
+	assertEqual(t, templ.Type, STATIC)
 
 	// not first thing in file, leaving as is
 	input = `#+OPTIONS: toc:nil num:nil
@@ -61,7 +63,7 @@ tags: ["software", "web"]
 
 	templ, err = Parse(file.Name())
 	assertEqual(t, err, nil)
-	assertEqual(t, templ, (*Template)(nil))
+	assertEqual(t, templ.Type, STATIC)
 }
 
 func TestInvalidFrontMatter(t *testing.T) {
@@ -94,9 +96,9 @@ title: my new post
 subtitle: a blog post
 tags: ["software", "web"]
 ---
-<h1>{{ title }}</h1>
-<h2>{{ subtitle }}</h2>
-<ul>{% for tag in tags %}
+<h1>{{ page.title }}</h1>
+<h2>{{ page.subtitle }}</h2>
+<ul>{% for tag in page.tags %}
 <li>{{tag}}</li>{% endfor %}
 </ul>
 `
@@ -106,7 +108,8 @@ tags: ["software", "web"]
 
 	templ, err := Parse(file.Name())
 	assertEqual(t, err, nil)
-	content, err := templ.Render()
+	ctx := map[string]interface{}{"page": templ.Metadata}
+	content, err := templ.Render(ctx)
 	assertEqual(t, err, nil)
 	expected := `<h1>my new post</h1>
 <h2>a blog post</h2>
@@ -138,7 +141,7 @@ tags: ["software", "web"]
 	assertEqual(t, err, nil)
 	assertEqual(t, templ.Ext(), ".html")
 
-	content, err := templ.Render()
+	content, err := templ.Render(nil)
 	assertEqual(t, err, nil)
 	expected := `<div id="outline-container-headline-1" class="outline-2">
 <h2 id="headline-1">
@@ -163,7 +166,55 @@ my Subtitle
 }
 
 func TestRenderLiquidLayout(t *testing.T) {
-	// TODO
+	input := `---
+title: base layout
+---
+<!DOCTYPE html>
+<html>
+<body>
+<p>this is the {{layout.title}} that wraps the content of {{ page.title}}</p>
+{{ content }}
+</body>
+</html>
+`
+
+	base := newFile("layouts/base*.html", input)
+	defer os.Remove(base.Name())
+	baseTempl, err := Parse(base.Name())
+	assertEqual(t, err, nil)
+	assertEqual(t, baseTempl.Type, LAYOUT)
+
+	context := map[string]interface{}{
+		"layouts": map[string]Template{
+			"base": *baseTempl,
+		},
+	}
+
+	input = `---
+title: my very first post
+layout: base
+date: 2023-12-01
+---
+<h1>{{page.title}}</h1>`
+
+	post := newFile("src/post1*.html", input)
+	defer os.Remove(post.Name())
+
+	templ, err := Parse(post.Name())
+	assertEqual(t, err, nil)
+	assertEqual(t, templ.Type, POST)
+	content, err := templ.Render(context)
+	assertEqual(t, err, nil)
+	expected := `<!DOCTYPE html>
+<html>
+<body>
+<p>this is the base layout that wraps the content of my very first post</p>
+<h1>my very first post</h1>
+
+</body>
+</html>
+`
+	assertEqual(t, string(content), expected)
 }
 
 func TestRenderOrgLayout(t *testing.T) {
@@ -176,8 +227,14 @@ func TestRenderLayoutLayout(t *testing.T) {
 
 // ------ HELPERS --------
 
-func newFile(name string, contents string) *os.File {
-	file, _ := os.CreateTemp("", name)
+func newFile(path string, contents string) *os.File {
+	parts := strings.Split(path, string(filepath.Separator))
+	name := parts[len(parts)-1]
+	path = filepath.Join(parts[:len(parts)-1]...)
+	path = filepath.Join(os.TempDir(), path)
+	os.MkdirAll(path, 0777)
+
+	file, _ := os.CreateTemp(path, name)
 	file.WriteString(contents)
 	return file
 }

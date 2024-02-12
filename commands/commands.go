@@ -1,16 +1,19 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
+	"github.com/facundoolano/blorg/templates"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/facundoolano/blorg/templates"
 )
+
+const SRC_DIR = "src"
+const TARGET_DIR = "target"
+const LAYOUT_DIR = "layouts"
+const FILE_RW_MODE = 0777
 
 func Init() error {
 	// get working directory
@@ -24,45 +27,109 @@ func Init() error {
 // Read the files in src/ render them and copy the result to target/
 // FIXME pass src and target by arg
 func Build() error {
-	const FILE_MODE = 0777
-
-	// fail if no src dir
-	_, err := os.ReadDir("src")
+	_, err := os.ReadDir(SRC_DIR)
 	if os.IsNotExist(err) {
-		return errors.New("missing src/ directory")
+		return fmt.Errorf("missing %s directory", SRC_DIR)
 	} else if err != nil {
-		return errors.New("couldn't read src")
+		return fmt.Errorf("couldn't read %s", SRC_DIR)
 	}
 
-	// clear previous target contents
-	os.RemoveAll("target")
-	os.Mkdir("target", FILE_MODE)
+	site := Site{
+		layouts: make(map[string]templates.Template),
+	}
 
-	// render each source file and copy it over to target
-	err = filepath.WalkDir("src", func(path string, entry fs.DirEntry, err error) error {
-		subpath, _ := filepath.Rel("src", path)
-		targetPath := filepath.Join("target", subpath)
+	// FIXME these sound like they should be site methods too
+	PHASES := []func(*Site) error{
+		loadConfig,
+		loadLayouts,
+		loadTemplates,
+		writeTarget,
+	}
+	for _, phaseFun := range PHASES {
+		if err := phaseFun(&site); err != nil {
+			return err
+		}
+	}
 
-		if entry.IsDir() {
-			os.MkdirAll(targetPath, FILE_MODE)
-		} else {
-			template, err := templates.Parse(path)
+	return err
+}
+
+func loadConfig(site *Site) error {
+	// context["config"]
+	return nil
+}
+
+func loadLayouts(site *Site) error {
+	files, err := os.ReadDir(LAYOUT_DIR)
+	if os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	for _, entry := range files {
+		if !entry.IsDir() {
+			filename := entry.Name()
+			path := filepath.Join(LAYOUT_DIR, filename)
+			templ, err := templates.Parse(path)
 			if err != nil {
 				return err
 			}
 
-			if template != nil {
-				// if a template was found at source, render it
-				targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + template.Ext()
+			layout_name := strings.TrimSuffix(filename, filepath.Ext(filename))
+			site.layouts[layout_name] = *templ
+		}
+	}
 
-				content, err := template.Render()
+	return nil
+}
+
+func loadTemplates(site *Site) error {
+	return filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
+		if !entry.IsDir() {
+			templ, err := templates.Parse(path)
+			if err != nil {
+				return err
+			}
+
+			switch templ.Type {
+			case templates.POST:
+				site.posts = append(site.posts, *templ)
+			case templates.PAGE:
+				site.pages = append(site.pages, *templ)
+			}
+			// TODO add tags
+		}
+		return nil
+	})
+}
+
+func writeTarget(site *Site) error {
+	// clear previous target contents
+	os.RemoveAll(TARGET_DIR)
+	os.Mkdir(TARGET_DIR, FILE_RW_MODE)
+
+	// walk the source directory, creating directories and files at the target dir
+	templIndex := site.templateIndex()
+	return filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
+		subpath, _ := filepath.Rel(SRC_DIR, path)
+		targetPath := filepath.Join(TARGET_DIR, subpath)
+
+		if entry.IsDir() {
+			os.MkdirAll(targetPath, FILE_RW_MODE)
+		} else {
+
+			if templ, ok := templIndex[path]; ok {
+				// if a template was found at source, render it
+				content, err := site.render(templ)
 				if err != nil {
 					return err
 				}
 
 				// write the file contents over to target at the same location
+				targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
 				fmt.Println("writing ", targetPath)
-				return os.WriteFile(targetPath, content, FILE_MODE)
+				return os.WriteFile(targetPath, []byte(content), FILE_RW_MODE)
 			} else {
 				// if a non template was found, copy file as is
 				fmt.Println("writing ", targetPath)
@@ -72,8 +139,6 @@ func Build() error {
 
 		return nil
 	})
-
-	return err
 }
 
 func copyFile(source string, target string) error {
