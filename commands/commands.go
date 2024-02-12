@@ -88,17 +88,18 @@ func loadTemplates(site *Site) error {
 	return filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := templates.Parse(path)
-			if err != nil {
+			// if sometime fails or this is not a template, skip
+			if err != nil || templ == nil {
 				return err
 			}
 
-			switch templ.Type {
-			case templates.POST:
+			// posts are templates that can be chronologically sorted --that have a date.
+			// the rest are pages.
+			if _, ok := templ.Metadata["date"]; ok {
 				site.posts = append(site.posts, *templ)
-			case templates.PAGE:
+			} else {
 				site.pages = append(site.pages, *templ)
 			}
-			// TODO add tags
 		}
 		return nil
 	})

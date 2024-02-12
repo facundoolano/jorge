@@ -19,7 +19,8 @@ type Site struct {
 }
 
 func (site Site) render(templ *templates.Template) (string, error) {
-	ctx := site.contextFor(templ)
+	ctx := site.baseContext()
+	ctx["page"] = templ.Metadata
 	content, err := templ.Render(ctx)
 	if err != nil {
 		return "", err
@@ -29,6 +30,7 @@ func (site Site) render(templ *templates.Template) (string, error) {
 	layout := templ.Metadata["layout"]
 	for layout != nil && err == nil {
 		if layout_templ, ok := site.layouts[layout.(string)]; ok {
+			ctx["layout"] = layout_templ.Metadata
 			ctx["content"] = content
 			content, err = layout_templ.Render(ctx)
 			layout = layout_templ.Metadata["layout"]
@@ -48,17 +50,10 @@ func (site Site) templateIndex() map[string]*templates.Template {
 	return templIndex
 }
 
-func (site Site) contextFor(templ *templates.Template) map[string]interface{} {
-	bindings := map[string]interface{}{
+func (site Site) baseContext() map[string]interface{} {
+	return map[string]interface{}{
 		"config": site.config,
 		"posts":  site.posts,
 		"tags":   site.tags,
 	}
-	if templ.Type == templates.LAYOUT {
-		bindings["layout"] = templ.Metadata
-	} else {
-		// assuming that if it's not a layout then it must be a page
-		bindings["page"] = templ.Metadata
-	}
-	return bindings
 }

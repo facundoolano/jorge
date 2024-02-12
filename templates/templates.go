@@ -16,35 +16,11 @@ import (
 
 const FM_SEPARATOR = "---"
 
-type Type string
-
-const (
-	// a file that doesn't have a front matter header, and thus is not renderable.
-	STATIC Type = "static"
-
-	// Templates in the root /layouts/ can be used to wrap around other template's content
-	// by setting the `layout` front matter field.
-	LAYOUT Type = "layout"
-
-	// A template that has a date, and thus can be ordered chronologically in a directory.
-	// They can thus be arranged in archives, feeds, etc.
-	// Posts are also assumed to have a title and can be excerpted.
-	POST Type = "post"
-
-	// The rest of the templates: no layout and no post
-	PAGE Type = "page"
-)
-
 type Template struct {
-	Type     Type
 	SrcPath  string
 	Metadata map[string]interface{}
 }
 
-// TODO think about knowledge boundaries
-// should this know to tell if its a layout based on srcPath conventions?
-// should it be able to detect its own type? does it still make sense to track a template type,
-// separate from the site?
 func Parse(path string) (*Template, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -58,7 +34,7 @@ func Parse(path string) (*Template, error) {
 
 	// if the file doesn't start with a front matter delimiter, it's not a template
 	if strings.TrimSpace(line) != FM_SEPARATOR {
-		return &Template{Type: STATIC}, nil
+		return nil, nil
 	}
 
 	// read and parse the yaml from the front matter
@@ -85,16 +61,6 @@ func Parse(path string) (*Template, error) {
 	}
 
 	templ := Template{SrcPath: path, Metadata: metadata}
-
-	// FIXME this also should check that it's in the root folder
-	if strings.HasSuffix(filepath.Dir(templ.SrcPath), "layouts") {
-		templ.Type = LAYOUT
-	} else if _, ok := metadata["date"]; ok {
-		templ.Type = POST
-	} else {
-		templ.Type = PAGE
-	}
-
 	return &templ, nil
 }
 
