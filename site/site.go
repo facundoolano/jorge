@@ -123,8 +123,10 @@ func (site Site) Render(templ *templates.Template) (string, error) {
 
 func (site Site) baseContext() map[string]interface{} {
 	return map[string]interface{}{
-		"config": site.config,
-		"posts":  site.posts,
-		"tags":   site.tags,
+		"site": map[string]interface{}{
+			"config": site.config,
+			"posts":  site.posts,
+			"tags":   site.tags,
+		},
 	}
 }

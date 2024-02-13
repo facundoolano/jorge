@@ -87,8 +87,14 @@ func (templ Template) Render(context map[string]interface{}) (string, error) {
 
 	// now read the proper template contents to memory
 	contents := ""
+	isFirstLine := true
 	for scanner.Scan() {
-		contents += scanner.Text() + "\n"
+		if isFirstLine {
+			isFirstLine = false
+			contents = scanner.Text()
+		} else {
+			contents += "\n" + scanner.Text()
+		}
 	}
 
 	if strings.HasSuffix(templ.SrcPath, ".org") {

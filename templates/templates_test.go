@@ -29,7 +29,7 @@ tags: ["software", "web"]
 
 	content, err := templ.Render(nil)
 	assertEqual(t, err, nil)
-	assertEqual(t, string(content), "<p>Hello World!</p>\n")
+	assertEqual(t, string(content), "<p>Hello World!</p>")
 }
 
 func TestNonTemplate(t *testing.T) {
@@ -96,8 +96,7 @@ tags: ["software", "web"]
 <h2>{{ page.subtitle }}</h2>
 <ul>{% for tag in page.tags %}
 <li>{{tag}}</li>{% endfor %}
-</ul>
-`
+</ul>`
 
 	file := newFile("test*.html", input)
 	defer os.Remove(file.Name())
@@ -112,8 +111,7 @@ tags: ["software", "web"]
 <ul>
 <li>software</li>
 <li>web</li>
-</ul>
-`
+</ul>`
 	assertEqual(t, string(content), expected)
 }
 
@@ -159,65 +157,6 @@ my Subtitle
 </div>
 `
 	assertEqual(t, string(content), expected)
-}
-
-func TestRenderLiquidLayout(t *testing.T) {
-	// 	input := `---
-	// title: base layout
-	// ---
-	// <!DOCTYPE html>
-	// <html>
-	// <body>
-	// <p>this is the {{layout.title}} that wraps the content of {{ page.title}}</p>
-	// {{ content }}
-	// </body>
-	// </html>
-	// `
-
-	// 	base := newFile("layouts/base*.html", input)
-	// 	defer os.Remove(base.Name())
-	// 	baseTempl, err := Parse(base.Name())
-	// 	assertEqual(t, err, nil)
-
-	// 	context := map[string]interface{}{
-	// 		"layouts": map[string]Template{
-	// 			"base": *baseTempl,
-	// 		},
-	// 	}
-
-	// 	input = `---
-	// title: my very first post
-	// layout: base
-	// date: 2023-12-01
-	// ---
-	// <h1>{{page.title}}</h1>`
-
-	// 	post := newFile("src/post1*.html", input)
-	// 	defer os.Remove(post.Name())
-
-	// 	templ, err := Parse(post.Name())
-	// 	assertEqual(t, err, nil)
-	// 	content, err := templ.Render(context)
-	// 	assertEqual(t, err, nil)
-	// 	expected := `<!DOCTYPE html>
-	// <html>
-	// <body>
-	// <p>this is the base layout that wraps the content of my very first post</p>
-	// <h1>my very first post</h1>
-
-	// </body>
-	// </html>
-	// `
-	//
-	//	assertEqual(t, string(content), expected)
-}
-
-func TestRenderOrgLayout(t *testing.T) {
-	// TODO
-}
-
-func TestRenderLayoutLayout(t *testing.T) {
-	// TODO
 }
 
 // ------ HELPERS --------
