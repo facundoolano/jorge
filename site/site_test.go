@@ -81,7 +81,7 @@ title: about
 	_, ok = site.layouts["post"]
 	assert(t, ok)
 
-	content, err = site.Render(site.Templates[helloPath])
+	content, err = site.Render(site.templates[helloPath])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<html>
 <head><title>hello world!</title></head>
@@ -92,7 +92,7 @@ title: about
 </body>
 </html>`)
 
-	content, err = site.Render(site.Templates[goodbyePath])
+	content, err = site.Render(site.templates[goodbyePath])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<html>
 <head><title>goodbye!</title></head>
@@ -103,7 +103,7 @@ title: about
 </body>
 </html>`)
 
-	content, err = site.Render(site.Templates[aboutPath])
+	content, err = site.Render(site.templates[aboutPath])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<html>
 <head><title>about</title></head>
@@ -153,7 +153,7 @@ date: 2023-01-01
 	defer os.Remove(file.Name())
 
 	site, err := Load(src, layouts)
-	content, err = site.Render(site.Templates[file.Name()])
+	content, err = site.Render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<ul>
 <li>2024-02-01 <a href="/goodbye">goodbye!</a></li>
@@ -206,7 +206,7 @@ tags: [software]
 	defer os.Remove(file.Name())
 
 	site, err := Load(src, layouts)
-	content, err = site.Render(site.Templates[file.Name()])
+	content, err = site.Render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<h1>software</h1>
 hello world!
@@ -257,7 +257,7 @@ title: "2. an oldie!"
 	defer os.Remove(file.Name())
 
 	site, err := Load(src, layouts)
-	content, err = site.Render(site.Templates[file.Name()])
+	content, err = site.Render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<ul>
 <li><a href="/01-hello">1. hello world!</a></li>

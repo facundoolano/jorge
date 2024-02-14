@@ -1,7 +1,9 @@
 package site
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,14 +23,14 @@ type Site struct {
 	pages   []map[string]interface{}
 	tags    map[string][]map[string]interface{}
 
-	Templates map[string]*templates.Template
+	templates map[string]*templates.Template
 }
 
 func Load(srcDir string, layoutsDir string) (*Site, error) {
 	// TODO load config from config.yml
 	site := Site{
 		layouts:   make(map[string]templates.Template),
-		Templates: make(map[string]*templates.Template),
+		templates: make(map[string]*templates.Template),
 		config:    make(map[string]string),
 		tags:      make(map[string][]map[string]interface{}),
 	}
@@ -112,7 +114,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 					site.pages = append(site.pages, templ.Metadata)
 				}
 			}
-			site.Templates[path] = templ
+			site.templates[path] = templ
 		}
 		return nil
 	})
@@ -132,7 +134,13 @@ func (site *Site) loadTemplates(srcDir string) error {
 	return nil
 }
 
-func (site Site) Render(templ *templates.Template) ([]byte, error) {
+func (site Site) RenderTemplate(path string) (io.Reader, bool, error) {
+	templ, ok := site.templates[path]
+	// if no known template at that location, return nil
+	if !ok {
+		return nil, false, nil
+	}
+
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
 			"config": site.config,
@@ -145,7 +153,7 @@ func (site Site) Render(templ *templates.Template) ([]byte, error) {
 	ctx["page"] = templ.Metadata
 	content, err := templ.Render(ctx)
 	if err != nil {
-		return nil, err
+		return nil, true, err
 	}
 
 	// recursively render parent layouts
@@ -157,9 +165,9 @@ func (site Site) Render(templ *templates.Template) ([]byte, error) {
 			content, err = layout_templ.Render(ctx)
 			layout = layout_templ.Metadata["layout"]
 		} else {
-			return nil, fmt.Errorf("layout '%s' not found", layout)
+			return nil, true, fmt.Errorf("layout '%s' not found", layout)
 		}
 	}
 
-	return content, err
+	return bytes.NewReader(content), true, nil
 }

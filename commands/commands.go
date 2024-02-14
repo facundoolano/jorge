@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
@@ -27,6 +26,16 @@ func Init() error {
 	return nil
 }
 
+func New() error {
+	// prompt for title
+	// slugify
+	// fail if file already exist
+	// create a new .org file with the slug
+	// add front matter and org options
+	fmt.Println("not implemented yet")
+	return nil
+}
+
 // Read the files in src/ render them and copy the result to target/
 // TODO add root dir override support
 func Build() error {
@@ -38,7 +47,7 @@ func Build() error {
 	return buildTarget(site, true, false)
 }
 
-// TODO consider moving to sited
+// TODO consider moving to site
 // TODO consider making minify and reload site.config values
 func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 	// clear previous target contents
@@ -58,17 +67,12 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
-		var contentReader io.Reader
-		if templ, ok := site.Templates[path]; ok {
-			// if a liquid template was found at source, render it
-			content, err := site.Render(templ)
-			if err != nil {
-				return err
-			}
-			contentReader = bytes.NewReader(content)
-
-		} else {
-			// otherwise treat the file as static, open for copying as is
+		contentReader, found, err := site.RenderTemplate(path)
+		if err != nil {
+			return err
+		} else if !found {
+			// if no template found at location, treat the file as static
+			// write its contents to target
 			srcFile, err := os.Open(path)
 			if err != nil {
 				return err
@@ -77,7 +81,7 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			contentReader = srcFile
 		}
 
-		// if it's org or markdown, export to html
+		// if it's org or markdown, export to html, updating the target extension accordingly
 		switch filepath.Ext(targetPath) {
 		case ".org":
 			{
@@ -91,30 +95,29 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			}
 		case ".md":
 			{
-				// TODO parse markedown
+				// TODO parse markdown
 				targetPath = strings.TrimSuffix(targetPath, ".md") + ".html"
 			}
 		}
 
+		// if live reload is enabled, inject the reload snippet to html files
 		ext := filepath.Ext(targetPath)
 		if htmlReload && ext == ".html" {
 			// TODO inject live reload snippet
 		}
 
+		// if enabled, minify web files
 		if minify && (ext == ".html" || ext == ".css" || ext == ".js") {
 			// TODO minify output
 		}
 
-		// FIXME do the contents copying
-		// write the file contents over to target at the same location
+		// write the file contents over to target
 		fmt.Println("writing", targetPath)
-		copyToFile(targetPath, contentReader)
-
-		return nil
+		return writeToFile(targetPath, contentReader)
 	})
 }
 
-func copyToFile(targetPath string, source io.Reader) error {
+func writeToFile(targetPath string, source io.Reader) error {
 	targetFile, err := os.Create(targetPath)
 	if err != nil {
 		return err
@@ -127,14 +130,4 @@ func copyToFile(targetPath string, source io.Reader) error {
 	}
 
 	return targetFile.Sync()
-}
-
-func New() error {
-	// prompt for title
-	// slugify
-	// fail if file already exist
-	// create a new .org file with the slug
-	// add front matter and org options
-	fmt.Println("not implemented yet")
-	return nil
 }
