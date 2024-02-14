@@ -45,7 +45,7 @@ func Build() error {
 			os.MkdirAll(targetPath, FILE_RW_MODE)
 		} else {
 
-			if templ, ok := site.TemplateIndex[path]; ok {
+			if templ, ok := site.Templates[path]; ok {
 				// if a template was found at source, render it
 				content, err := site.Render(templ)
 				if err != nil {

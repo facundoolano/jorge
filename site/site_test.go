@@ -7,7 +7,7 @@ import (
 )
 
 func TestLoadAndRenderTemplates(t *testing.T) {
-	root, src, layouts := newProject()
+	root, layouts, src := newProject()
 	defer os.RemoveAll(root)
 
 	// add two layouts
@@ -40,7 +40,8 @@ date: 2024-01-01
 ---
 <p>Hello world!</p>`
 	file = newFile(src, "hello.html", content)
-	defer os.Remove(file.Name())
+	helloPath := file.Name()
+	defer os.Remove(helloPath)
 
 	content = `---
 layout: post
@@ -50,7 +51,8 @@ date: 2024-02-01
 ---
 <p>goodbye world!</p>`
 	file = newFile(src, "goodbye.html", content)
-	defer os.Remove(file.Name())
+	goodbyePath := file.Name()
+	defer os.Remove(goodbyePath)
 
 	// add a page (no date)
 	content = `---
@@ -59,7 +61,8 @@ title: about
 ---
 <p>about this site</p>`
 	file = newFile(src, "about.html", content)
-	defer os.Remove(file.Name())
+	aboutPath := file.Name()
+	defer os.Remove(aboutPath)
 
 	// add a static file (no front matter)
 	content = `go away!`
@@ -78,8 +81,7 @@ title: about
 	_, ok = site.layouts["post"]
 	assert(t, ok)
 
-	hello := site.posts[1]
-	content, err = site.Render(&hello)
+	content, err = site.Render(site.Templates[helloPath])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<html>
 <head><title>hello world!</title></head>
@@ -90,8 +92,7 @@ title: about
 </body>
 </html>`)
 
-	goodbye := site.posts[0]
-	content, err = site.Render(&goodbye)
+	content, err = site.Render(site.Templates[goodbyePath])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<html>
 <head><title>goodbye!</title></head>
@@ -102,8 +103,7 @@ title: about
 </body>
 </html>`)
 
-	about := site.pages[0]
-	content, err = site.Render(&about)
+	content, err = site.Render(site.Templates[aboutPath])
 	assertEqual(t, err, nil)
 	assertEqual(t, content, `<html>
 <head><title>about</title></head>
@@ -115,10 +115,117 @@ title: about
 }
 
 func TestRenderArchive(t *testing.T) {
-	// TODO
+	root, layouts, src := newProject()
+	defer os.RemoveAll(root)
+
+	content := `---
+title: hello world!
+date: 2024-01-01
+---
+<p>Hello world!</p>`
+	file := newFile(src, "hello.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: goodbye!
+date: 2024-02-01
+---
+<p>goodbye world!</p>`
+	file = newFile(src, "goodbye.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: an oldie!
+date: 2023-01-01
+---
+<p>oldie</p>`
+	file = newFile(src, "an-oldie.html", content)
+	defer os.Remove(file.Name())
+
+	// add a page (no date)
+	content = `---
+---
+<ul>{% for post in site.posts %}
+<li>{{ post.date | date: "%Y-%m-%d" }} <a href="{{ post.url }}">{{post.title}}</a></li>{%endfor%}
+</ul>`
+
+	file = newFile(src, "about.html", content)
+	defer os.Remove(file.Name())
+
+	site, err := Load(src, layouts)
+	content, err = site.Render(site.Templates[file.Name()])
+	assertEqual(t, err, nil)
+	assertEqual(t, content, `<ul>
+<li>2024-02-01 <a href="/goodbye">goodbye!</a></li>
+<li>2024-01-01 <a href="/hello">hello world!</a></li>
+<li>2023-01-01 <a href="/an-oldie">an oldie!</a></li>
+</ul>`)
 }
 
 func TestRenderTags(t *testing.T) {
+	root, layouts, src := newProject()
+	defer os.RemoveAll(root)
+
+	content := `---
+title: hello world!
+date: 2024-01-01
+tags: [web, software]
+---
+<p>Hello world!</p>`
+	file := newFile(src, "hello.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: goodbye!
+date: 2024-02-01
+tags: [web]
+---
+<p>goodbye world!</p>`
+	file = newFile(src, "goodbye.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: an oldie!
+date: 2023-01-01
+tags: [software]
+---
+<p>oldie</p>`
+	file = newFile(src, "an-oldie.html", content)
+	defer os.Remove(file.Name())
+
+	// add a page (no date)
+	content = `---
+---
+{% for tag in site.tags %}<h1>{{tag[0]}}</h1>{% for post in tag[1] %}
+{{post.title}}
+{% endfor %}
+{% endfor %}
+`
+
+	file = newFile(src, "about.html", content)
+	defer os.Remove(file.Name())
+
+	site, err := Load(src, layouts)
+	content, err = site.Render(site.Templates[file.Name()])
+	assertEqual(t, err, nil)
+	assertEqual(t, content, `<h1>software</h1>
+hello world!
+
+an oldie!
+
+<h1>web</h1>
+goodbye!
+
+hello world!
+
+`)
+}
+
+func TestRenderPagesInDir(t *testing.T) {
+	// TODO
+}
+
+func TestRenderArchiveWithExcerpts(t *testing.T) {
 	// TODO
 }
 

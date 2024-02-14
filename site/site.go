@@ -2,11 +2,14 @@ package site
 
 import (
 	"fmt"
-	"github.com/facundoolano/blorg/templates"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"time"
+
+	"github.com/facundoolano/blorg/templates"
 )
 
 // TODO review build and other commands and think what can be brought over here.
@@ -14,19 +17,20 @@ import (
 type Site struct {
 	config  map[string]string // may need to make this interface{} if config gets sophisticated
 	layouts map[string]templates.Template
-	posts   []templates.Template
-	pages   []templates.Template
-	tags    map[string]*templates.Template
+	posts   []map[string]interface{}
+	pages   []map[string]interface{}
+	tags    map[string][]map[string]interface{}
 
-	TemplateIndex map[string]*templates.Template
+	Templates map[string]*templates.Template
 }
 
 func Load(srcDir string, layoutsDir string) (*Site, error) {
 	// TODO load config from config.yml
 	site := Site{
-		layouts:       make(map[string]templates.Template),
-		TemplateIndex: make(map[string]*templates.Template),
-		config:        make(map[string]string),
+		layouts:   make(map[string]templates.Template),
+		Templates: make(map[string]*templates.Template),
+		config:    make(map[string]string),
+		tags:      make(map[string][]map[string]interface{}),
 	}
 
 	if err := site.loadLayouts(layoutsDir); err != nil {
@@ -74,7 +78,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 		return fmt.Errorf("couldn't read %s", srcDir)
 	}
 
-	return filepath.WalkDir(srcDir, func(path string, entry fs.DirEntry, err error) error {
+	err = filepath.WalkDir(srcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := templates.Parse(path)
 			// if sometime fails or this is not a template, skip
@@ -82,23 +86,58 @@ func (site *Site) loadTemplates(srcDir string) error {
 				return err
 			}
 
+			// set site related (?) metadata. Not sure if this should go elsewhere
+			relPath, _ := filepath.Rel(srcDir, path)
+			templ.Metadata["path"] = relPath
+			templ.Metadata["url"] = "/" + strings.TrimSuffix(relPath, ".html")
+			templ.Metadata["dir"] = "/" + filepath.Base(relPath)
+
 			// posts are templates that can be chronologically sorted --that have a date.
 			// the rest are pages.
 			if _, ok := templ.Metadata["date"]; ok {
-				site.posts = append(site.posts, *templ)
-			} else {
-				site.pages = append(site.pages, *templ)
-			}
-			site.TemplateIndex[path] = templ
+				site.posts = append(site.posts, templ.Metadata)
 
-			// TODO load tags
+				// also add to tags index
+				if tags, ok := templ.Metadata["tags"]; ok {
+					for _, tag := range tags.([]interface{}) {
+						tag := tag.(string)
+						site.tags[tag] = append(site.tags[tag], templ.Metadata)
+					}
+				}
+
+			} else {
+				site.pages = append(site.pages, templ.Metadata)
+			}
+			site.Templates[path] = templ
 		}
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	// sort posts by reverse chronological order
+	Compare := func(a map[string]interface{}, b map[string]interface{}) int {
+		return b["date"].(time.Time).Compare(a["date"].(time.Time))
+	}
+	slices.SortFunc(site.posts, Compare)
+	for _, posts := range site.tags {
+		slices.SortFunc(posts, Compare)
+	}
+	return nil
 }
 
 func (site Site) Render(templ *templates.Template) (string, error) {
-	ctx := site.baseContext()
+	ctx := map[string]interface{}{
+		"site": map[string]interface{}{
+			"config": site.config,
+			"posts":  site.posts,
+			"tags":   site.tags,
+			"pages":  site.pages,
+		},
+	}
+
 	ctx["page"] = templ.Metadata
 	content, err := templ.Render(ctx)
 	if err != nil {
@@ -119,14 +158,4 @@ func (site Site) Render(templ *templates.Template) (string, error) {
 	}
 
 	return content, err
-}
-
-func (site Site) baseContext() map[string]interface{} {
-	return map[string]interface{}{
-		"site": map[string]interface{}{
-			"config": site.config,
-			"posts":  site.posts,
-			"tags":   site.tags,
-		},
-	}
 }

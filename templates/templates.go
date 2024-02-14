@@ -52,7 +52,7 @@ func Parse(path string) (*Template, error) {
 		return nil, errors.New("front matter not closed")
 	}
 
-	var metadata map[string]interface{}
+	metadata := make(map[string]interface{})
 	if len(yamlContent) != 0 {
 		err := yaml.Unmarshal([]byte(yamlContent), &metadata)
 		if err != nil {
