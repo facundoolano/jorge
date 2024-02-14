@@ -21,7 +21,6 @@ tags: ["software", "web"]
 	templ, err := Parse(file.Name())
 	assertEqual(t, err, nil)
 
-	assertEqual(t, templ.Ext(), ".html")
 	assertEqual(t, templ.Metadata["title"], "my new post")
 	assertEqual(t, templ.Metadata["subtitle"], "a blog post")
 	assertEqual(t, templ.Metadata["tags"].([]interface{})[0], "software")
@@ -133,7 +132,6 @@ tags: ["software", "web"]
 
 	templ, err := Parse(file.Name())
 	assertEqual(t, err, nil)
-	assertEqual(t, templ.Ext(), ".html")
 
 	content, err := templ.Render(nil)
 	assertEqual(t, err, nil)

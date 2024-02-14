@@ -6,10 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/niklasfasching/go-org/org"
 	"gopkg.in/osteele/liquid.v1"
 	"gopkg.in/yaml.v3"
 )
@@ -64,14 +62,6 @@ func Parse(path string) (*Template, error) {
 	return &templ, nil
 }
 
-func (templ Template) Ext() string {
-	ext := filepath.Ext(templ.SrcPath)
-	if ext == ".org" {
-		ext = ".html"
-	}
-	return ext
-}
-
 func (templ Template) Render(context map[string]interface{}) (string, error) {
 	file, _ := os.Open(templ.SrcPath)
 	defer file.Close()
@@ -95,12 +85,6 @@ func (templ Template) Render(context map[string]interface{}) (string, error) {
 		} else {
 			contents += "\n" + scanner.Text()
 		}
-	}
-
-	if strings.HasSuffix(templ.SrcPath, ".org") {
-		// if it's an org file, convert to html
-		doc := org.New().Parse(strings.NewReader(contents), templ.SrcPath)
-		return doc.Write(org.NewHTMLWriter())
 	}
 
 	// for other file types, assume a liquid template

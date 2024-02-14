@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/facundoolano/blorg/site"
+	"github.com/niklasfasching/go-org/org"
 )
 
 const SRC_DIR = "src"
@@ -50,43 +51,74 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			os.MkdirAll(targetPath, FILE_RW_MODE)
 		} else {
 
+			var content string
+			var contentReader io.Reader
+			var err error
+
+			// if a liquid template was found at source, render it
 			if templ, ok := site.Templates[path]; ok {
-				// if a template was found at source, render it
-				content, err := site.Render(templ)
+				content, err = site.Render(templ)
 				if err != nil {
 					return err
 				}
+				contentReader = strings.NewReader(content)
 
-				// write the file contents over to target at the same location
-				targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
-				fmt.Println("writing", targetPath)
-				return os.WriteFile(targetPath, []byte(content), FILE_RW_MODE)
 			} else {
-				// if a non template was found, copy file as is
-				fmt.Println("writing", targetPath)
-				return copyFile(path, targetPath)
+				// FIXME read contents of the file to be copied to target
+				srcFile, err := os.Open(path)
+				if err != nil {
+					return err
+				}
+				defer srcFile.Close()
+				contentReader = srcFile
 			}
+
+			// if it's org or markdown, export to html
+			switch filepath.Ext(targetPath) {
+			case ".org":
+				{
+					doc := org.New().Parse(contentReader, path)
+					content, err = doc.Write(org.NewHTMLWriter())
+					if err != nil {
+						return err
+					}
+					contentReader = strings.NewReader(content)
+					targetPath = strings.TrimSuffix(targetPath, ".org") + ".html"
+				}
+			case ".md":
+				{
+					// TODO parse markedown
+					targetPath = strings.TrimSuffix(targetPath, ".md") + ".html"
+				}
+			}
+
+			ext := filepath.Ext(targetPath)
+			if htmlReload && ext == ".html" {
+				// TODO inject live reload snippet
+			}
+
+			if minify && (ext == ".html" || ext == ".css" || ext == ".js") {
+				// TODO minify output
+			}
+
+			// FIXME do the contents copying
+			// // write the file contents over to target at the same location
+			fmt.Println("writing", targetPath)
+			copyToFile(targetPath, contentReader)
 		}
 
 		return nil
 	})
 }
 
-func copyFile(source string, target string) error {
-	// does this need to be so verbose?
-	srcFile, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	targetFile, _ := os.Create(target)
+func copyToFile(targetPath string, source io.Reader) error {
+	targetFile, err := os.Create(targetPath)
 	if err != nil {
 		return err
 	}
 	defer targetFile.Close()
 
-	_, err = io.Copy(targetFile, srcFile)
+	_, err = io.Copy(targetFile, source)
 	if err != nil {
 		return err
 	}
