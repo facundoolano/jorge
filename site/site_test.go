@@ -222,7 +222,48 @@ hello world!
 }
 
 func TestRenderPagesInDir(t *testing.T) {
-	// TODO
+	root, layouts, src := newProject()
+	defer os.RemoveAll(root)
+
+	content := `---
+title: "1. hello world!"
+---
+<p>Hello world!</p>`
+	file := newFile(src, "01-hello.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: "3. goodbye!"
+---
+<p>goodbye world!</p>`
+	file = newFile(src, "03-goodbye.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: "2. an oldie!"
+---
+<p>oldie</p>`
+	file = newFile(src, "02-an-oldie.html", content)
+	defer os.Remove(file.Name())
+
+	// add a page (no date)
+	content = `---
+---
+<ul>{% for page in site.pages %}
+<li><a href="{{ page.url }}">{{page.title}}</a></li>{%endfor%}
+</ul>`
+
+	file = newFile(src, "index.html", content)
+	defer os.Remove(file.Name())
+
+	site, err := Load(src, layouts)
+	content, err = site.Render(site.Templates[file.Name()])
+	assertEqual(t, err, nil)
+	assertEqual(t, content, `<ul>
+<li><a href="/01-hello">1. hello world!</a></li>
+<li><a href="/02-an-oldie">2. an oldie!</a></li>
+<li><a href="/03-goodbye">3. goodbye!</a></li>
+</ul>`)
 }
 
 func TestRenderArchiveWithExcerpts(t *testing.T) {

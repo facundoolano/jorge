@@ -90,7 +90,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 			relPath, _ := filepath.Rel(srcDir, path)
 			templ.Metadata["path"] = relPath
 			templ.Metadata["url"] = "/" + strings.TrimSuffix(relPath, ".html")
-			templ.Metadata["dir"] = "/" + filepath.Base(relPath)
+			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
 
 			// posts are templates that can be chronologically sorted --that have a date.
 			// the rest are pages.
@@ -106,7 +106,11 @@ func (site *Site) loadTemplates(srcDir string) error {
 				}
 
 			} else {
-				site.pages = append(site.pages, templ.Metadata)
+				// the index pages should be skipped from the page directory
+				filename := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
+				if filename != "index" {
+					site.pages = append(site.pages, templ.Metadata)
+				}
 			}
 			site.Templates[path] = templ
 		}
