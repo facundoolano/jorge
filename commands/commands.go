@@ -2,12 +2,13 @@ package commands
 
 import (
 	"fmt"
-	"github.com/facundoolano/blorg/site"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/facundoolano/blorg/site"
 )
 
 const SRC_DIR = "src"
@@ -95,14 +96,6 @@ func New() error {
 	// fail if file already exist
 	// create a new .org file with the slug
 	// add front matter and org options
-	fmt.Println("not implemented yet")
-	return nil
-}
-
-func Serve() error {
-	// build
-	// serve target with file server
-	// (later watch and live reload)
 	fmt.Println("not implemented yet")
 	return nil
 }
