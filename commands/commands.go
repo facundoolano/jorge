@@ -33,6 +33,10 @@ func Build() error {
 		return err
 	}
 
+	return buildTarget(site, true, false)
+}
+
+func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 	// clear previous target contents
 	os.RemoveAll(TARGET_DIR)
 	os.Mkdir(TARGET_DIR, FILE_RW_MODE)
