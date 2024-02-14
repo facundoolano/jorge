@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
@@ -37,6 +38,8 @@ func Build() error {
 	return buildTarget(site, true, false)
 }
 
+// TODO consider moving to sited
+// TODO consider making minify and reload site.config values
 func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 	// clear previous target contents
 	os.RemoveAll(TARGET_DIR)
@@ -50,20 +53,19 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 		subpath, _ := filepath.Rel(SRC_DIR, path)
 		targetPath := filepath.Join(TARGET_DIR, subpath)
 
+		// if it's a directory, just create the same at the target
 		if entry.IsDir() {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
-		var content string
 		var contentReader io.Reader
-
 		if templ, ok := site.Templates[path]; ok {
 			// if a liquid template was found at source, render it
-			content, err = site.Render(templ)
+			content, err := site.Render(templ)
 			if err != nil {
 				return err
 			}
-			contentReader = strings.NewReader(content)
+			contentReader = bytes.NewReader(content)
 
 		} else {
 			// otherwise treat the file as static, open for copying as is
@@ -80,7 +82,7 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 		case ".org":
 			{
 				doc := org.New().Parse(contentReader, path)
-				content, err = doc.Write(org.NewHTMLWriter())
+				content, err := doc.Write(org.NewHTMLWriter())
 				if err != nil {
 					return err
 				}
@@ -104,7 +106,7 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 		}
 
 		// FIXME do the contents copying
-		// // write the file contents over to target at the same location
+		// write the file contents over to target at the same location
 		fmt.Println("writing", targetPath)
 		copyToFile(targetPath, contentReader)
 

@@ -132,7 +132,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 	return nil
 }
 
-func (site Site) Render(templ *templates.Template) (string, error) {
+func (site Site) Render(templ *templates.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
 			"config": site.config,
@@ -145,7 +145,7 @@ func (site Site) Render(templ *templates.Template) (string, error) {
 	ctx["page"] = templ.Metadata
 	content, err := templ.Render(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// recursively render parent layouts
@@ -157,7 +157,7 @@ func (site Site) Render(templ *templates.Template) (string, error) {
 			content, err = layout_templ.Render(ctx)
 			layout = layout_templ.Metadata["layout"]
 		} else {
-			return "", fmt.Errorf("layout '%s' not found", layout)
+			return nil, fmt.Errorf("layout '%s' not found", layout)
 		}
 	}
 

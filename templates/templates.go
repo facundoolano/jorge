@@ -8,15 +8,16 @@ import (
 	"os"
 	"strings"
 
-	"gopkg.in/osteele/liquid.v1"
+	"github.com/osteele/liquid"
 	"gopkg.in/yaml.v3"
 )
 
 const FM_SEPARATOR = "---"
 
 type Template struct {
-	SrcPath  string
-	Metadata map[string]interface{}
+	SrcPath        string
+	Metadata       map[string]interface{}
+	liquidTemplate liquid.Template
 }
 
 func Parse(path string) (*Template, error) {
@@ -35,16 +36,23 @@ func Parse(path string) (*Template, error) {
 		return nil, nil
 	}
 
-	// read and parse the yaml from the front matter
+	// extract the yaml front matter and save the rest of the template content separately
 	var yamlContent []byte
+	var liquidContent []byte
 	closed := false
 	for scanner.Scan() {
 		line := scanner.Text()
-		if strings.TrimSpace(line) == FM_SEPARATOR {
-			closed = true
-			break
+		if closed {
+			// TODO should we use bytes here?
+			liquidContent = append(liquidContent, []byte(line+"\n")...)
+		} else {
+			line := scanner.Text()
+			if strings.TrimSpace(line) == FM_SEPARATOR {
+				closed = true
+				continue
+			}
+			yamlContent = append(yamlContent, []byte(line+"\n")...)
 		}
-		yamlContent = append(yamlContent, []byte(line+"\n")...)
 	}
 	if !closed {
 		return nil, errors.New("front matter not closed")
@@ -58,36 +66,17 @@ func Parse(path string) (*Template, error) {
 		}
 	}
 
-	templ := Template{SrcPath: path, Metadata: metadata}
+	// FIXME the engine should be stored elsewhere and reused
+	engine := liquid.NewEngine()
+	liquid, err := engine.ParseTemplateAndCache(liquidContent, path, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	templ := Template{SrcPath: path, Metadata: metadata, liquidTemplate: *liquid}
 	return &templ, nil
 }
 
-func (templ Template) Render(context map[string]interface{}) (string, error) {
-	file, _ := os.Open(templ.SrcPath)
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
-	// first line is the front matter delimiter, Scan to skip
-	// and keep skipping until the closing delimiter
-	scanner.Scan()
-	scanner.Scan()
-	for scanner.Text() != FM_SEPARATOR {
-		scanner.Scan()
-	}
-
-	// now read the proper template contents to memory
-	contents := ""
-	isFirstLine := true
-	for scanner.Scan() {
-		if isFirstLine {
-			isFirstLine = false
-			contents = scanner.Text()
-		} else {
-			contents += "\n" + scanner.Text()
-		}
-	}
-
-	// for other file types, assume a liquid template
-	engine := liquid.NewEngine()
-	return engine.ParseAndRenderString(contents, context)
+func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
+	return templ.liquidTemplate.Render(context)
 }
