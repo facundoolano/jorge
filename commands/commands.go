@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
@@ -9,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/facundoolano/blorg/site"
-	"github.com/niklasfasching/go-org/org"
 )
 
 const SRC_DIR = "src"
@@ -67,10 +67,16 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
-		contentReader, found, err := site.RenderTemplate(path)
+		templateFound, extension, content, err := site.RenderTemplate(path)
 		if err != nil {
 			return err
-		} else if !found {
+		}
+
+		var contentReader io.Reader
+		if templateFound {
+			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + extension
+			contentReader = bytes.NewReader(content)
+		} else {
 			// if no template found at location, treat the file as static
 			// write its contents to target
 			srcFile, err := os.Open(path)
@@ -81,33 +87,13 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			contentReader = srcFile
 		}
 
-		// if it's org or markdown, export to html, updating the target extension accordingly
-		switch filepath.Ext(targetPath) {
-		case ".org":
-			{
-				doc := org.New().Parse(contentReader, path)
-				content, err := doc.Write(org.NewHTMLWriter())
-				if err != nil {
-					return err
-				}
-				contentReader = strings.NewReader(content)
-				targetPath = strings.TrimSuffix(targetPath, ".org") + ".html"
-			}
-		case ".md":
-			{
-				// TODO parse markdown
-				targetPath = strings.TrimSuffix(targetPath, ".md") + ".html"
-			}
-		}
-
 		// if live reload is enabled, inject the reload snippet to html files
-		ext := filepath.Ext(targetPath)
-		if htmlReload && ext == ".html" {
+		if htmlReload && extension == ".html" {
 			// TODO inject live reload snippet
 		}
 
 		// if enabled, minify web files
-		if minify && (ext == ".html" || ext == ".css" || ext == ".js") {
+		if minify && (extension == ".html" || extension == ".css" || extension == ".js") {
 			// TODO minify output
 		}
 

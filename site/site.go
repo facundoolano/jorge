@@ -1,9 +1,7 @@
 package site
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -134,11 +132,13 @@ func (site *Site) loadTemplates(srcDir string) error {
 	return nil
 }
 
-func (site Site) RenderTemplate(path string) (io.Reader, bool, error) {
+// TODO the return tuple here is a bad smell
+func (site Site) RenderTemplate(path string) (bool, string, []byte, error) {
+	ext := filepath.Ext(path)
 	templ, ok := site.templates[path]
 	// if no known template at that location, return nil
 	if !ok {
-		return nil, false, nil
+		return false, ext, nil, nil
 	}
 
 	ctx := map[string]interface{}{
@@ -153,7 +153,23 @@ func (site Site) RenderTemplate(path string) (io.Reader, bool, error) {
 	ctx["page"] = templ.Metadata
 	content, err := templ.Render(ctx)
 	if err != nil {
-		return nil, true, err
+		return true, ext, nil, err
+	}
+
+	// render convert other markdown to html before rendering the layouts
+	switch ext {
+	case ".org":
+		{
+			var contentStr string
+			contentStr, err = templates.RenderOrg(content, path)
+			content = []byte(contentStr)
+			ext = ".html"
+		}
+	case ".md":
+		{
+			// TODO
+			ext = ".html"
+		}
 	}
 
 	// recursively render parent layouts
@@ -165,9 +181,9 @@ func (site Site) RenderTemplate(path string) (io.Reader, bool, error) {
 			content, err = layout_templ.Render(ctx)
 			layout = layout_templ.Metadata["layout"]
 		} else {
-			return nil, true, fmt.Errorf("layout '%s' not found", layout)
+			return true, ext, nil, fmt.Errorf("layout '%s' not found", layout)
 		}
 	}
 
-	return bytes.NewReader(content), true, nil
+	return true, ext, content, nil
 }

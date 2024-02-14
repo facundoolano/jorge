@@ -3,11 +3,13 @@ package templates
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/niklasfasching/go-org/org"
 	"github.com/osteele/liquid"
 	"gopkg.in/yaml.v3"
 )
@@ -39,22 +41,27 @@ func Parse(path string) (*Template, error) {
 	// extract the yaml front matter and save the rest of the template content separately
 	var yamlContent []byte
 	var liquidContent []byte
-	closed := false
+	yamlClosed := false
+	isFirstLine := true
 	for scanner.Scan() {
 		line := scanner.Text()
-		if closed {
+		if yamlClosed {
 			// TODO should we use bytes here?
-			liquidContent = append(liquidContent, []byte(line+"\n")...)
+			if isFirstLine {
+				isFirstLine = false
+				liquidContent = []byte(line)
+			} else {
+				liquidContent = append(liquidContent, []byte("\n"+line)...)
+			}
 		} else {
-			line := scanner.Text()
 			if strings.TrimSpace(line) == FM_SEPARATOR {
-				closed = true
+				yamlClosed = true
 				continue
 			}
 			yamlContent = append(yamlContent, []byte(line+"\n")...)
 		}
 	}
-	if !closed {
+	if !yamlClosed {
 		return nil, errors.New("front matter not closed")
 	}
 
@@ -79,4 +86,13 @@ func Parse(path string) (*Template, error) {
 
 func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 	return templ.liquidTemplate.Render(context)
+}
+
+func RenderOrg(content []byte, path string) (string, error) {
+	doc := org.New().Parse(bytes.NewReader(content), path)
+	return doc.Write(org.NewHTMLWriter())
+}
+
+func RenderMarkdown(content []byte, path string) (string, error) {
+	return "", nil
 }
