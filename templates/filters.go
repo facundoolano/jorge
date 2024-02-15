@@ -4,11 +4,48 @@ import (
 	"fmt"
 	"reflect"
 
+	"encoding/xml"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
+	"time"
 )
 
-// copied from  https://github.com/osteele/gojekyll/blob/main/filters/filters.go
+// a lot of the filters and tags available at jekyll aren't default liquid manually adding them here
+// copied from https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/filters.go
+// MIT License: https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/LICENSE
+func loadJekyllFilters(e *liquid.Engine) {
+	e.RegisterFilter("filter", filter)
+	e.RegisterFilter("group_by", groupByFilter)
+	e.RegisterFilter("group_by_exp", groupByExpFilter)
+	e.RegisterFilter("sort", sortFilter)
+	e.RegisterFilter("where", whereFilter)
+	e.RegisterFilter("where_exp", whereExpFilter)
+	e.RegisterFilter("xml_escape", xml.Marshal)
+
+	e.RegisterFilter("absolute_url", func(s string) string {
+		// FIXME implement after adding a config struct, using the url
+		// return utils.URLJoin(c.AbsoluteURL, c.BaseURL, s)
+		return s
+	})
+
+	e.RegisterFilter("date_to_rfc822", func(date time.Time) string {
+		return date.Format(time.RFC822)
+		// Out: Mon, 07 Nov 2008 13:07:54 -0800
+	})
+	e.RegisterFilter("date_to_string", func(date time.Time) string {
+		return date.Format("02 Jan 2006")
+		// Out: 07 Nov 2008
+	})
+	e.RegisterFilter("date_to_long_string", func(date time.Time) string {
+		return date.Format("02 January 2006")
+		// Out: 07 November 2008
+	})
+	e.RegisterFilter("date_to_xmlschema", func(date time.Time) string {
+		return date.Format("2006-01-02T15:04:05-07:00")
+		// Out: 2008-11-07T13:07:54-08:00
+	})
+}
 
 func filter(values []map[string]interface{}, key string) []interface{} {
 	var result []interface{}
