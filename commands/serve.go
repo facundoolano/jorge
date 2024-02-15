@@ -113,6 +113,8 @@ func setupWatcher() (*fsnotify.Watcher, error) {
 // Add the layouts and all source directories to the given watcher
 func addAll(watcher *fsnotify.Watcher) error {
 	err := watcher.Add(LAYOUTS_DIR)
+	err = watcher.Add(DATA_DIR)
+	err = watcher.Add(INCLUDES_DIR)
 	// fsnotify watches all files within a dir, but non recursively
 	// this walks through the src dir and adds watches for each found directory
 	filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {

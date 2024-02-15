@@ -10,6 +10,7 @@ import (
 const SRC_DIR = "src"
 const TARGET_DIR = "target"
 const LAYOUTS_DIR = "layouts"
+const INCLUDES_DIR = "includes"
 const DATA_DIR = "data"
 
 func Init() error {
