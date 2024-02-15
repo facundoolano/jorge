@@ -3,6 +3,7 @@ package templates
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -10,18 +11,26 @@ import (
 	"strings"
 
 	"github.com/niklasfasching/go-org/org"
-	"gopkg.in/osteele/liquid.v1"
+	"github.com/osteele/liquid"
+	"github.com/yuin/goldmark"
 	"gopkg.in/yaml.v3"
 )
 
 const FM_SEPARATOR = "---"
 
+type Engine = liquid.Engine
+
 type Template struct {
-	SrcPath  string
-	Metadata map[string]interface{}
+	SrcPath        string
+	Metadata       map[string]interface{}
+	liquidTemplate liquid.Template
 }
 
-func Parse(path string) (*Template, error) {
+func NewEngine() *Engine {
+	return liquid.NewEngine()
+}
+
+func Parse(engine *Engine, path string) (*Template, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -37,18 +46,25 @@ func Parse(path string) (*Template, error) {
 		return nil, nil
 	}
 
-	// read and parse the yaml from the front matter
+	// extract the yaml front matter and save the rest of the template content separately
 	var yamlContent []byte
-	closed := false
+	var liquidContent []byte
+	yamlClosed := false
 	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.TrimSpace(line) == FM_SEPARATOR {
-			closed = true
-			break
+		line := append(scanner.Bytes(), '\n')
+		if yamlClosed {
+			liquidContent = append(liquidContent, line...)
+		} else {
+			if strings.TrimSpace(scanner.Text()) == FM_SEPARATOR {
+				yamlClosed = true
+				continue
+			}
+			yamlContent = append(yamlContent, line...)
 		}
-		yamlContent = append(yamlContent, []byte(line+"\n")...)
 	}
-	if !closed {
+	liquidContent = bytes.TrimSuffix(liquidContent, []byte("\n"))
+
+	if !yamlClosed {
 		return nil, errors.New("front matter not closed")
 	}
 
@@ -60,50 +76,45 @@ func Parse(path string) (*Template, error) {
 		}
 	}
 
-	templ := Template{SrcPath: path, Metadata: metadata}
+	liquid, err := engine.ParseTemplateAndCache(liquidContent, path, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	templ := Template{SrcPath: path, Metadata: metadata, liquidTemplate: *liquid}
 	return &templ, nil
 }
 
+// Return the extension for the output format of this template
 func (templ Template) Ext() string {
 	ext := filepath.Ext(templ.SrcPath)
-	if ext == ".org" {
-		ext = ".html"
+	if ext == ".org" || ext == ".md" {
+		return ".html"
 	}
 	return ext
 }
 
-func (templ Template) Render(context map[string]interface{}) (string, error) {
-	file, _ := os.Open(templ.SrcPath)
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-
-	// first line is the front matter delimiter, Scan to skip
-	// and keep skipping until the closing delimiter
-	scanner.Scan()
-	scanner.Scan()
-	for scanner.Text() != FM_SEPARATOR {
-		scanner.Scan()
+func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
+	content, err := templ.liquidTemplate.Render(context)
+	if err != nil {
+		return nil, err
 	}
 
-	// now read the proper template contents to memory
-	contents := ""
-	isFirstLine := true
-	for scanner.Scan() {
-		if isFirstLine {
-			isFirstLine = false
-			contents = scanner.Text()
-		} else {
-			contents += "\n" + scanner.Text()
+	ext := filepath.Ext(templ.SrcPath)
+	if ext == ".org" {
+		doc := org.New().Parse(bytes.NewReader(content), templ.SrcPath)
+		contentStr, err := doc.Write(org.NewHTMLWriter())
+		if err != nil {
+			return nil, err
 		}
+		content = []byte(contentStr)
+	} else if ext == ".md" {
+		var buf bytes.Buffer
+		if err := goldmark.Convert(content, &buf); err != nil {
+			return nil, err
+		}
+		content = buf.Bytes()
 	}
 
-	if strings.HasSuffix(templ.SrcPath, ".org") {
-		// if it's an org file, convert to html
-		doc := org.New().Parse(strings.NewReader(contents), templ.SrcPath)
-		return doc.Write(org.NewHTMLWriter())
-	}
-
-	// for other file types, assume a liquid template
-	engine := liquid.NewEngine()
-	return engine.ParseAndRenderString(contents, context)
+	return content, nil
 }

@@ -8,20 +8,23 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/facundoolano/blorg/site"
 	"github.com/fsnotify/fsnotify"
 )
 
 // Generate and serve the site, rebuilding when the source files change.
 func Serve() error {
-	// TODO tweak the building logic to inject js snippet that reloads the browser on rebuild
+	site, err := site.Load(SRC_DIR, LAYOUTS_DIR)
+	if err != nil {
+		return err
+	}
 
-	// first rebuild the target
-	if err := Build(); err != nil {
+	if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
 		return err
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, err := setupWatcher()
+	watcher, err := setupWatcher(site)
 	if err != nil {
 		return err
 	}
@@ -54,7 +57,7 @@ func (d HTMLDir) Open(name string) (http.File, error) {
 	return f, err
 }
 
-func setupWatcher() (*fsnotify.Watcher, error) {
+func setupWatcher(site *site.Site) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -85,7 +88,7 @@ func setupWatcher() (*fsnotify.Watcher, error) {
 						return
 					}
 
-					if err := Build(); err != nil {
+					if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
 						fmt.Println("error:", err)
 						return
 					}
