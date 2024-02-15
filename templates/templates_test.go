@@ -157,6 +157,10 @@ my Subtitle
 	assertEqual(t, string(content), expected)
 }
 
+func TestRenderMarkdown(t *testing.T) {
+	// TODO
+}
+
 // ------ HELPERS --------
 
 func newFile(path string, contents string) *os.File {

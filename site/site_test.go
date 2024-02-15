@@ -81,9 +81,9 @@ title: about
 	_, ok = site.layouts["post"]
 	assert(t, ok)
 
-	content, err = site.Render(site.templates[helloPath])
+	output, err := site.render(site.templates[helloPath])
 	assertEqual(t, err, nil)
-	assertEqual(t, content, `<html>
+	assertEqual(t, string(output), `<html>
 <head><title>hello world!</title></head>
 <body>
 <h1>hello world!</h1>
@@ -92,9 +92,9 @@ title: about
 </body>
 </html>`)
 
-	content, err = site.Render(site.templates[goodbyePath])
+	output, err = site.render(site.templates[goodbyePath])
 	assertEqual(t, err, nil)
-	assertEqual(t, content, `<html>
+	assertEqual(t, string(output), `<html>
 <head><title>goodbye!</title></head>
 <body>
 <h1>goodbye!</h1>
@@ -103,9 +103,9 @@ title: about
 </body>
 </html>`)
 
-	content, err = site.Render(site.templates[aboutPath])
+	output, err = site.render(site.templates[aboutPath])
 	assertEqual(t, err, nil)
-	assertEqual(t, content, `<html>
+	assertEqual(t, string(output), `<html>
 <head><title>about</title></head>
 <body>
 <p>about this site</p>
@@ -153,9 +153,9 @@ date: 2023-01-01
 	defer os.Remove(file.Name())
 
 	site, err := Load(src, layouts)
-	content, err = site.Render(site.templates[file.Name()])
+	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
-	assertEqual(t, content, `<ul>
+	assertEqual(t, string(output), `<ul>
 <li>2024-02-01 <a href="/goodbye">goodbye!</a></li>
 <li>2024-01-01 <a href="/hello">hello world!</a></li>
 <li>2023-01-01 <a href="/an-oldie">an oldie!</a></li>
@@ -206,9 +206,9 @@ tags: [software]
 	defer os.Remove(file.Name())
 
 	site, err := Load(src, layouts)
-	content, err = site.Render(site.templates[file.Name()])
+	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
-	assertEqual(t, content, `<h1>software</h1>
+	assertEqual(t, string(output), `<h1>software</h1>
 hello world!
 
 an oldie!
@@ -257,9 +257,9 @@ title: "2. an oldie!"
 	defer os.Remove(file.Name())
 
 	site, err := Load(src, layouts)
-	content, err = site.Render(site.templates[file.Name()])
+	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
-	assertEqual(t, content, `<ul>
+	assertEqual(t, string(output), `<ul>
 <li><a href="/01-hello">1. hello world!</a></li>
 <li><a href="/02-an-oldie">2. an oldie!</a></li>
 <li><a href="/03-goodbye">3. goodbye!</a></li>
