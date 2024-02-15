@@ -1,4 +1,3 @@
-// TODO consider making this another package
 package templates
 
 import (
@@ -27,7 +26,25 @@ type Template struct {
 }
 
 func NewEngine() *Engine {
-	return liquid.NewEngine()
+	// a lot of the filters and tags available at jekyll aren't default liquid
+	// manually adding them here as in https://github.com/osteele/gojekyll/blob/main/filters/filters.go
+
+	e := liquid.NewEngine()
+
+	e.RegisterFilter("filter", filter)
+	e.RegisterFilter("group_by", groupByFilter)
+	e.RegisterFilter("group_by_exp", groupByExpFilter)
+	e.RegisterFilter("sort", sortFilter)
+	e.RegisterFilter("where", whereFilter)
+	e.RegisterFilter("where_exp", whereExpFilter)
+
+	e.RegisterFilter("absolute_url", func(s string) string {
+		// FIXME implement after adding a config struct, using the url
+		// return utils.URLJoin(c.AbsoluteURL, c.BaseURL, s)
+		return s
+	})
+
+	return e
 }
 
 func Parse(engine *Engine, path string) (*Template, error) {
