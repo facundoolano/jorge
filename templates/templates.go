@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/niklasfasching/go-org/org"
@@ -84,15 +85,32 @@ func Parse(path string) (*Template, error) {
 	return &templ, nil
 }
 
+// Return the extension for the output format of this template
+func (templ Template) Ext() string {
+	ext := filepath.Ext(templ.SrcPath)
+	if ext == ".org" || ext == ".md" {
+		return ".html"
+	}
+	return ext
+}
+
 func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
-	return templ.liquidTemplate.Render(context)
-}
+	content, err := templ.liquidTemplate.Render(context)
+	if err != nil {
+		return nil, err
+	}
 
-func RenderOrg(content []byte, path string) (string, error) {
-	doc := org.New().Parse(bytes.NewReader(content), path)
-	return doc.Write(org.NewHTMLWriter())
-}
+	ext := filepath.Ext(templ.SrcPath)
+	if ext == ".org" {
+		doc := org.New().Parse(bytes.NewReader(content), templ.SrcPath)
+		contentStr, err := doc.Write(org.NewHTMLWriter())
+		if err != nil {
+			return nil, err
+		}
+		content = []byte(contentStr)
+	} else if ext == ".md" {
+		// TODO
+	}
 
-func RenderMarkdown(content []byte, path string) (string, error) {
-	return "", nil
+	return content, nil
 }

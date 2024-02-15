@@ -21,14 +21,14 @@ type Site struct {
 	pages   []map[string]interface{}
 	tags    map[string][]map[string]interface{}
 
-	templates map[string]*templates.Template
+	Templates map[string]*templates.Template
 }
 
 func Load(srcDir string, layoutsDir string) (*Site, error) {
 	// TODO load config from config.yml
 	site := Site{
 		layouts:   make(map[string]templates.Template),
-		templates: make(map[string]*templates.Template),
+		Templates: make(map[string]*templates.Template),
 		config:    make(map[string]string),
 		tags:      make(map[string][]map[string]interface{}),
 	}
@@ -112,7 +112,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 					site.pages = append(site.pages, templ.Metadata)
 				}
 			}
-			site.templates[path] = templ
+			site.Templates[path] = templ
 		}
 		return nil
 	})
@@ -132,15 +132,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 	return nil
 }
 
-// TODO the return tuple here is a bad smell
-func (site Site) RenderTemplate(path string) (bool, string, []byte, error) {
-	ext := filepath.Ext(path)
-	templ, ok := site.templates[path]
-	// if no known template at that location, return nil
-	if !ok {
-		return false, ext, nil, nil
-	}
-
+func (site Site) Render(templ *templates.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
 			"config": site.config,
@@ -153,23 +145,7 @@ func (site Site) RenderTemplate(path string) (bool, string, []byte, error) {
 	ctx["page"] = templ.Metadata
 	content, err := templ.Render(ctx)
 	if err != nil {
-		return true, ext, nil, err
-	}
-
-	// render convert other markdown to html before rendering the layouts
-	switch ext {
-	case ".org":
-		{
-			var contentStr string
-			contentStr, err = templates.RenderOrg(content, path)
-			content = []byte(contentStr)
-			ext = ".html"
-		}
-	case ".md":
-		{
-			// TODO
-			ext = ".html"
-		}
+		return nil, err
 	}
 
 	// recursively render parent layouts
@@ -181,9 +157,9 @@ func (site Site) RenderTemplate(path string) (bool, string, []byte, error) {
 			content, err = layout_templ.Render(ctx)
 			layout = layout_templ.Metadata["layout"]
 		} else {
-			return true, ext, nil, fmt.Errorf("layout '%s' not found", layout)
+			return nil, fmt.Errorf("layout '%s' not found", layout)
 		}
 	}
 
-	return true, ext, content, nil
+	return content, nil
 }

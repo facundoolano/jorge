@@ -67,14 +67,14 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
-		templateFound, extension, content, err := site.RenderTemplate(path)
-		if err != nil {
-			return err
-		}
-
 		var contentReader io.Reader
-		if templateFound {
-			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + extension
+		if templ, found := site.Templates[path]; found {
+			content, err := site.Render(templ)
+			if err != nil {
+				return err
+			}
+
+			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
 			contentReader = bytes.NewReader(content)
 		} else {
 			// if no template found at location, treat the file as static
@@ -87,13 +87,14 @@ func buildTarget(site *site.Site, minify bool, htmlReload bool) error {
 			contentReader = srcFile
 		}
 
+		targetExt := filepath.Ext(targetPath)
 		// if live reload is enabled, inject the reload snippet to html files
-		if htmlReload && extension == ".html" {
+		if htmlReload && targetExt == ".html" {
 			// TODO inject live reload snippet
 		}
 
 		// if enabled, minify web files
-		if minify && (extension == ".html" || extension == ".css" || extension == ".js") {
+		if minify && (targetExt == ".html" || targetExt == ".css" || targetExt == ".js") {
 			// TODO minify output
 		}
 
