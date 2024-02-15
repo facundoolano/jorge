@@ -7,7 +7,7 @@ import (
 )
 
 func TestLoadAndRenderTemplates(t *testing.T) {
-	root, layouts, src := newProject()
+	root, layouts, src, data := newProject()
 	defer os.RemoveAll(root)
 
 	// add two layouts
@@ -68,7 +68,7 @@ title: about
 	content = `go away!`
 	file = newFile(src, "robots.txt", content)
 
-	site, err := Load(src, layouts)
+	site, err := Load(src, layouts, data)
 
 	assertEqual(t, err, nil)
 
@@ -115,7 +115,7 @@ title: about
 }
 
 func TestRenderArchive(t *testing.T) {
-	root, layouts, src := newProject()
+	root, layouts, src, data := newProject()
 	defer os.RemoveAll(root)
 
 	content := `---
@@ -152,7 +152,7 @@ date: 2023-01-01
 	file = newFile(src, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(src, layouts)
+	site, err := Load(src, layouts, data)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -163,7 +163,7 @@ date: 2023-01-01
 }
 
 func TestRenderTags(t *testing.T) {
-	root, layouts, src := newProject()
+	root, layouts, src, data := newProject()
 	defer os.RemoveAll(root)
 
 	content := `---
@@ -205,7 +205,7 @@ tags: [software]
 	file = newFile(src, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(src, layouts)
+	site, err := Load(src, layouts, data)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<h1>software</h1>
@@ -222,7 +222,7 @@ hello world!
 }
 
 func TestRenderPagesInDir(t *testing.T) {
-	root, layouts, src := newProject()
+	root, layouts, src, data := newProject()
 	defer os.RemoveAll(root)
 
 	content := `---
@@ -256,7 +256,7 @@ title: "2. an oldie!"
 	file = newFile(src, "index.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(src, layouts)
+	site, err := Load(src, layouts, data)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -271,24 +271,57 @@ func TestRenderArchiveWithExcerpts(t *testing.T) {
 }
 
 func TestRenderDataFile(t *testing.T) {
-	// TODO
+	root, layouts, src, data := newProject()
+	defer os.RemoveAll(root)
+
+	content := `
+- name: feedi
+  url: https://github.com/facundoolano/feedi
+- name: blorg
+  url: https://github.com/facundoolano/blorg
+`
+	file := newFile(data, "projects.yml", content)
+	defer os.Remove(file.Name())
+
+	// add a page (no date)
+	content = `---
+---
+<ul>{% for project in site.data.projects %}
+<li><a href="{{ project.url }}">{{project.name}}</a></li>{%endfor%}
+</ul>`
+
+	file = newFile(src, "projects.html", content)
+	defer os.Remove(file.Name())
+
+	site, err := Load(src, layouts, data)
+	output, err := site.render(site.templates[file.Name()])
+	assertEqual(t, err, nil)
+	assertEqual(t, string(output), `<ul>
+<li><a href="https://github.com/facundoolano/feedi">feedi</a></li>
+<li><a href="https://github.com/facundoolano/blorg">blorg</a></li>
+</ul>`)
 }
 
 // ------ HELPERS --------
 
-func newProject() (string, string, string) {
+func newProject() (string, string, string, string) {
 	projectDir, _ := os.MkdirTemp("", "root")
 	layoutsDir := filepath.Join(projectDir, "layouts")
 	srcDir := filepath.Join(projectDir, "src")
+	dataDir := filepath.Join(projectDir, "data")
 	os.Mkdir(layoutsDir, 0777)
-	os.Mkdir(filepath.Join(projectDir, "src"), 0777)
+	os.Mkdir(srcDir, 0777)
+	os.Mkdir(dataDir, 0777)
 
-	return projectDir, layoutsDir, srcDir
+	return projectDir, layoutsDir, srcDir, dataDir
 }
 
 func newFile(dir string, filename string, contents string) *os.File {
 	path := filepath.Join(dir, filename)
-	file, _ := os.Create(path)
+	file, err := os.Create(path)
+	if err != nil {
+		panic(err)
+	}
 	file.WriteString(contents)
 	return file
 }

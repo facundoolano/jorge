@@ -35,7 +35,7 @@ func Serve() error {
 }
 
 func rebuild() error {
-	site, err := site.Load(SRC_DIR, LAYOUTS_DIR)
+	site, err := site.Load(SRC_DIR, LAYOUTS_DIR, DATA_DIR)
 	if err != nil {
 		return err
 	}

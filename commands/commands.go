@@ -10,6 +10,7 @@ import (
 const SRC_DIR = "src"
 const TARGET_DIR = "target"
 const LAYOUTS_DIR = "layouts"
+const DATA_DIR = "data"
 
 func Init() error {
 	// get working directory
@@ -35,8 +36,9 @@ func Build(root string) error {
 	src := filepath.Join(root, SRC_DIR)
 	target := filepath.Join(root, TARGET_DIR)
 	layouts := filepath.Join(root, LAYOUTS_DIR)
+	data := filepath.Join(root, DATA_DIR)
 
-	site, err := site.Load(src, layouts)
+	site, err := site.Load(src, layouts, data)
 	if err != nil {
 		return err
 	}

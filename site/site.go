@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/facundoolano/blorg/templates"
+	"gopkg.in/yaml.v3"
 )
 
 const FILE_RW_MODE = 0777
@@ -22,19 +23,25 @@ type Site struct {
 	posts   []map[string]interface{}
 	pages   []map[string]interface{}
 	tags    map[string][]map[string]interface{}
+	data    map[string]interface{}
 
 	templateEngine *templates.Engine
 	templates      map[string]*templates.Template
 }
 
-func Load(srcDir string, layoutsDir string) (*Site, error) {
+func Load(srcDir string, layoutsDir string, dataDir string) (*Site, error) {
 	// TODO load config from config.yml
 	site := Site{
 		layouts:        make(map[string]templates.Template),
 		templates:      make(map[string]*templates.Template),
 		config:         make(map[string]string),
 		tags:           make(map[string][]map[string]interface{}),
+		data:           make(map[string]interface{}),
 		templateEngine: templates.NewEngine(),
+	}
+
+	if err := site.loadDataFiles(dataDir); err != nil {
+		return nil, err
 	}
 
 	if err := site.loadLayouts(layoutsDir); err != nil {
@@ -68,6 +75,38 @@ func (site *Site) loadLayouts(layoutsDir string) error {
 
 			layout_name := strings.TrimSuffix(filename, filepath.Ext(filename))
 			site.layouts[layout_name] = *templ
+		}
+	}
+
+	return nil
+}
+
+func (site *Site) loadDataFiles(dataDir string) error {
+	files, err := os.ReadDir(dataDir)
+
+	if os.IsNotExist(err) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	for _, entry := range files {
+		if !entry.IsDir() {
+			filename := entry.Name()
+			path := filepath.Join(dataDir, filename)
+
+			yamlContent, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			var data interface{}
+			err = yaml.Unmarshal(yamlContent, &data)
+			if err != nil {
+				return err
+			}
+
+			data_name := strings.TrimSuffix(filename, filepath.Ext(filename))
+			site.data[data_name] = data
 		}
 	}
 
@@ -206,6 +245,7 @@ func (site Site) render(templ *templates.Template) ([]byte, error) {
 			"posts":  site.posts,
 			"tags":   site.tags,
 			"pages":  site.pages,
+			"data":   site.data,
 		},
 	}
 
