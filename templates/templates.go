@@ -107,7 +107,12 @@ func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 	if ext == ".org" {
 		// org-mode rendering
 		doc := org.New().Parse(bytes.NewReader(content), templ.SrcPath)
-		contentStr, err := doc.Write(org.NewHTMLWriter())
+		htmlWriter := org.NewHTMLWriter()
+
+		// make * -> h1, ** -> h2, etc
+		htmlWriter.TopLevelHLevel = 1
+
+		contentStr, err := doc.Write(htmlWriter)
 		if err != nil {
 			return nil, err
 		}
