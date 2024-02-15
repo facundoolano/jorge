@@ -34,7 +34,11 @@ func run(args []string) error {
 		initCmd.Parse(os.Args[2:])
 		return commands.Init()
 	case "build":
-		return commands.Build()
+		rootDir := "."
+		if len(os.Args) > 2 {
+			rootDir = os.Args[2]
+		}
+		return commands.Build(rootDir)
 	case "new":
 		newCmd.Parse(os.Args[2:])
 		return commands.New()

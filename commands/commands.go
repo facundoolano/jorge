@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/facundoolano/blorg/site"
 )
@@ -30,12 +31,15 @@ func New() error {
 }
 
 // Read the files in src/ render them and copy the result to target/
-// TODO add root dir override support
-func Build() error {
-	site, err := site.Load(SRC_DIR, LAYOUTS_DIR)
+func Build(root string) error {
+	src := filepath.Join(root, SRC_DIR)
+	target := filepath.Join(root, TARGET_DIR)
+	layouts := filepath.Join(root, LAYOUTS_DIR)
+
+	site, err := site.Load(src, layouts)
 	if err != nil {
 		return err
 	}
 
-	return site.Build(SRC_DIR, TARGET_DIR, true, false)
+	return site.Build(src, target, true, false)
 }
