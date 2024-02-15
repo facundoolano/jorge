@@ -23,16 +23,18 @@ type Site struct {
 	pages   []map[string]interface{}
 	tags    map[string][]map[string]interface{}
 
-	templates map[string]*templates.Template
+	templateEngine *templates.Engine
+	templates      map[string]*templates.Template
 }
 
 func Load(srcDir string, layoutsDir string) (*Site, error) {
 	// TODO load config from config.yml
 	site := Site{
-		layouts:   make(map[string]templates.Template),
-		templates: make(map[string]*templates.Template),
-		config:    make(map[string]string),
-		tags:      make(map[string][]map[string]interface{}),
+		layouts:        make(map[string]templates.Template),
+		templates:      make(map[string]*templates.Template),
+		config:         make(map[string]string),
+		tags:           make(map[string][]map[string]interface{}),
+		templateEngine: templates.NewEngine(),
 	}
 
 	if err := site.loadLayouts(layoutsDir); err != nil {
@@ -59,7 +61,7 @@ func (site *Site) loadLayouts(layoutsDir string) error {
 		if !entry.IsDir() {
 			filename := entry.Name()
 			path := filepath.Join(layoutsDir, filename)
-			templ, err := templates.Parse(path)
+			templ, err := templates.Parse(site.templateEngine, path)
 			if err != nil {
 				return err
 			}
@@ -82,7 +84,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 
 	err = filepath.WalkDir(srcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
-			templ, err := templates.Parse(path)
+			templ, err := templates.Parse(site.templateEngine, path)
 			// if sometime fails or this is not a template, skip
 			if err != nil || templ == nil {
 				return err

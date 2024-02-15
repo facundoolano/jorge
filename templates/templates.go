@@ -18,13 +18,19 @@ import (
 
 const FM_SEPARATOR = "---"
 
+type Engine = liquid.Engine
+
 type Template struct {
 	SrcPath        string
 	Metadata       map[string]interface{}
 	liquidTemplate liquid.Template
 }
 
-func Parse(path string) (*Template, error) {
+func NewEngine() *Engine {
+	return liquid.NewEngine()
+}
+
+func Parse(engine *Engine, path string) (*Template, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -70,8 +76,6 @@ func Parse(path string) (*Template, error) {
 		}
 	}
 
-	// FIXME the engine should be stored elsewhere and reused
-	engine := liquid.NewEngine()
 	liquid, err := engine.ParseTemplateAndCache(liquidContent, path, 0)
 	if err != nil {
 		return nil, err
