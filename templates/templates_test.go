@@ -158,7 +158,33 @@ my Subtitle
 }
 
 func TestRenderMarkdown(t *testing.T) {
-	// TODO
+	input := `---
+title: my new post
+subtitle: a blog post
+tags: ["software", "web"]
+---
+# My title
+## my Subtitle
+- list 1
+- list 2
+`
+
+	file := newFile("test*.md", input)
+	defer os.Remove(file.Name())
+
+	templ, err := Parse(file.Name())
+	assertEqual(t, err, nil)
+
+	content, err := templ.Render(nil)
+	assertEqual(t, err, nil)
+	expected := `<h1>My title</h1>
+<h2>my Subtitle</h2>
+<ul>
+<li>list 1</li>
+<li>list 2</li>
+</ul>
+`
+	assertEqual(t, string(content), expected)
 }
 
 // ------ HELPERS --------
