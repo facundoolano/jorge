@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/osteele/tuesday v1.0.3 // indirect
+	github.com/yuin/goldmark v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

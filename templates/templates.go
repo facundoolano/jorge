@@ -12,6 +12,7 @@ import (
 
 	"github.com/niklasfasching/go-org/org"
 	"github.com/osteele/liquid"
+	"github.com/yuin/goldmark"
 	"gopkg.in/yaml.v3"
 )
 
@@ -109,7 +110,11 @@ func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 		}
 		content = []byte(contentStr)
 	} else if ext == ".md" {
-		// TODO
+		var buf bytes.Buffer
+		if err := goldmark.Convert(content, &buf); err != nil {
+			return nil, err
+		}
+		content = buf.Bytes()
 	}
 
 	return content, nil
