@@ -44,25 +44,20 @@ func Parse(path string) (*Template, error) {
 	var yamlContent []byte
 	var liquidContent []byte
 	yamlClosed := false
-	isFirstLine := true
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := append(scanner.Bytes(), '\n')
 		if yamlClosed {
-			// TODO should we use bytes here?
-			if isFirstLine {
-				isFirstLine = false
-				liquidContent = []byte(line)
-			} else {
-				liquidContent = append(liquidContent, []byte("\n"+line)...)
-			}
+			liquidContent = append(liquidContent, line...)
 		} else {
-			if strings.TrimSpace(line) == FM_SEPARATOR {
+			if strings.TrimSpace(scanner.Text()) == FM_SEPARATOR {
 				yamlClosed = true
 				continue
 			}
-			yamlContent = append(yamlContent, []byte(line+"\n")...)
+			yamlContent = append(yamlContent, line...)
 		}
 	}
+	liquidContent = bytes.TrimSuffix(liquidContent, []byte("\n"))
+
 	if !yamlClosed {
 		return nil, errors.New("front matter not closed")
 	}
