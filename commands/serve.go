@@ -14,17 +14,13 @@ import (
 
 // Generate and serve the site, rebuilding when the source files change.
 func Serve() error {
-	site, err := site.Load(SRC_DIR, LAYOUTS_DIR)
-	if err != nil {
-		return err
-	}
 
-	if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
+	if err := rebuild(); err != nil {
 		return err
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, err := setupWatcher(site)
+	watcher, err := setupWatcher()
 	if err != nil {
 		return err
 	}
@@ -35,6 +31,19 @@ func Serve() error {
 	http.Handle("/", http.StripPrefix("/", fs))
 	fmt.Println("server listening at http://localhost:4001/")
 	http.ListenAndServe(":4001", nil)
+
+	return nil
+}
+
+func rebuild() error {
+	site, err := site.Load(SRC_DIR, LAYOUTS_DIR)
+	if err != nil {
+		return err
+	}
+
+	if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -57,7 +66,7 @@ func (d HTMLDir) Open(name string) (http.File, error) {
 	return f, err
 }
 
-func setupWatcher(site *site.Site) (*fsnotify.Watcher, error) {
+func setupWatcher() (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -88,7 +97,7 @@ func setupWatcher(site *site.Site) (*fsnotify.Watcher, error) {
 						return
 					}
 
-					if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
+					if err := rebuild(); err != nil {
 						fmt.Println("error:", err)
 						return
 					}
