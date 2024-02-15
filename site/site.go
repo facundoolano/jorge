@@ -16,8 +16,6 @@ import (
 
 const FILE_RW_MODE = 0777
 
-// TODO review build and other commands and think what can be brought over here.
-// e.g. SRC and TARGET dir knowledge
 type Site struct {
 	config  map[string]string // may need to make this interface{} if config gets sophisticated
 	layouts map[string]templates.Template
