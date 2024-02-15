@@ -1,14 +1,17 @@
 package templates
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 
 	"encoding/xml"
+	"time"
+
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
-	"time"
+	"github.com/yuin/goldmark"
 )
 
 // a lot of the filters and tags available at jekyll aren't default liquid manually adding them here
@@ -22,6 +25,16 @@ func loadJekyllFilters(e *liquid.Engine) {
 	e.RegisterFilter("where", whereFilter)
 	e.RegisterFilter("where_exp", whereExpFilter)
 	e.RegisterFilter("xml_escape", xml.Marshal)
+
+	e.RegisterFilter("markdownify", func(s string) string {
+		// using goldmark here instead of balckfriday, to avoid an extra dependencie
+		var buf bytes.Buffer
+		err := goldmark.Convert([]byte(s), &buf)
+		if err != nil {
+			panic(err)
+		}
+		return buf.String()
+	})
 
 	e.RegisterFilter("absolute_url", func(s string) string {
 		// FIXME implement after adding a config struct, using the url
