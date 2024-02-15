@@ -215,6 +215,9 @@ func (site Site) render(templ *templates.Template) ([]byte, error) {
 			ctx["layout"] = layout_templ.Metadata
 			ctx["content"] = content
 			content, err = layout_templ.Render(ctx)
+			if err != nil {
+				return nil, err
+			}
 			layout = layout_templ.Metadata["layout"]
 		} else {
 			return nil, fmt.Errorf("layout '%s' not found", layout)
