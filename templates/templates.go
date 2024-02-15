@@ -96,13 +96,16 @@ func (templ Template) Ext() string {
 }
 
 func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
+	// liquid rendering
 	content, err := templ.liquidTemplate.Render(context)
 	if err != nil {
 		return nil, err
 	}
 
 	ext := filepath.Ext(templ.SrcPath)
+
 	if ext == ".org" {
+		// org-mode rendering
 		doc := org.New().Parse(bytes.NewReader(content), templ.SrcPath)
 		contentStr, err := doc.Write(org.NewHTMLWriter())
 		if err != nil {
@@ -110,6 +113,7 @@ func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 		}
 		content = []byte(contentStr)
 	} else if ext == ".md" {
+		// markdown rendering
 		var buf bytes.Buffer
 		if err := goldmark.Convert(content, &buf); err != nil {
 			return nil, err

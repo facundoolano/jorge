@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/facundoolano/blorg/templates"
+	"golang.org/x/net/html"
 	"gopkg.in/yaml.v3"
 )
 
@@ -139,6 +140,11 @@ func (site *Site) loadTemplates(srcDir string) error {
 			// posts are templates that can be chronologically sorted --that have a date.
 			// the rest are pages.
 			if _, ok := templ.Metadata["date"]; ok {
+
+				// NOTE: getting the excerpt if not set at the front matter requires rendering the template
+				// which could be too onerous for this stage. Consider postponing setting this and/or caching the
+				// template render result
+				templ.Metadata["excerpt"] = getExcerpt(templ)
 				site.posts = append(site.posts, templ.Metadata)
 
 				// also add to tags index
@@ -281,4 +287,57 @@ func writeToFile(targetPath string, source io.Reader) error {
 	}
 
 	return targetFile.Sync()
+}
+
+// Assuming the given template is a post, try to generating an excerpt of it.
+// If it contains an `excerpt` key in its metadata use that, otherwise try
+// to render it as HTML and extract the text of its first <p>
+func getExcerpt(templ *templates.Template) string {
+	if excerpt, ok := templ.Metadata["excerpt"]; ok {
+		return excerpt.(string)
+	}
+
+	// if we don't expect this to render to html don't bother parsing it
+	if templ.Ext() != ".html" {
+		return ""
+	}
+
+	ctx := map[string]interface{}{
+		"page": templ.Metadata,
+	}
+	content, err := templ.Render(ctx)
+	if err != nil {
+		return ""
+	}
+
+	html, err := html.Parse(bytes.NewReader(content))
+	if err != nil {
+		return ""
+	}
+
+	ptag := findFirstParagraph(html)
+	return getTextContent(ptag)
+}
+
+func findFirstParagraph(node *html.Node) *html.Node {
+	if node.Type == html.ElementNode && node.Data == "p" {
+		return node
+	}
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		if p := findFirstParagraph(c); p != nil {
+			return p
+		}
+	}
+	return nil
+}
+
+func getTextContent(node *html.Node) string {
+	var textContent string
+	if node.Type == html.TextNode {
+		textContent = node.Data
+	}
+	for c := node.FirstChild; c != nil; c = c.NextSibling {
+		textContent += getTextContent(c)
+	}
+	return textContent
 }
