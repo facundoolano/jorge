@@ -1,6 +1,8 @@
 # blorg
 A presonal (small + opinionated) site generator with org-mode support.
 
+(NOTE: this is stil a WIP, the doc below is a wishlist, not the current behavior.)
+
 Install from binary:
 
     $ wget https://github.com/facundoolano/blorg/releases/download/latest/blorg-$(uname -m) \
