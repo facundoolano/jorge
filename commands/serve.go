@@ -80,7 +80,7 @@ func setupWatcher() (*fsnotify.Watcher, error) {
 				}
 
 				// chmod events are noisy, ignore them
-				if event.Has(fsnotify.Chmod) {
+				if !event.Has(fsnotify.Chmod) {
 					fmt.Printf("\nFile %s changed, triggering rebuild.\n", event.Name)
 
 					// since new nested directories could be triggering this change, and we need to watch those too
