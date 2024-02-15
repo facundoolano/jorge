@@ -98,6 +98,7 @@ func (site *Site) loadTemplates(srcDir string) error {
 
 			// set site related (?) metadata. Not sure if this should go elsewhere
 			relPath, _ := filepath.Rel(srcDir, path)
+			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.Ext()
 			templ.Metadata["path"] = relPath
 			templ.Metadata["url"] = "/" + strings.TrimSuffix(relPath, ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
