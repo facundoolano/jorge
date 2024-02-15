@@ -19,8 +19,7 @@ func Serve() error {
 		return err
 	}
 
-	buildTarget(site, false, true)
-	if err != nil {
+	if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
 		return err
 	}
 
@@ -89,7 +88,7 @@ func setupWatcher(site *site.Site) (*fsnotify.Watcher, error) {
 						return
 					}
 
-					if err := buildTarget(site, false, true); err != nil {
+					if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
 						fmt.Println("error:", err)
 						return
 					}
