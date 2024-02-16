@@ -135,16 +135,16 @@ tags: ["software", "web"]
 
 	content, err := templ.Render(nil)
 	assertEqual(t, err, nil)
-	expected := `<div id="outline-container-headline-1" class="outline-2">
-<h2 id="headline-1">
+	expected := `<div id="outline-container-headline-1" class="outline-1">
+<h1 id="headline-1">
 My title
-</h2>
-<div id="outline-text-headline-1" class="outline-text-2">
-<div id="outline-container-headline-2" class="outline-3">
-<h3 id="headline-2">
+</h1>
+<div id="outline-text-headline-1" class="outline-text-1">
+<div id="outline-container-headline-2" class="outline-2">
+<h2 id="headline-2">
 my Subtitle
-</h3>
-<div id="outline-text-headline-2" class="outline-text-3">
+</h2>
+<div id="outline-text-headline-2" class="outline-text-2">
 <ul>
 <li>list 1</li>
 <li>list 2</li>
