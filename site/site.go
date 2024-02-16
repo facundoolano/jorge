@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/facundoolano/blorg/config"
 	"github.com/facundoolano/blorg/templates"
 	"golang.org/x/net/html"
 	"gopkg.in/yaml.v3"
@@ -19,7 +20,7 @@ import (
 const FILE_RW_MODE = 0777
 
 type Site struct {
-	config  map[string]string // may need to make this interface{} if config gets sophisticated
+	Config  config.Config
 	layouts map[string]templates.Template
 	posts   []map[string]interface{}
 	pages   []map[string]interface{}
@@ -30,34 +31,33 @@ type Site struct {
 	templates      map[string]*templates.Template
 }
 
-func Load(srcDir string, layoutsDir string, dataDir string) (*Site, error) {
-	// TODO load config from config.yml
+func Load(config config.Config) (*Site, error) {
 	site := Site{
 		layouts:        make(map[string]templates.Template),
 		templates:      make(map[string]*templates.Template),
-		config:         make(map[string]string),
+		Config:         config,
 		tags:           make(map[string][]map[string]interface{}),
 		data:           make(map[string]interface{}),
-		templateEngine: templates.NewEngine(),
+		templateEngine: templates.NewEngine(config.SiteUrl),
 	}
 
-	if err := site.loadDataFiles(dataDir); err != nil {
+	if err := site.loadDataFiles(); err != nil {
 		return nil, err
 	}
 
-	if err := site.loadLayouts(layoutsDir); err != nil {
+	if err := site.loadLayouts(); err != nil {
 		return nil, err
 	}
 
-	if err := site.loadTemplates(srcDir); err != nil {
+	if err := site.loadTemplates(); err != nil {
 		return nil, err
 	}
 
 	return &site, nil
 }
 
-func (site *Site) loadLayouts(layoutsDir string) error {
-	files, err := os.ReadDir(layoutsDir)
+func (site *Site) loadLayouts() error {
+	files, err := os.ReadDir(site.Config.LayoutsDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -68,7 +68,7 @@ func (site *Site) loadLayouts(layoutsDir string) error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(layoutsDir, filename)
+			path := filepath.Join(site.Config.LayoutsDir, filename)
 			templ, err := templates.Parse(site.templateEngine, path)
 			if err != nil {
 				return err
@@ -82,8 +82,8 @@ func (site *Site) loadLayouts(layoutsDir string) error {
 	return nil
 }
 
-func (site *Site) loadDataFiles(dataDir string) error {
-	files, err := os.ReadDir(dataDir)
+func (site *Site) loadDataFiles() error {
+	files, err := os.ReadDir(site.Config.DataDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -94,7 +94,7 @@ func (site *Site) loadDataFiles(dataDir string) error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(dataDir, filename)
+			path := filepath.Join(site.Config.DataDir, filename)
 
 			yamlContent, err := os.ReadFile(path)
 			if err != nil {
@@ -114,15 +114,15 @@ func (site *Site) loadDataFiles(dataDir string) error {
 	return nil
 }
 
-func (site *Site) loadTemplates(srcDir string) error {
-	_, err := os.ReadDir(srcDir)
+func (site *Site) loadTemplates() error {
+	_, err := os.ReadDir(site.Config.SrcDir)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("missing %s directory", srcDir)
+		return fmt.Errorf("missing %s directory", site.Config.SrcDir)
 	} else if err != nil {
-		return fmt.Errorf("couldn't read %s", srcDir)
+		return fmt.Errorf("couldn't read %s", site.Config.SrcDir)
 	}
 
-	err = filepath.WalkDir(srcDir, func(path string, entry fs.DirEntry, err error) error {
+	err = filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := templates.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip
@@ -131,10 +131,10 @@ func (site *Site) loadTemplates(srcDir string) error {
 			}
 
 			// set site related (?) metadata. Not sure if this should go elsewhere
-			relPath, _ := filepath.Rel(srcDir, path)
+			relPath, _ := filepath.Rel(site.Config.SrcDir, path)
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.Ext()
 			templ.Metadata["path"] = relPath
-			templ.Metadata["url"] = "/" + strings.TrimSuffix(relPath, ".html")
+			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
 
 			// posts are templates that can be chronologically sorted --that have a date.
@@ -182,19 +182,18 @@ func (site *Site) loadTemplates(srcDir string) error {
 	return nil
 }
 
-// TODO consider making minify and reload site.config values
-func (site *Site) Build(srcDir string, targetDir string, minify bool, htmlReload bool) error {
+func (site *Site) Build() error {
 	// clear previous target contents
-	os.RemoveAll(targetDir)
-	os.Mkdir(srcDir, FILE_RW_MODE)
+	os.RemoveAll(site.Config.TargetDir)
+	os.Mkdir(site.Config.SrcDir, FILE_RW_MODE)
 
 	// walk the source directory, creating directories and files at the target dir
-	return filepath.WalkDir(srcDir, func(path string, entry fs.DirEntry, err error) error {
+	return filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		subpath, _ := filepath.Rel(srcDir, path)
-		targetPath := filepath.Join(targetDir, subpath)
+		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+		targetPath := filepath.Join(site.Config.TargetDir, subpath)
 
 		// if it's a directory, just create the same at the target
 		if entry.IsDir() {
@@ -202,7 +201,22 @@ func (site *Site) Build(srcDir string, targetDir string, minify bool, htmlReload
 		}
 
 		var contentReader io.Reader
-		if templ, found := site.templates[path]; found {
+		templ, found := site.templates[path]
+		if !found {
+			// if no template found at location, treat the file as static write its contents to target
+			if site.Config.LinkStatic {
+				// dev optimization: link static files instead of copying them
+				abs, _ := filepath.Abs(path)
+				return os.Symlink(abs, targetPath)
+			}
+
+			srcFile, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer srcFile.Close()
+			contentReader = srcFile
+		} else {
 			content, err := site.render(templ)
 			if err != nil {
 				return err
@@ -210,25 +224,16 @@ func (site *Site) Build(srcDir string, targetDir string, minify bool, htmlReload
 
 			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
 			contentReader = bytes.NewReader(content)
-		} else {
-			// if no template found at location, treat the file as static
-			// write its contents to target
-			srcFile, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer srcFile.Close()
-			contentReader = srcFile
 		}
 
 		targetExt := filepath.Ext(targetPath)
 		// if live reload is enabled, inject the reload snippet to html files
-		if htmlReload && targetExt == ".html" {
+		if site.Config.LiveReload && targetExt == ".html" {
 			// TODO inject live reload snippet
 		}
 
 		// if enabled, minify web files
-		if minify && (targetExt == ".html" || targetExt == ".css" || targetExt == ".js") {
+		if site.Config.Minify && (targetExt == ".html" || targetExt == ".css" || targetExt == ".js") {
 			// TODO minify output
 		}
 
@@ -241,7 +246,7 @@ func (site *Site) Build(srcDir string, targetDir string, minify bool, htmlReload
 func (site Site) render(templ *templates.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
-			"config": site.config,
+			"config": site.Config.AsContext(),
 			"posts":  site.posts,
 			"tags":   site.tags,
 			"pages":  site.pages,

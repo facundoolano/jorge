@@ -18,7 +18,7 @@ tags: ["software", "web"]
 	file := newFile("test*.html", input)
 	defer os.Remove(file.Name())
 
-	templ, err := Parse(NewEngine(), file.Name())
+	templ, err := Parse(NewEngine("https://olano.dev"), file.Name())
 	assertEqual(t, err, nil)
 
 	assertEqual(t, templ.Metadata["title"], "my new post")
@@ -42,7 +42,7 @@ subtitle: a blog post
 	file := newFile("test*.html", input)
 	defer os.Remove(file.Name())
 
-	_, err := Parse(NewEngine(), file.Name())
+	_, err := Parse(NewEngine("https://olano.dev"), file.Name())
 	assertEqual(t, err, nil)
 
 	// not first thing in file, leaving as is
@@ -57,7 +57,7 @@ tags: ["software", "web"]
 	file = newFile("test*.html", input)
 	defer os.Remove(file.Name())
 
-	_, err = Parse(NewEngine(), file.Name())
+	_, err = Parse(NewEngine("https://olano.dev"), file.Name())
 	assertEqual(t, err, nil)
 }
 
@@ -69,7 +69,7 @@ tags: ["software", "web"]
 `
 	file := newFile("test*.html", input)
 	defer os.Remove(file.Name())
-	_, err := Parse(NewEngine(), file.Name())
+	_, err := Parse(NewEngine("https://olano.dev"), file.Name())
 
 	assertEqual(t, err.Error(), "front matter not closed")
 
@@ -81,7 +81,7 @@ tags: ["software", "web"]
 
 	file = newFile("test*.html", input)
 	defer os.Remove(file.Name())
-	_, err = Parse(NewEngine(), file.Name())
+	_, err = Parse(NewEngine("https://olano.dev"), file.Name())
 	assert(t, strings.Contains(err.Error(), "invalid yaml"))
 }
 
@@ -100,7 +100,7 @@ tags: ["software", "web"]
 	file := newFile("test*.html", input)
 	defer os.Remove(file.Name())
 
-	templ, err := Parse(NewEngine(), file.Name())
+	templ, err := Parse(NewEngine("https://olano.dev"), file.Name())
 	assertEqual(t, err, nil)
 	ctx := map[string]interface{}{"page": templ.Metadata}
 	content, err := templ.Render(ctx)
@@ -130,7 +130,7 @@ tags: ["software", "web"]
 	file := newFile("test*.org", input)
 	defer os.Remove(file.Name())
 
-	templ, err := Parse(NewEngine(), file.Name())
+	templ, err := Parse(NewEngine("https://olano.dev"), file.Name())
 	assertEqual(t, err, nil)
 
 	content, err := templ.Render(nil)
@@ -172,7 +172,7 @@ tags: ["software", "web"]
 	file := newFile("test*.md", input)
 	defer os.Remove(file.Name())
 
-	templ, err := Parse(NewEngine(), file.Name())
+	templ, err := Parse(NewEngine("https://olano.dev"), file.Name())
 	assertEqual(t, err, nil)
 
 	content, err := templ.Render(nil)

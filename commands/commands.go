@@ -2,16 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"path/filepath"
 
+	"github.com/facundoolano/blorg/config"
 	"github.com/facundoolano/blorg/site"
 )
-
-const SRC_DIR = "src"
-const TARGET_DIR = "target"
-const LAYOUTS_DIR = "layouts"
-const INCLUDES_DIR = "includes"
-const DATA_DIR = "data"
 
 func Init() error {
 	// get working directory
@@ -34,15 +28,15 @@ func New() error {
 
 // Read the files in src/ render them and copy the result to target/
 func Build(root string) error {
-	src := filepath.Join(root, SRC_DIR)
-	target := filepath.Join(root, TARGET_DIR)
-	layouts := filepath.Join(root, LAYOUTS_DIR)
-	data := filepath.Join(root, DATA_DIR)
-
-	site, err := site.Load(src, layouts, data)
+	config, err := config.Load(root)
 	if err != nil {
 		return err
 	}
 
-	return site.Build(src, target, true, false)
+	site, err := site.Load(*config)
+	if err != nil {
+		return err
+	}
+
+	return site.Build()
 }
