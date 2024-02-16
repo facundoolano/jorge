@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/facundoolano/blorg/config"
-	"github.com/facundoolano/blorg/templates"
+	"github.com/facundoolano/jorge/config"
+	"github.com/facundoolano/jorge/templates"
 	"golang.org/x/net/html"
 	"gopkg.in/yaml.v3"
 )

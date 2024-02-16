@@ -1,22 +1,22 @@
-# blorg
+# jorge
 A presonal (small + opinionated) site generator with org-mode support.
 
 (NOTE: this is stil a WIP, the doc below is a wishlist, not the current behavior.)
 
 Install from binary:
 
-    $ wget https://github.com/facundoolano/blorg/releases/download/latest/blorg-$(uname -m) \
-        -o blorg && chmod +x blorg
+    $ wget https://github.com/facundoolano/jorge/releases/download/latest/jorge-$(uname -m) \
+        -o jorge && chmod +x jorge
 
 Or install with go:
 
-    $ go install github.com/facundoolano/blorg
+    $ go install github.com/facundoolano/jorge
 
 
 Usage:
 
 ```bash
-$ blorg init myblog
+$ jorge init myblog
 > site name: My Blog
 > author: Facundo Olano
 > url: https://myblog.olano.dev
@@ -33,11 +33,11 @@ $ blorg init myblog
   added myblog/src/tags.html
 
 $ cd myblog
-$ blorg post "My First Post"
+$ jorge post "My First Post"
   added draft src/blog/my-first-post.org
 
 # serve the site locally with live reload
-$ blorg serve
+$ jorge serve
   server running at http://localhost:4001/
 
 # browse to the new post
@@ -53,7 +53,7 @@ EOF
 # remove the draft flag before publishing
 $ sed -i '/^draft: true$/d' src/blog/my-first-post.org
 
-$ blorg build
+$ jorge build
   wrote target/index.html
   wrote target/assets/css/main.css
   wrote target/blog/hello.html
@@ -64,6 +64,6 @@ $ blorg build
 
 For more details see the:
 
-  - [Tutorial](https://blorg.olano.dev#tutorial)
-  - [Docs](https://blorg.olano.dev#docs)
-  - [Development blog](https://blorg.olano.dev#blog)
+  - [Tutorial](https://jorge.olano.dev#tutorial)
+  - [Docs](https://jorge.olano.dev#docs)
+  - [Development blog](https://jorge.olano.dev#blog)

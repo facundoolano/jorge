@@ -1,4 +1,4 @@
-module github.com/facundoolano/blorg
+module github.com/facundoolano/jorge
 
 go 1.22.0
 
