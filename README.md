@@ -18,7 +18,8 @@ Usage:
 ```bash
 $ blorg init myblog
 > site name: My Blog
-> author: Facundo
+> author: Facundo Olano
+> url: https://myblog.olano.dev
 
   added myblog/README.md
   added myblog/.gitignore
