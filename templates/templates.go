@@ -27,9 +27,9 @@ type Template struct {
 
 // Create a new template engine, with custom liquid filters.
 // The `siteUrl` is necessary to provide context for the absolute_url filter.
-func NewEngine(siteUrl string) *Engine {
+func NewEngine(siteUrl string, includesDir string) *Engine {
 	e := liquid.NewEngine()
-	loadJekyllFilters(e, siteUrl)
+	loadJekyllFilters(e, siteUrl, includesDir)
 	return e
 }
 
