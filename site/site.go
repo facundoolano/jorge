@@ -14,7 +14,7 @@ import (
 	"github.com/facundoolano/blorg/config"
 	"github.com/facundoolano/blorg/templates"
 	"golang.org/x/net/html"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const FILE_RW_MODE = 0777

@@ -12,7 +12,7 @@ import (
 	"github.com/niklasfasching/go-org/org"
 	"github.com/osteele/liquid"
 	"github.com/yuin/goldmark"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const FM_SEPARATOR = "---"
