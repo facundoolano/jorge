@@ -50,7 +50,7 @@ $ cat >> src/blog/test.org <<EOF
   EOF
 
 # remove the draft flag before publishing
-$ sed -i '/^draft: true$/d' your_file.md
+$ sed -i '/^draft: true$/d' src/blog/my-first-post.org
 
 $ blorg build
   wrote target/index.html
