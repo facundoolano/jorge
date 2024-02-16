@@ -203,7 +203,22 @@ func (site *Site) Build() error {
 		}
 
 		var contentReader io.Reader
-		if templ, found := site.templates[path]; found {
+		templ, found := site.templates[path]
+		if !found {
+			// if no template found at location, treat the file as static write its contents to target
+			if site.Config.LinkStatic {
+				// dev optimization: link static files instead of copying them
+				abs, _ := filepath.Abs(path)
+				return os.Symlink(abs, targetPath)
+			}
+
+			srcFile, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer srcFile.Close()
+			contentReader = srcFile
+		} else {
 			content, err := site.render(templ)
 			if err != nil {
 				return err
@@ -211,15 +226,6 @@ func (site *Site) Build() error {
 
 			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
 			contentReader = bytes.NewReader(content)
-		} else {
-			// if no template found at location, treat the file as static
-			// write its contents to target
-			srcFile, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer srcFile.Close()
-			contentReader = srcFile
 		}
 
 		targetExt := filepath.Ext(targetPath)
