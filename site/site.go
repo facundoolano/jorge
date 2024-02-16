@@ -29,6 +29,8 @@ type Site struct {
 
 	templateEngine *templates.Engine
 	templates      map[string]*templates.Template
+
+	minifier Minifier
 }
 
 func Load(config config.Config) (*Site, error) {
@@ -52,6 +54,8 @@ func Load(config config.Config) (*Site, error) {
 	if err := site.loadTemplates(); err != nil {
 		return nil, err
 	}
+
+	site.loadMinifier()
 
 	return &site, nil
 }
@@ -233,9 +237,7 @@ func (site *Site) Build() error {
 		}
 
 		// if enabled, minify web files
-		if site.Config.Minify && (targetExt == ".html" || targetExt == ".css" || targetExt == ".js") {
-			// TODO minify output
-		}
+		contentReader = site.minify(targetExt, contentReader)
 
 		// write the file contents over to target
 		fmt.Println("writing", targetPath)

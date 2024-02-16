@@ -7,6 +7,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/niklasfasching/go-org v1.7.0
 	github.com/osteele/liquid v1.3.2
+	github.com/tdewolff/minify/v2 v2.20.16
 	github.com/yuin/goldmark v1.7.0
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
 	gopkg.in/yaml.v2 v2.4.0
@@ -15,5 +16,6 @@ require (
 
 require (
 	github.com/osteele/tuesday v1.0.3 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	github.com/tdewolff/parse/v2 v2.7.11 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 )

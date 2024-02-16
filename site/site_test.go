@@ -315,6 +315,7 @@ func newProject() *config.Config {
 	os.Mkdir(dataDir, 0777)
 
 	config, _ := config.Load(projectDir)
+	config.Minify = false
 
 	return config
 }
