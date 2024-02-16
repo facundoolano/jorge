@@ -15,10 +15,10 @@ Or install with go:
 
 Usage:
 
-```shell
+```bash
 $ blorg init myblog
-  site name: My Blog
-  author: Facundo
+> site name: My Blog
+> author: Facundo
 
   added myblog/README.md
   added myblog/.gitignore
@@ -30,28 +30,35 @@ $ blorg init myblog
   added myblog/src/blog/hello.org
   added myblog/src/feed.xml
   added myblog/src/tags.html
+
 $ cd myblog
 $ blorg post "My First Post"
-  added src/blog/my-first-post.org
-$ blorg serve &
+  added draft src/blog/my-first-post.org
+
+# serve the site locally with live reload
+$ blorg serve
   server running at http://localhost:4001/
+
+# browse to the new post
+$ open http://localhost:4001/blog/my-first-post
+
+# add some content
 $ cat >> src/blog/test.org <<EOF
   # Hello world!
 
   this is my *first* post.
   EOF
-$ open http://localhost:4001/blog/my-first-post
-$ blorg pub
-  drafts:
-    1. blog/my-first-post.org
-  choose file to publish: 1
+
+# remove the draft flag before publishing
+$ sed -i '/^draft: true$/d' your_file.md
+
 $ blorg build
-  added target/index.html
-  added target/assets/css/main.css
-  added target/blog/hello.html
-  added target/blog/my-first-post.html
-  added target/feed.xml
-  added target/tags.html
+  wrote target/index.html
+  wrote target/assets/css/main.css
+  wrote target/blog/hello.html
+  wrote target/blog/my-first-post.html
+  wrote target/feed.xml
+  wrote target/tags.html
 ```
 
 For more details see the:
