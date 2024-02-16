@@ -32,7 +32,6 @@ type Site struct {
 }
 
 func Load(config config.Config) (*Site, error) {
-	// TODO load config from config.yml
 	site := Site{
 		layouts:        make(map[string]templates.Template),
 		templates:      make(map[string]*templates.Template),
@@ -183,7 +182,6 @@ func (site *Site) loadTemplates() error {
 	return nil
 }
 
-// TODO consider making minify and reload site.Config values
 func (site *Site) Build() error {
 	// clear previous target contents
 	os.RemoveAll(site.Config.TargetDir)
