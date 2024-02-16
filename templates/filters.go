@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"reflect"
+	"regexp"
 
 	"encoding/xml"
 	"time"
@@ -28,6 +29,11 @@ func loadJekyllFilters(e *liquid.Engine, siteUrl string) {
 	e.RegisterFilter("where", whereFilter)
 	e.RegisterFilter("where_exp", whereExpFilter)
 	e.RegisterFilter("xml_escape", xml.Marshal)
+
+	e.RegisterFilter("normalize_whitespace", func(s string) string {
+		wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
+		return wsPattern.ReplaceAllString(s, " ")
+	})
 
 	e.RegisterFilter("markdownify", func(s string) string {
 		// using goldmark here instead of balckfriday, to avoid an extra dependencie
