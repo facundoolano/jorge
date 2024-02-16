@@ -40,7 +40,7 @@ func Load(config config.Config) (*Site, error) {
 		Config:         config,
 		tags:           make(map[string][]map[string]interface{}),
 		data:           make(map[string]interface{}),
-		templateEngine: templates.NewEngine(config.SiteUrl),
+		templateEngine: templates.NewEngine(config.SiteUrl, config.IncludesDir),
 	}
 
 	if err := site.loadDataFiles(); err != nil {

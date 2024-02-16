@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 
 	"encoding/xml"
 	"time"
@@ -16,12 +18,14 @@ import (
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
 	"github.com/yuin/goldmark"
+
+	"github.com/osteele/liquid/render"
 )
 
 // a lot of the filters and tags available at jekyll aren't default liquid manually adding them here
 // copied from https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/filters.go
 // MIT License: https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/LICENSE
-func loadJekyllFilters(e *liquid.Engine, siteUrl string) {
+func loadJekyllFilters(e *liquid.Engine, siteUrl string, includesDir string) {
 	e.RegisterFilter("filter", filter)
 	e.RegisterFilter("group_by", groupByFilter)
 	e.RegisterFilter("group_by_exp", groupByExpFilter)
@@ -68,6 +72,10 @@ func loadJekyllFilters(e *liquid.Engine, siteUrl string) {
 	e.RegisterFilter("date_to_xmlschema", func(date time.Time) string {
 		return date.Format("2006-01-02T15:04:05-07:00")
 		// Out: 2008-11-07T13:07:54-08:00
+	})
+
+	e.RegisterTag("include", func(rc render.Context) (string, error) {
+		return includeFromDir(includesDir, rc)
 	})
 }
 
@@ -184,4 +192,21 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 		}
 	}
 	return result
+}
+
+func includeFromDir(dir string, rc render.Context) (string, error) {
+	argsline, err := rc.ExpandTagArg()
+	if err != nil {
+		return "", err
+	}
+	args := strings.Split(argsline, " ")
+	if err != nil {
+		return "", err
+	}
+	if len(args) != 1 {
+		return "", fmt.Errorf("parse error")
+	}
+
+	filename := filepath.Join(dir, args[0])
+	return rc.RenderFile(filename, map[string]interface{}{})
 }
