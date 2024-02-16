@@ -39,7 +39,7 @@ func Load(config config.Config) (*Site, error) {
 		Config:         config,
 		tags:           make(map[string][]map[string]interface{}),
 		data:           make(map[string]interface{}),
-		templateEngine: templates.NewEngine(),
+		templateEngine: templates.NewEngine(config.SiteUrl),
 	}
 
 	if err := site.loadDataFiles(); err != nil {
@@ -135,7 +135,7 @@ func (site *Site) loadTemplates() error {
 			relPath, _ := filepath.Rel(site.Config.SrcDir, path)
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.Ext()
 			templ.Metadata["path"] = relPath
-			templ.Metadata["url"] = "/" + strings.TrimSuffix(relPath, ".html")
+			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
 
 			// posts are templates that can be chronologically sorted --that have a date.

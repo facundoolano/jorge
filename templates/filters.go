@@ -3,6 +3,8 @@ package templates
 import (
 	"bytes"
 	"fmt"
+	"log"
+	"net/url"
 	"reflect"
 
 	"encoding/xml"
@@ -18,7 +20,7 @@ import (
 // a lot of the filters and tags available at jekyll aren't default liquid manually adding them here
 // copied from https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/filters.go
 // MIT License: https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/LICENSE
-func loadJekyllFilters(e *liquid.Engine) {
+func loadJekyllFilters(e *liquid.Engine, siteUrl string) {
 	e.RegisterFilter("filter", filter)
 	e.RegisterFilter("group_by", groupByFilter)
 	e.RegisterFilter("group_by_exp", groupByExpFilter)
@@ -32,15 +34,17 @@ func loadJekyllFilters(e *liquid.Engine) {
 		var buf bytes.Buffer
 		err := goldmark.Convert([]byte(s), &buf)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		return buf.String()
 	})
 
-	e.RegisterFilter("absolute_url", func(s string) string {
-		// FIXME implement after adding a config struct, using the url
-		// return utils.URLJoin(c.AbsoluteURL, c.BaseURL, s)
-		return s
+	e.RegisterFilter("absolute_url", func(path string) string {
+		url, err := url.JoinPath(siteUrl, path)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return url
 	})
 
 	e.RegisterFilter("date_to_rfc822", func(date time.Time) string {

@@ -25,9 +25,9 @@ type Template struct {
 	liquidTemplate liquid.Template
 }
 
-func NewEngine() *Engine {
+func NewEngine(siteUrl string) *Engine {
 	e := liquid.NewEngine()
-	loadJekyllFilters(e)
+	loadJekyllFilters(e, siteUrl)
 	return e
 }
 
