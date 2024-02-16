@@ -7,11 +7,21 @@ import (
 	"github.com/facundoolano/jorge/site"
 )
 
-func Init() error {
-	// get working directory
-	// default to .
-	// if not exist, create directory
-	// copy over default files
+func Init(rootDir string) error {
+	// os.MkDir
+	//   if already exist, check if empty
+	//   https://stackoverflow.com/a/30708914/993769
+	//   if not empty fail
+
+	// prompt site name
+	// prompt author
+	// prompt url
+	// build context with supplied answers
+
+	// walk over initfiles dir
+	// if directory: create at target
+	// if file: read, render with context, write at target
+
 	fmt.Println("not implemented yet")
 	return nil
 }

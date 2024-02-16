@@ -21,8 +21,6 @@ func main() {
 func run(args []string) error {
 	// TODO consider using cobra or something else to make cli more declarative
 	// and get a better ux out of the box
-	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
-	newCmd := flag.NewFlagSet("new", flag.ExitOnError)
 
 	if len(os.Args) < 2 {
 		// TODO print usage
@@ -31,8 +29,11 @@ func run(args []string) error {
 
 	switch os.Args[1] {
 	case "init":
-		initCmd.Parse(os.Args[2:])
-		return commands.Init()
+		if len(os.Args) < 3 {
+			return errors.New("project directory missing")
+		}
+		rootDir := os.Args[2]
+		return commands.Init(rootDir)
 	case "build":
 		rootDir := "."
 		if len(os.Args) > 2 {
@@ -40,7 +41,6 @@ func run(args []string) error {
 		}
 		return commands.Build(rootDir)
 	case "new":
-		newCmd.Parse(os.Args[2:])
 		return commands.New()
 	case "serve":
 		rootDir := "."
