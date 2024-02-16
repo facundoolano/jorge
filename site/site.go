@@ -20,7 +20,7 @@ import (
 const FILE_RW_MODE = 0777
 
 type Site struct {
-	config  config.Config
+	Config  config.Config
 	layouts map[string]templates.Template
 	posts   []map[string]interface{}
 	pages   []map[string]interface{}
@@ -36,7 +36,7 @@ func Load(config config.Config) (*Site, error) {
 	site := Site{
 		layouts:        make(map[string]templates.Template),
 		templates:      make(map[string]*templates.Template),
-		config:         config,
+		Config:         config,
 		tags:           make(map[string][]map[string]interface{}),
 		data:           make(map[string]interface{}),
 		templateEngine: templates.NewEngine(),
@@ -58,7 +58,7 @@ func Load(config config.Config) (*Site, error) {
 }
 
 func (site *Site) loadLayouts() error {
-	files, err := os.ReadDir(site.config.LayoutsDir)
+	files, err := os.ReadDir(site.Config.LayoutsDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -69,7 +69,7 @@ func (site *Site) loadLayouts() error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(site.config.LayoutsDir, filename)
+			path := filepath.Join(site.Config.LayoutsDir, filename)
 			templ, err := templates.Parse(site.templateEngine, path)
 			if err != nil {
 				return err
@@ -84,7 +84,7 @@ func (site *Site) loadLayouts() error {
 }
 
 func (site *Site) loadDataFiles() error {
-	files, err := os.ReadDir(site.config.DataDir)
+	files, err := os.ReadDir(site.Config.DataDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -95,7 +95,7 @@ func (site *Site) loadDataFiles() error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(site.config.DataDir, filename)
+			path := filepath.Join(site.Config.DataDir, filename)
 
 			yamlContent, err := os.ReadFile(path)
 			if err != nil {
@@ -116,14 +116,14 @@ func (site *Site) loadDataFiles() error {
 }
 
 func (site *Site) loadTemplates() error {
-	_, err := os.ReadDir(site.config.SrcDir)
+	_, err := os.ReadDir(site.Config.SrcDir)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("missing %s directory", site.config.SrcDir)
+		return fmt.Errorf("missing %s directory", site.Config.SrcDir)
 	} else if err != nil {
-		return fmt.Errorf("couldn't read %s", site.config.SrcDir)
+		return fmt.Errorf("couldn't read %s", site.Config.SrcDir)
 	}
 
-	err = filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	err = filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := templates.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip
@@ -132,7 +132,7 @@ func (site *Site) loadTemplates() error {
 			}
 
 			// set site related (?) metadata. Not sure if this should go elsewhere
-			relPath, _ := filepath.Rel(site.config.SrcDir, path)
+			relPath, _ := filepath.Rel(site.Config.SrcDir, path)
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.Ext()
 			templ.Metadata["path"] = relPath
 			templ.Metadata["url"] = "/" + strings.TrimSuffix(relPath, ".html")
@@ -183,19 +183,19 @@ func (site *Site) loadTemplates() error {
 	return nil
 }
 
-// TODO consider making minify and reload site.config values
+// TODO consider making minify and reload site.Config values
 func (site *Site) Build() error {
 	// clear previous target contents
-	os.RemoveAll(site.config.TargetDir)
-	os.Mkdir(site.config.SrcDir, FILE_RW_MODE)
+	os.RemoveAll(site.Config.TargetDir)
+	os.Mkdir(site.Config.SrcDir, FILE_RW_MODE)
 
 	// walk the source directory, creating directories and files at the target dir
-	return filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	return filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		subpath, _ := filepath.Rel(site.config.SrcDir, path)
-		targetPath := filepath.Join(site.config.TargetDir, subpath)
+		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+		targetPath := filepath.Join(site.Config.TargetDir, subpath)
 
 		// if it's a directory, just create the same at the target
 		if entry.IsDir() {
@@ -224,12 +224,12 @@ func (site *Site) Build() error {
 
 		targetExt := filepath.Ext(targetPath)
 		// if live reload is enabled, inject the reload snippet to html files
-		if site.config.LiveReload && targetExt == ".html" {
+		if site.Config.LiveReload && targetExt == ".html" {
 			// TODO inject live reload snippet
 		}
 
 		// if enabled, minify web files
-		if site.config.Minify && (targetExt == ".html" || targetExt == ".css" || targetExt == ".js") {
+		if site.Config.Minify && (targetExt == ".html" || targetExt == ".css" || targetExt == ".js") {
 			// TODO minify output
 		}
 
@@ -242,7 +242,7 @@ func (site *Site) Build() error {
 func (site Site) render(templ *templates.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
-			"config": site.config.AsContext(),
+			"config": site.Config.AsContext(),
 			"posts":  site.posts,
 			"tags":   site.tags,
 			"pages":  site.pages,

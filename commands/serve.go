@@ -8,19 +8,24 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/facundoolano/blorg/config"
 	"github.com/facundoolano/blorg/site"
 	"github.com/fsnotify/fsnotify"
 )
 
 // Generate and serve the site, rebuilding when the source files change.
-func Serve() error {
+func Serve(rootDir string) error {
+	config, err := config.LoadDevServer(rootDir)
+	if err != nil {
+		return err
+	}
 
-	if err := rebuild(); err != nil {
+	if err := rebuild(config); err != nil {
 		return err
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, err := setupWatcher()
+	watcher, err := setupWatcher(config)
 	if err != nil {
 		return err
 	}
@@ -35,13 +40,14 @@ func Serve() error {
 	return nil
 }
 
-func rebuild() error {
-	site, err := site.Load(SRC_DIR, LAYOUTS_DIR, DATA_DIR)
+func rebuild(config *config.Config) error {
+
+	site, err := site.Load(*config)
 	if err != nil {
 		return err
 	}
 
-	if err := site.Build(SRC_DIR, TARGET_DIR, false, true); err != nil {
+	if err := site.Build(); err != nil {
 		return err
 	}
 
@@ -66,7 +72,7 @@ func (d HTMLDir) Open(name string) (http.File, error) {
 	return f, err
 }
 
-func setupWatcher() (*fsnotify.Watcher, error) {
+func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
@@ -96,12 +102,12 @@ func setupWatcher() (*fsnotify.Watcher, error) {
 
 				// since new nested directories could be triggering this change, and we need to watch those too
 				// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
-				if err := addAll(watcher); err != nil {
+				if err := addAll(watcher, config); err != nil {
 					fmt.Println("error:", err)
 					return
 				}
 
-				if err := rebuild(); err != nil {
+				if err := rebuild(config); err != nil {
 					fmt.Println("error:", err)
 					return
 				}
@@ -115,19 +121,19 @@ func setupWatcher() (*fsnotify.Watcher, error) {
 		}
 	}()
 
-	err = addAll(watcher)
+	err = addAll(watcher, config)
 
 	return watcher, err
 }
 
 // Add the layouts and all source directories to the given watcher
-func addAll(watcher *fsnotify.Watcher) error {
-	err := watcher.Add(LAYOUTS_DIR)
-	err = watcher.Add(DATA_DIR)
-	err = watcher.Add(INCLUDES_DIR)
+func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
+	err := watcher.Add(config.LayoutsDir)
+	err = watcher.Add(config.DataDir)
+	err = watcher.Add(config.IncludesDir)
 	// fsnotify watches all files within a dir, but non recursively
 	// this walks through the src dir and adds watches for each found directory
-	filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
+	filepath.WalkDir(config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if entry.IsDir() {
 			watcher.Add(path)
 		}

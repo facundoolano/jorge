@@ -43,7 +43,11 @@ func run(args []string) error {
 		newCmd.Parse(os.Args[2:])
 		return commands.New()
 	case "serve":
-		return commands.Serve()
+		rootDir := "."
+		if len(os.Args) > 2 {
+			rootDir = os.Args[2]
+		}
+		return commands.Serve(rootDir)
 	default:
 		// TODO print usage
 		return errors.New("unknown subcommand")
