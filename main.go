@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/facundoolano/blorg/commands"
+	"github.com/facundoolano/jorge/commands"
 )
 
 func main() {

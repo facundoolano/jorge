@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/facundoolano/blorg/config"
-	"github.com/facundoolano/blorg/site"
+	"github.com/facundoolano/jorge/config"
+	"github.com/facundoolano/jorge/site"
 )
 
 func Init() error {

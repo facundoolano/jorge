@@ -1,7 +1,7 @@
 package site
 
 import (
-	"github.com/facundoolano/blorg/config"
+	"github.com/facundoolano/jorge/config"
 	"os"
 	"path/filepath"
 	"testing"
@@ -278,8 +278,8 @@ func TestRenderDataFile(t *testing.T) {
 	content := `
 - name: feedi
   url: https://github.com/facundoolano/feedi
-- name: blorg
-  url: https://github.com/facundoolano/blorg
+- name: jorge
+  url: https://github.com/facundoolano/jorge
 `
 	file := newFile(config.DataDir, "projects.yml", content)
 	defer os.Remove(file.Name())
@@ -299,7 +299,7 @@ func TestRenderDataFile(t *testing.T) {
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
 <li><a href="https://github.com/facundoolano/feedi">feedi</a></li>
-<li><a href="https://github.com/facundoolano/blorg">blorg</a></li>
+<li><a href="https://github.com/facundoolano/jorge">jorge</a></li>
 </ul>`)
 }
 
