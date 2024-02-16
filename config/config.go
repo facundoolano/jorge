@@ -1,9 +1,13 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"maps"
+	"os"
 	"path/filepath"
+
+	"gopkg.in/yaml.v2"
 )
 
 // The properties that are depended upon in the source code are declared explicitly in the config struct.
@@ -40,7 +44,7 @@ type Config struct {
 }
 
 func Load(rootDir string) (*Config, error) {
-	// FIXME change defaults based on command mode
+	// TODO allow to disable minify
 
 	config := &Config{
 		RootDir:      rootDir,
@@ -56,14 +60,37 @@ func Load(rootDir string) (*Config, error) {
 		pageDefaults: map[string]interface{}{},
 	}
 
-	// TODO load overrides from config.yml
-	// TODO set siteUrl from overrides["url"]
-	// TODO set slugFormat from overrides["slug"]
+	// load overrides from config.yml
+	configPath := filepath.Join(rootDir, "config.yml")
+	yamlContent, err := os.ReadFile(configPath)
+
+	if errors.Is(err, os.ErrNotExist) {
+		// config file is not mandatory
+		return config, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(yamlContent, &config.overrides)
+	if err != nil {
+		return nil, err
+	}
+
+	// set user-provided overrides of declared config keys
+	if url, found := config.overrides["url"]; found {
+		config.SiteUrl = url.(string)
+	}
+	if slug, found := config.overrides["url"]; found {
+		config.SlugFormat = slug.(string)
+	}
 
 	return config, nil
 }
 
 func LoadDevServer(rootDir string) (*Config, error) {
+	// TODO revisit is this Load vs LoadDevServer is the best way to handle both modes
+	// TODO some of the options need to be overridable: host, port, live reload at least
+
 	config, err := Load(rootDir)
 	if err != nil {
 		return nil, err
