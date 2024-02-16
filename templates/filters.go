@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"time"
 
+	"github.com/elliotchance/orderedmap/v2"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
@@ -75,48 +76,51 @@ func groupByExpFilter(array []map[string]interface{}, name string, expr expressi
 	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
 		return nil, nil
 	}
-	groups := map[interface{}][]interface{}{}
+	groups := orderedmap.NewOrderedMap[interface{}, []interface{}]()
 	for i := 0; i < rt.Len(); i++ {
 		item := rt.Index(i).Interface()
 		key, err := expr.Bind(name, item).Evaluate()
 		if err != nil {
 			return nil, err
 		}
-		if group, found := groups[key]; found {
-			groups[key] = append(group, item)
+		if group, found := groups.Get(key); found {
+			groups.Set(key, append(group, item))
 		} else {
-			groups[key] = []interface{}{item}
+			groups.Set(key, []interface{}{item})
 		}
 	}
 	var result []map[string]interface{}
-	for k, v := range groups {
+	for _, k := range groups.Keys() {
+		v, _ := groups.Get(k)
 		result = append(result, map[string]interface{}{"name": k, "items": v})
 	}
 	return result, nil
 }
 
+// TODO use ordered map
 func groupByFilter(array []map[string]interface{}, property string) []map[string]interface{} {
 	rt := reflect.ValueOf(array)
 	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
 		return nil
 	}
-	groups := map[interface{}][]interface{}{}
+	groups := orderedmap.NewOrderedMap[interface{}, []interface{}]()
 	for i := 0; i < rt.Len(); i++ {
 		irt := rt.Index(i)
 		if irt.Kind() == reflect.Map && irt.Type().Key().Kind() == reflect.String {
 			krt := irt.MapIndex(reflect.ValueOf(property))
 			if krt.IsValid() && krt.CanInterface() {
 				key := krt.Interface()
-				if group, found := groups[key]; found {
-					groups[key] = append(group, irt.Interface())
+				if group, found := groups.Get(key); found {
+					groups.Set(key, append(group, irt.Interface()))
 				} else {
-					groups[key] = []interface{}{irt.Interface()}
+					groups.Set(key, []interface{}{irt.Interface()})
 				}
 			}
 		}
 	}
 	var result []map[string]interface{}
-	for k, v := range groups {
+	for _, k := range groups.Keys() {
+		v, _ := groups.Get(k)
 		result = append(result, map[string]interface{}{"name": k, "items": v})
 	}
 	return result
