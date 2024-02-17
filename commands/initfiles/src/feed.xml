@@ -2,7 +2,7 @@
 ---
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" {% if site.config.lang %}xml:lang="{{ site.lang }}"{% endif %}>
-    <generator uri="https://blorg.olano.dev/" version="0.0.1">blorg</generator>
+    <generator uri="https://jorge.olano.dev/" version="0.0.1">jorge</generator>
     <link href="{{ page.url | absolute_url}}" rel="self" type="application/atom+xml"/>
     <link href="{{ site.config.url }}" rel="alternate" type="text/html"/>
     <updated>{{ "now" | date: "%Y-%m-%d %H:%M" }}</updated>
