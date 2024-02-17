@@ -32,12 +32,12 @@ func Serve(rootDir string) error {
 	defer watcher.Close()
 
 	// serve the target dir with a file server
-	fs := http.FileServer(HTMLDir{http.Dir("target/")})
+	fs := http.FileServer(HTMLDir{http.Dir(config.TargetDir)})
 	http.Handle("/", http.StripPrefix("/", fs))
-	fmt.Println("server listening at http://localhost:4001/")
-	http.ListenAndServe(":4001", nil)
 
-	return nil
+	addr := fmt.Sprintf("%s:%d", config.ServerHost, config.ServerPort)
+	fmt.Printf("server listening at http://%s\n", addr)
+	return http.ListenAndServe(addr, nil)
 }
 
 func rebuild(config *config.Config) error {
