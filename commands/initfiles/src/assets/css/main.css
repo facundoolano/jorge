@@ -130,7 +130,7 @@ img.cover-img {
 }
 
 .layout-post header.with-cover {
-    margin-top: 2rem;
+    margin-top: -0.5rem;
 }
 
 .src pre {
@@ -150,8 +150,8 @@ blockquote {
 }
 
 .layout-post p {
-    /* margin: 0 0 .4rem 0; */
     line-height: 1.8;
+    margin-bottom: 1.5rem;
 }
 
 .layout-post p + h2 {
@@ -160,6 +160,30 @@ blockquote {
 
 .layout-post .center-block {
     margin: 2rem 0;
+}
+
+/* override in mobile devices for more compact text */
+@media screen and (max-width: 768px) {
+    .layout-post {
+        font-size: 1rem;
+        line-height: 1.2;
+        letter-spacing: unset;
+        hyphens: none;
+        text-align: left;
+    }
+
+    .layout-post p {
+        margin: 0 0 1rem 0;
+        line-height: 1.7;
+    }
+
+    .layout-post p + p {
+        text-indent: 0;
+    }
+
+    .layout-post img {
+        max-width: 100%;
+    }
 }
 
 hr.footnotes-separatator {
