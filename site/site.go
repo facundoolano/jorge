@@ -204,49 +204,54 @@ func (site *Site) Build() error {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
-		var contentReader io.Reader
-		templ, found := site.templates[path]
-		if !found {
-			// if no template found at location, treat the file as static write its contents to target
-			if site.Config.LinkStatic {
-				// dev optimization: link static files instead of copying them
-				abs, _ := filepath.Abs(path)
-				err = os.Symlink(abs, targetPath)
-				return checkFileError(err)
-			}
-
-			srcFile, err := os.Open(path)
-			if err != nil {
-				return checkFileError(err)
-			}
-			defer srcFile.Close()
-			contentReader = srcFile
-		} else {
-			content, err := site.render(templ)
-			if err != nil {
-				return err
-			}
-
-			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
-			contentReader = bytes.NewReader(content)
-		}
-
-		targetExt := filepath.Ext(targetPath)
-		// if live reload is enabled, inject the reload snippet to html files
-		if site.Config.LiveReload && targetExt == ".html" {
-			// TODO inject live reload snippet
-		}
-
-		// if enabled, minify web files
-		contentReader = site.minify(targetExt, contentReader)
-
-		// write the file contents over to target
-		fmt.Println("writing", targetPath)
-		return writeToFile(targetPath, contentReader)
+		return site.buildFile(path, targetPath)
 	})
 }
 
-func (site Site) render(templ *templates.Template) ([]byte, error) {
+func (site *Site) buildFile(path string, targetPath string) error {
+	var contentReader io.Reader
+	var err error
+	templ, found := site.templates[path]
+	if !found {
+		// if no template found at location, treat the file as static write its contents to target
+		if site.Config.LinkStatic {
+			// dev optimization: link static files instead of copying them
+			abs, _ := filepath.Abs(path)
+			err = os.Symlink(abs, targetPath)
+			return checkFileError(err)
+		}
+
+		srcFile, err := os.Open(path)
+		if err != nil {
+			return checkFileError(err)
+		}
+		defer srcFile.Close()
+		contentReader = srcFile
+	} else {
+		content, err := site.render(templ)
+		if err != nil {
+			return err
+		}
+
+		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
+		contentReader = bytes.NewReader(content)
+	}
+
+	targetExt := filepath.Ext(targetPath)
+	// if live reload is enabled, inject the reload snippet to html files
+	if site.Config.LiveReload && targetExt == ".html" {
+		// TODO inject live reload snippet
+	}
+
+	// if enabled, minify web files
+	contentReader = site.minify(targetExt, contentReader)
+
+	// write the file contents over to target
+	fmt.Println("writing", targetPath)
+	return writeToFile(targetPath, contentReader)
+}
+
+func (site *Site) render(templ *templates.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
 			"config": site.Config.AsContext(),
