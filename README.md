@@ -1,5 +1,5 @@
 # jorge
-A presonal (small + opinionated) site generator with org-mode support.
+A personal (small + opinionated) site generator with org-mode support.
 
 (NOTE: this is stil a WIP, the doc below is a wishlist, not the current behavior.)
 
