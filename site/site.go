@@ -131,7 +131,7 @@ func (site *Site) loadTemplates() error {
 			templ, err := templates.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip
 			if err != nil || templ == nil {
-				return err
+				return checkFileError(err)
 			}
 
 			// set site related (?) metadata. Not sure if this should go elsewhere
@@ -211,12 +211,13 @@ func (site *Site) Build() error {
 			if site.Config.LinkStatic {
 				// dev optimization: link static files instead of copying them
 				abs, _ := filepath.Abs(path)
-				return os.Symlink(abs, targetPath)
+				err = os.Symlink(abs, targetPath)
+				return checkFileError(err)
 			}
 
 			srcFile, err := os.Open(path)
 			if err != nil {
-				return err
+				return checkFileError(err)
 			}
 			defer srcFile.Close()
 			contentReader = srcFile
@@ -279,6 +280,19 @@ func (site Site) render(templ *templates.Template) ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+func checkFileError(err error) error {
+	// When walking the source dir it can happen that a file is present when walking starts
+	// but missing or inaccessible when trying to open it (this is particularly frequent with
+	// backup files from emacs and when running the dev server). We don't want to halt the build
+	// process in that situation, just inform and continue.
+	if os.IsNotExist(err) {
+		// don't abort on missing files, usually spurious temps
+		fmt.Println("skipping missing file", err)
+		return nil
+	}
+	return err
 }
 
 func writeToFile(targetPath string, source io.Reader) error {
