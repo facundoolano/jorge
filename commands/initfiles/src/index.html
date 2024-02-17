@@ -1,0 +1,16 @@
+---
+layout: default
+---
+<h2><a href="#about" class="title" id="about">About</a></h2>
+<p>Welcome to {{ site.config.name }} by {{ site.config.author }}.</p>
+
+<h2><a href="#latest" class="title" id="latest">Latest posts</a></h2>
+
+{% for post in site.posts limit:4 %}
+{% include post_preview.html %}
+{% endfor %}
+
+<h2><a href="#contact" class="title" id="contact">Contact</a></h2>
+<ul>
+    <li><a href="mailto:some@email.com">@gmail</a></li>
+</ul>
