@@ -7,8 +7,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/facundoolano/jorge/config"
@@ -191,8 +193,12 @@ func (site *Site) Build() error {
 	os.RemoveAll(site.Config.TargetDir)
 	os.Mkdir(site.Config.SrcDir, FILE_RW_MODE)
 
+	wg, files := spawnBuildWorkers(site)
+	defer wg.Wait()
+	defer close(files)
+
 	// walk the source directory, creating directories and files at the target dir
-	return filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	err := filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -203,12 +209,36 @@ func (site *Site) Build() error {
 		if entry.IsDir() {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
-
-		return site.buildFile(path, targetPath)
+		// if it's a file (either static or template) send the path to a worker to build in target
+		files <- path
+		return nil
 	})
+
+	return err
 }
 
-func (site *Site) buildFile(path string, targetPath string) error {
+// Create a channel to send paths to build and a worker pool to handle them concurrently
+func spawnBuildWorkers(site *Site) (*sync.WaitGroup, chan string) {
+
+	var wg sync.WaitGroup
+	files := make(chan string, 20)
+
+	for range runtime.NumCPU() {
+		wg.Add(1)
+		go func(files <-chan string) {
+			defer wg.Done()
+			for path := range files {
+				site.buildFile(path)
+			}
+		}(files)
+	}
+	return &wg, files
+}
+
+func (site *Site) buildFile(path string) error {
+	subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+	targetPath := filepath.Join(site.Config.TargetDir, subpath)
+
 	var contentReader io.Reader
 	var err error
 	templ, found := site.templates[path]

@@ -104,6 +104,8 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
 					continue
 				}
 
+				fmt.Println("done")
+
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
