@@ -1,6 +1,6 @@
 ---
 title: Hello Org!
-subtitle: writing posts with org-mode syntax
+subtitle: Writing posts with org-mode syntax
 tags: [blog, emacs]
 date: 2024-02-17
 layout: post
@@ -13,8 +13,10 @@ This post was originally written with org-mode syntax, instead of [[file:goodbye
 
 As you can see, /italics/ and *bold* render as expected, and you can even use footnotes[fn:1].
 
-All of this is powered by [[https://github.com/niklasfasching/go-org][go-org]], btw.
+All of this is powered by [[https://github.com/niklasfasching/go-org][go-org]], btw[fn:2].
 
 ** Notes
 
 [fn:1] See?
+
+[fn:2] And another one footnote, to stay on the safe side.
