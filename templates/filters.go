@@ -30,6 +30,7 @@ func loadJekyllFilters(e *liquid.Engine, siteUrl string, includesDir string) {
 	e.RegisterFilter("group_by", groupByFilter)
 	e.RegisterFilter("group_by_exp", groupByExpFilter)
 	e.RegisterFilter("sort", sortFilter)
+	e.RegisterFilter("keys", keysFilter)
 	e.RegisterFilter("where", whereFilter)
 	e.RegisterFilter("where_exp", whereExpFilter)
 	e.RegisterFilter("xml_escape", xml.Marshal)
@@ -142,6 +143,16 @@ func groupByFilter(array []map[string]interface{}, property string) []map[string
 		result = append(result, map[string]interface{}{"name": k, "items": v})
 	}
 	return result
+}
+
+func keysFilter(m map[string]interface{}) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	return keys
 }
 
 func sortFilter(array []interface{}, key interface{}, nilFirst func(bool) bool) []interface{} {

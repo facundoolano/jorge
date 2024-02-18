@@ -197,7 +197,7 @@ tags: [software]
 	// add a page (no date)
 	content = `---
 ---
-{% for tag in site.tags %}<h1>{{tag[0]}}</h1>{% for post in tag[1] %}
+{% for tag in site.tags | keys | sort %}<h1>{{tag}}</h1>{% for post in site.tags[tag] %}
 {{post.title}}
 {% endfor %}
 {% endfor %}
