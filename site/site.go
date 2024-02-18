@@ -277,7 +277,6 @@ func (site *Site) buildFile(path string) error {
 	contentReader = site.minify(targetExt, contentReader)
 
 	// write the file contents over to target
-	fmt.Println("writing", targetPath)
 	return writeToFile(targetPath, contentReader)
 }
 
@@ -342,6 +341,7 @@ func writeToFile(targetPath string, source io.Reader) error {
 		return err
 	}
 
+	fmt.Println("added", targetPath)
 	return targetFile.Sync()
 }
 

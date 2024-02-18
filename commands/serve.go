@@ -85,8 +85,9 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
 					return
 				}
 
-				// chmod events are noisy, ignore them
-				if !event.Has(fsnotify.Chmod) {
+				// chmod events are noisy, ignore them. also skip create events
+				// which we assume meaningless until the write that comes next
+				if event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) {
 					continue
 				}
 
@@ -104,7 +105,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
 					continue
 				}
 
-				fmt.Println("done")
+				fmt.Println("done\nserver listening at", config.SiteUrl)
 
 			case err, ok := <-watcher.Errors:
 				if !ok {
