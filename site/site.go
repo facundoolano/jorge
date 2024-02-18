@@ -7,8 +7,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/facundoolano/jorge/config"
@@ -131,7 +133,7 @@ func (site *Site) loadTemplates() error {
 			templ, err := templates.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip
 			if err != nil || templ == nil {
-				return err
+				return checkFileError(err)
 			}
 
 			// set site related (?) metadata. Not sure if this should go elsewhere
@@ -191,8 +193,12 @@ func (site *Site) Build() error {
 	os.RemoveAll(site.Config.TargetDir)
 	os.Mkdir(site.Config.SrcDir, FILE_RW_MODE)
 
+	wg, files := spawnBuildWorkers(site)
+	defer wg.Wait()
+	defer close(files)
+
 	// walk the source directory, creating directories and files at the target dir
-	return filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	err := filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -203,49 +209,78 @@ func (site *Site) Build() error {
 		if entry.IsDir() {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
-
-		var contentReader io.Reader
-		templ, found := site.templates[path]
-		if !found {
-			// if no template found at location, treat the file as static write its contents to target
-			if site.Config.LinkStatic {
-				// dev optimization: link static files instead of copying them
-				abs, _ := filepath.Abs(path)
-				return os.Symlink(abs, targetPath)
-			}
-
-			srcFile, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer srcFile.Close()
-			contentReader = srcFile
-		} else {
-			content, err := site.render(templ)
-			if err != nil {
-				return err
-			}
-
-			targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
-			contentReader = bytes.NewReader(content)
-		}
-
-		targetExt := filepath.Ext(targetPath)
-		// if live reload is enabled, inject the reload snippet to html files
-		if site.Config.LiveReload && targetExt == ".html" {
-			// TODO inject live reload snippet
-		}
-
-		// if enabled, minify web files
-		contentReader = site.minify(targetExt, contentReader)
-
-		// write the file contents over to target
-		fmt.Println("writing", targetPath)
-		return writeToFile(targetPath, contentReader)
+		// if it's a file (either static or template) send the path to a worker to build in target
+		files <- path
+		return nil
 	})
+
+	return err
 }
 
-func (site Site) render(templ *templates.Template) ([]byte, error) {
+// Create a channel to send paths to build and a worker pool to handle them concurrently
+func spawnBuildWorkers(site *Site) (*sync.WaitGroup, chan string) {
+
+	var wg sync.WaitGroup
+	files := make(chan string, 20)
+
+	for range runtime.NumCPU() {
+		wg.Add(1)
+		go func(files <-chan string) {
+			defer wg.Done()
+			for path := range files {
+				site.buildFile(path)
+			}
+		}(files)
+	}
+	return &wg, files
+}
+
+func (site *Site) buildFile(path string) error {
+	subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+	targetPath := filepath.Join(site.Config.TargetDir, subpath)
+
+	var contentReader io.Reader
+	var err error
+	templ, found := site.templates[path]
+	if !found {
+		// if no template found at location, treat the file as static write its contents to target
+		if site.Config.LinkStatic {
+			// dev optimization: link static files instead of copying them
+			abs, _ := filepath.Abs(path)
+			err = os.Symlink(abs, targetPath)
+			return checkFileError(err)
+		}
+
+		srcFile, err := os.Open(path)
+		if err != nil {
+			return checkFileError(err)
+		}
+		defer srcFile.Close()
+		contentReader = srcFile
+	} else {
+		content, err := site.render(templ)
+		if err != nil {
+			return err
+		}
+
+		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
+		contentReader = bytes.NewReader(content)
+	}
+
+	targetExt := filepath.Ext(targetPath)
+	// if live reload is enabled, inject the reload snippet to html files
+	if site.Config.LiveReload && targetExt == ".html" {
+		// TODO inject live reload snippet
+	}
+
+	// if enabled, minify web files
+	contentReader = site.minify(targetExt, contentReader)
+
+	// write the file contents over to target
+	return writeToFile(targetPath, contentReader)
+}
+
+func (site *Site) render(templ *templates.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
 			"config": site.Config.AsContext(),
@@ -281,6 +316,19 @@ func (site Site) render(templ *templates.Template) ([]byte, error) {
 	return content, nil
 }
 
+func checkFileError(err error) error {
+	// When walking the source dir it can happen that a file is present when walking starts
+	// but missing or inaccessible when trying to open it (this is particularly frequent with
+	// backup files from emacs and when running the dev server). We don't want to halt the build
+	// process in that situation, just inform and continue.
+	if os.IsNotExist(err) {
+		// don't abort on missing files, usually spurious temps
+		fmt.Println("skipping missing file", err)
+		return nil
+	}
+	return err
+}
+
 func writeToFile(targetPath string, source io.Reader) error {
 	targetFile, err := os.Create(targetPath)
 	if err != nil {
@@ -293,6 +341,7 @@ func writeToFile(targetPath string, source io.Reader) error {
 		return err
 	}
 
+	fmt.Println("added", targetPath)
 	return targetFile.Sync()
 }
 
