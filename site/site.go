@@ -266,10 +266,24 @@ func (site *Site) buildFile(path string) error {
 		contentReader = bytes.NewReader(content)
 	}
 
+	// FIXME move to a helper fun like the minify one
 	targetExt := filepath.Ext(targetPath)
 	// if live reload is enabled, inject the reload snippet to html files
 	if site.Config.LiveReload && targetExt == ".html" {
-		// TODO inject live reload snippet
+		script := fmt.Sprintf(`const url = '%s/_events/'
+         const eventSource = new EventSource(url);
+
+         eventSource.onmessage = function () {
+             eventSource.close();
+             location.reload()
+         };
+         eventSource.onerror = function (event) {
+             console.error('An error occurred:', event)
+         };`, site.Config.SiteUrl)
+		contentReader, err = InjectScript(contentReader, script)
+		if err != nil {
+			return err
+		}
 	}
 
 	// if enabled, minify web files
