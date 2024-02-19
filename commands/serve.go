@@ -165,3 +165,59 @@ func makeServerEventsHandler(events chan string) http.HandlerFunc {
 		}
 	}
 }
+
+type EventBroker struct {
+	inEvents        chan string
+	inSubscriptions chan Subscription
+	subscribers     map[string]chan string
+}
+
+type Subscription struct {
+	id        string
+	outEvents chan string
+}
+
+// TODO
+func newEventBroker() *EventBroker {
+	broker := EventBroker{
+		inEvents:        make(chan string),
+		inSubscriptions: make(chan Subscription),
+		subscribers:     map[string]chan string{},
+	}
+
+	go func() {
+		for {
+			select {
+			case msg := <-broker.inSubscriptions:
+				if msg.outEvents != nil {
+					// subscribe
+					broker.subscribers[msg.id] = msg.outEvents
+				} else {
+					// unsubscribe
+					close(broker.subscribers[msg.id])
+					delete(broker.subscribers, msg.id)
+				}
+			case msg := <-broker.inEvents:
+				// send the event to all the subscribers
+				for _, outEvents := range broker.subscribers {
+					outEvents <- msg
+				}
+			}
+		}
+	}()
+	return &broker
+}
+
+func (broker *EventBroker) subscribe(id string) <-chan string {
+	outEvents := make(chan string)
+	broker.inSubscriptions <- Subscription{id, outEvents}
+	return outEvents
+}
+
+func (broker *EventBroker) unsubscribe(id string) {
+	broker.inSubscriptions <- Subscription{id: id, outEvents: nil}
+}
+
+func (broker *EventBroker) publish(event string) {
+	broker.inEvents <- event
+}
