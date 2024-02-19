@@ -388,6 +388,9 @@ func findFirstParagraph(node *html.Node) *html.Node {
 }
 
 func getTextContent(node *html.Node) string {
+	if node == nil {
+		return ""
+	}
 	var textContent string
 	if node.Type == html.TextNode {
 		textContent = node.Data
