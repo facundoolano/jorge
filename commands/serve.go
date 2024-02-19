@@ -15,12 +15,12 @@ import (
 
 // Generate and serve the site, rebuilding when the source files change.
 func Serve(rootDir string) error {
-	config, err := config.LoadDevServer(rootDir)
+	config, err := config.LoadDev(rootDir)
 	if err != nil {
 		return err
 	}
 
-	if err := rebuild(config); err != nil {
+	if err := buildSite(config); err != nil {
 		return err
 	}
 
@@ -32,49 +32,49 @@ func Serve(rootDir string) error {
 	defer watcher.Close()
 
 	// serve the target dir with a file server
-	fs := http.FileServer(HTMLDir{http.Dir(config.TargetDir)})
+	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
 	http.Handle("/", http.StripPrefix("/", fs))
 
-	// handle client requests to receive events from the server
-	http.Handle("/_events/", makeServerEventsHandler(broker))
+	if config.LiveReload {
+		// handle client requests to listen to server-sent events
+		http.Handle("/_events/", makeServerEventsHandler(broker))
+	}
 
 	addr := fmt.Sprintf("%s:%d", config.ServerHost, config.ServerPort)
 	fmt.Printf("server listening at http://%s\n", addr)
 	return http.ListenAndServe(addr, nil)
 }
 
-func rebuild(config *config.Config) error {
+// Return an http.HandlerFunc that establishes a server-sent event stream with clients,
+// subscribes to site rebuild events received through the given event broker
+// and forwards them through the client.
+func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Content-Type", "text/event-stream")
+		res.Header().Set("Connection", "keep-alive")
+		res.Header().Set("Cache-Control", "no-cache")
+		res.Header().Set("Access-Control-Allow-Origin", "*")
 
-	site, err := site.Load(*config)
-	if err != nil {
-		return err
-	}
+		id, events := broker.subscribe()
+		fmt.Println("client connection")
 
-	if err := site.Build(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Tweaks the http file system to construct a server that hides the .html suffix from requests.
-// Based on https://stackoverflow.com/a/57281956/993769
-type HTMLDir struct {
-	d http.Dir
-}
-
-func (d HTMLDir) Open(name string) (http.File, error) {
-	// Try name as supplied
-	f, err := d.d.Open(name)
-	if os.IsNotExist(err) {
-		// Not found, try with .html
-		if f, err := d.d.Open(name + ".html"); err == nil {
-			return f, nil
+		for {
+			select {
+			case <-events:
+				fmt.Println("writing event")
+				fmt.Fprint(res, "data\n\n")
+				res.(http.Flusher).Flush()
+			case <-req.Context().Done():
+				fmt.Println("unsubscribing")
+				broker.unsubscribe(id)
+				return
+			}
 		}
 	}
-	return f, err
 }
 
+// Sets up a watcher that will publish changes in the site source files
+// to the returned event broker.
 func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -106,7 +106,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					continue
 				}
 
-				if err := rebuild(config); err != nil {
+				if err := buildSite(config); err != nil {
 					fmt.Println("build error:", err)
 					continue
 				}
@@ -144,31 +144,40 @@ func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
 	return err
 }
 
-func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		res.Header().Set("Content-Type", "text/event-stream")
-		res.Header().Set("Connection", "keep-alive")
-		res.Header().Set("Cache-Control", "no-cache")
-		res.Header().Set("Access-Control-Allow-Origin", "*")
-
-		id, events := broker.subscribe()
-		fmt.Println("client connection")
-
-		for {
-			select {
-			case <-events:
-				fmt.Println("writing event")
-				fmt.Fprint(res, "data\n\n")
-				res.(http.Flusher).Flush()
-			case <-req.Context().Done():
-				fmt.Println("unsubscribing")
-				broker.unsubscribe(id)
-				return
-			}
-		}
+func buildSite(config *config.Config) error {
+	site, err := site.Load(*config)
+	if err != nil {
+		return err
 	}
+
+	if err := site.Build(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
+// Tweaks the http file system to construct a server that hides the .html suffix from requests.
+// Based on https://stackoverflow.com/a/57281956/993769
+type HTMLFileSystem struct {
+	d http.Dir
+}
+
+func (d HTMLFileSystem) Open(name string) (http.File, error) {
+	// Try name as supplied
+	f, err := d.d.Open(name)
+	if os.IsNotExist(err) {
+		// Not found, try with .html
+		if f, err := d.d.Open(name + ".html"); err == nil {
+			return f, nil
+		}
+	}
+	return f, err
+}
+
+// The event broker allows the file watcher to publish site rebuild events
+// and register http clients to listen for them, in order to trigger browser refresh
+// events after the the site has been rebuilt.
 type EventBroker struct {
 	inEvents        chan string
 	inSubscriptions chan Subscription
@@ -181,7 +190,6 @@ type Subscription struct {
 	outEvents chan string
 }
 
-// TODO
 func newEventBroker() *EventBroker {
 	broker := EventBroker{
 		inEvents:        make(chan string),

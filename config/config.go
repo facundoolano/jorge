@@ -87,7 +87,7 @@ func Load(rootDir string) (*Config, error) {
 	return config, nil
 }
 
-func LoadDevServer(rootDir string) (*Config, error) {
+func LoadDev(rootDir string) (*Config, error) {
 	// TODO revisit is this Load vs LoadDevServer is the best way to handle both modes
 	// TODO some of the options need to be overridable: host, port, live reload at least
 
