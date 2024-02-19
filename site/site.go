@@ -15,7 +15,6 @@ import (
 
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/templates"
-	"golang.org/x/net/html"
 	"gopkg.in/yaml.v3"
 )
 
@@ -268,12 +267,10 @@ func (site *Site) buildFile(path string) error {
 	}
 
 	targetExt := filepath.Ext(targetPath)
-	// if live reload is enabled, inject the reload snippet to html files
-	if site.Config.LiveReload && targetExt == ".html" {
-		// TODO inject live reload snippet
+	contentReader, err = site.injectLiveReload(targetExt, contentReader)
+	if err != nil {
+		return err
 	}
-
-	// if enabled, minify web files
 	contentReader = site.minify(targetExt, contentReader)
 
 	// write the file contents over to target
@@ -365,35 +362,28 @@ func getExcerpt(templ *templates.Template) string {
 	if err != nil {
 		return ""
 	}
-
-	html, err := html.Parse(bytes.NewReader(content))
-	if err != nil {
-		return ""
-	}
-
-	ptag := findFirstParagraph(html)
-	return getTextContent(ptag)
+	return ExtractFirstParagraph(bytes.NewReader(content))
 }
 
-func findFirstParagraph(node *html.Node) *html.Node {
-	if node.Type == html.ElementNode && node.Data == "p" {
-		return node
+// if live reload is enabled, inject the reload snippet to html files
+func (site *Site) injectLiveReload(extension string, contentReader io.Reader) (io.Reader, error) {
+	if !site.Config.LiveReload || extension != ".html" {
+		return contentReader, nil
 	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		if p := findFirstParagraph(c); p != nil {
-			return p
-		}
-	}
-	return nil
-}
 
-func getTextContent(node *html.Node) string {
-	var textContent string
-	if node.Type == html.TextNode {
-		textContent = node.Data
-	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		textContent += getTextContent(c)
-	}
-	return textContent
+	const JS_SNIPPET = `
+const url = '%s/_events/'
+const eventSource = new EventSource(url);
+
+eventSource.onmessage = function () {
+  location.reload()
+};
+window.onbeforeunload = function() {
+  eventSource.close();
+}
+eventSource.onerror = function (event) {
+  console.error('An error occurred:', event)
+};`
+	script := fmt.Sprintf(JS_SNIPPET, site.Config.SiteUrl)
+	return InjectScript(contentReader, script)
 }
