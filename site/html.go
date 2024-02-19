@@ -7,21 +7,22 @@ import (
 	"golang.org/x/net/html"
 )
 
-func ExtractFirstParagraph(doc io.Reader) string {
-	html, err := html.Parse(doc)
+// Find the first p tag in the given html document and return its text content.
+func ExtractFirstParagraph(htmlReader io.Reader) string {
+	html, err := html.Parse(htmlReader)
 	if err != nil {
 		return ""
 	}
 
-	ptag := FindFirstElement(html, "p")
+	ptag := findFirstElement(html, "p")
 	if ptag == nil {
 		return ""
 	}
 	return getTextContent(ptag)
 }
 
-// InjectScriptIntoHTML injects a <script> tag with the given JavaScript code into the HTML document
-// provided as an io.Reader. It returns the modified HTML content as an io.Reader.
+// Inject a <script> tag with the given JavaScript code into provided the HTML document
+// and return the updated document as a new io.Reader
 func InjectScript(htmlReader io.Reader, jsCode string) (io.Reader, error) {
 	doc, err := html.Parse(htmlReader)
 	if err != nil {
@@ -43,7 +44,7 @@ func InjectScript(htmlReader io.Reader, jsCode string) (io.Reader, error) {
 	}
 	scriptNode.AppendChild(scriptTextNode)
 
-	head := FindFirstElement(doc, "head")
+	head := findFirstElement(doc, "head")
 	if head == nil {
 		// If <head> element not found, create one and append it to the document
 		head = &html.Node{
@@ -66,20 +67,20 @@ func InjectScript(htmlReader io.Reader, jsCode string) (io.Reader, error) {
 	return &buf, nil
 }
 
-// FindFirstElement finds the first occurrence of the specified HTML element in the HTML document
-func FindFirstElement(n *html.Node, tagName string) *html.Node {
+// Finds the first occurrence of the specified element in the HTML document
+func findFirstElement(n *html.Node, tagName string) *html.Node {
 	if n.Type == html.ElementNode && n.Data == tagName {
 		return n
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if element := FindFirstElement(c, tagName); element != nil {
+		if element := findFirstElement(c, tagName); element != nil {
 			return element
 		}
 	}
 	return nil
 }
 
-// findHead finds the <head> element in the HTML document
+// Finds the <head> element in the HTML document
 func getTextContent(node *html.Node) string {
 	var textContent string
 	if node.Type == html.TextNode {
