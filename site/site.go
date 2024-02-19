@@ -376,9 +376,11 @@ const url = '%s/_events/'
 const eventSource = new EventSource(url);
 
 eventSource.onmessage = function () {
-  eventSource.close();
   location.reload()
 };
+window.onbeforeunload = function() {
+  eventSource.close();
+}
 eventSource.onerror = function (event) {
   console.error('An error occurred:', event)
 };`
