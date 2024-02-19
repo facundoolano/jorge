@@ -23,6 +23,7 @@ func (site *Site) loadMinifier() {
 	site.minifier.AddFunc(".xml", xml.Minify)
 }
 
+// if enabled by config, minify web files
 func (site *Site) minify(extension string, contentReader io.Reader) io.Reader {
 
 	if !site.Config.Minify || !slices.Contains(SUPPORTED_MINIFIERS, extension) {

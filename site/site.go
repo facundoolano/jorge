@@ -266,27 +266,11 @@ func (site *Site) buildFile(path string) error {
 		contentReader = bytes.NewReader(content)
 	}
 
-	// FIXME move to a helper fun like the minify one
 	targetExt := filepath.Ext(targetPath)
-	// if live reload is enabled, inject the reload snippet to html files
-	if site.Config.LiveReload && targetExt == ".html" {
-		script := fmt.Sprintf(`const url = '%s/_events/'
-         const eventSource = new EventSource(url);
-
-         eventSource.onmessage = function () {
-             eventSource.close();
-             location.reload()
-         };
-         eventSource.onerror = function (event) {
-             console.error('An error occurred:', event)
-         };`, site.Config.SiteUrl)
-		contentReader, err = InjectScript(contentReader, script)
-		if err != nil {
-			return err
-		}
+	contentReader, err = site.injectLiveReload(targetExt, contentReader)
+	if err != nil {
+		return err
 	}
-
-	// if enabled, minify web files
 	contentReader = site.minify(targetExt, contentReader)
 
 	// write the file contents over to target
@@ -379,4 +363,25 @@ func getExcerpt(templ *templates.Template) string {
 		return ""
 	}
 	return ExtractFirstParagraph(bytes.NewReader(content))
+}
+
+// if live reload is enabled, inject the reload snippet to html files
+func (site *Site) injectLiveReload(extension string, contentReader io.Reader) (io.Reader, error) {
+	if !site.Config.LiveReload || extension != ".html" {
+		return contentReader, nil
+	}
+
+	const JS_SNIPPET = `
+const url = '%s/_events/'
+const eventSource = new EventSource(url);
+
+eventSource.onmessage = function () {
+  eventSource.close();
+  location.reload()
+};
+eventSource.onerror = function (event) {
+  console.error('An error occurred:', event)
+};`
+	script := fmt.Sprintf(JS_SNIPPET, site.Config.SiteUrl)
+	return InjectScript(contentReader, script)
 }
