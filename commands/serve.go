@@ -60,6 +60,9 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 		for {
 			select {
 			case <-events:
+				// send an event to the connected client.
+				// data\n\n just means send an empty, unnamed event
+				// since we only need to support the single reload operation.
 				fmt.Fprint(res, "data\n\n")
 				res.(http.Flusher).Flush()
 			case <-req.Context().Done():
@@ -217,6 +220,8 @@ func newEventBroker() *EventBroker {
 	return &broker
 }
 
+// Adds a subscription to this broker events, returning a subscriber id
+// (useful for unsubscribing later) and a channel where events will be delivered.
 func (broker *EventBroker) subscribe() (uint64, <-chan string) {
 	id := broker.idgen.Add(1)
 	outEvents := make(chan string)
@@ -224,10 +229,13 @@ func (broker *EventBroker) subscribe() (uint64, <-chan string) {
 	return id, outEvents
 }
 
+// Remove the subscriber with the given id from the broker,
+// closing its associated channel.
 func (broker *EventBroker) unsubscribe(id uint64) {
 	broker.inSubscriptions <- Subscription{id: id, outEvents: nil}
 }
 
+// Publish an event to all the broker subscribers.
 func (broker *EventBroker) publish(event string) {
 	broker.inEvents <- event
 }
