@@ -15,7 +15,6 @@ import (
 
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/templates"
-	"golang.org/x/net/html"
 	"gopkg.in/yaml.v3"
 )
 
@@ -365,38 +364,5 @@ func getExcerpt(templ *templates.Template) string {
 	if err != nil {
 		return ""
 	}
-
-	html, err := html.Parse(bytes.NewReader(content))
-	if err != nil {
-		return ""
-	}
-
-	ptag := findFirstParagraph(html)
-	return getTextContent(ptag)
-}
-
-func findFirstParagraph(node *html.Node) *html.Node {
-	if node.Type == html.ElementNode && node.Data == "p" {
-		return node
-	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		if p := findFirstParagraph(c); p != nil {
-			return p
-		}
-	}
-	return nil
-}
-
-func getTextContent(node *html.Node) string {
-	if node == nil {
-		return ""
-	}
-	var textContent string
-	if node.Type == html.TextNode {
-		textContent = node.Data
-	}
-	for c := node.FirstChild; c != nil; c = c.NextSibling {
-		textContent += getTextContent(c)
-	}
-	return textContent
+	return ExtractFirstParagraph(bytes.NewReader(content))
 }
