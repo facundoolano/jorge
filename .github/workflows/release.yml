@@ -1,4 +1,4 @@
-name: Build Go Binaries
+name: Upload release binaries
 
 on:
   push:
