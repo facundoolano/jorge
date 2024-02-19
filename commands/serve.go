@@ -48,7 +48,7 @@ func Serve(rootDir string) error {
 
 // Return an http.HandlerFunc that establishes a server-sent event stream with clients,
 // subscribes to site rebuild events received through the given event broker
-// and forwards them through the client.
+// and forwards them to the client.
 func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/event-stream")
