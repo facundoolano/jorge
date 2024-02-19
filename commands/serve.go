@@ -13,14 +13,15 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-// Generate and serve the site, rebuilding when the source files change.
+// Generate and serve the site, rebuilding when the source files change
+// and triggering a page refresh on clients browsing it.
 func Serve(rootDir string) error {
 	config, err := config.LoadDev(rootDir)
 	if err != nil {
 		return err
 	}
 
-	if err := buildSite(config); err != nil {
+	if err := rebuildSite(config); err != nil {
 		return err
 	}
 
@@ -102,7 +103,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					continue
 				}
 
-				if err := buildSite(config); err != nil {
+				if err := rebuildSite(config); err != nil {
 					fmt.Println("build error:", err)
 					continue
 				}
@@ -140,7 +141,7 @@ func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
 	return err
 }
 
-func buildSite(config *config.Config) error {
+func rebuildSite(config *config.Config) error {
 	site, err := site.Load(*config)
 	if err != nil {
 		return err
