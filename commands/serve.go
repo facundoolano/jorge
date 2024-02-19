@@ -24,15 +24,19 @@ func Serve(rootDir string) error {
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, err := setupWatcher(config)
+	watcher, eventsChan, err := setupWatcher(config)
 	if err != nil {
 		return err
 	}
 	defer watcher.Close()
+	defer close(eventsChan)
 
 	// serve the target dir with a file server
 	fs := http.FileServer(HTMLDir{http.Dir(config.TargetDir)})
 	http.Handle("/", http.StripPrefix("/", fs))
+
+	// handle client requests to receive events from the server
+	http.Handle("/_events/", makeServerEventsHandler(eventsChan))
 
 	addr := fmt.Sprintf("%s:%d", config.ServerHost, config.ServerPort)
 	fmt.Printf("server listening at http://%s\n", addr)
@@ -71,11 +75,13 @@ func (d HTMLDir) Open(name string) (http.File, error) {
 	return f, err
 }
 
-func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
+func setupWatcher(config *config.Config) (*fsnotify.Watcher, chan string, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	eventsChan := make(chan string, 10)
 
 	go func() {
 		for {
@@ -104,6 +110,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
 					fmt.Println("build error:", err)
 					continue
 				}
+				eventsChan <- "rebuild"
 
 				fmt.Println("done\nserver listening at", config.SiteUrl)
 
@@ -118,7 +125,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, error) {
 
 	err = addAll(watcher, config)
 
-	return watcher, err
+	return watcher, eventsChan, err
 }
 
 // Add the layouts and all source directories to the given watcher
@@ -135,4 +142,26 @@ func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
 		return nil
 	})
 	return err
+}
+
+func makeServerEventsHandler(events chan string) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Content-Type", "text/event-stream")
+		res.Header().Set("Connection", "keep-alive")
+		res.Header().Set("Cache-Control", "no-cache")
+		res.Header().Set("Access-Control-Allow-Origin", "*")
+
+		fmt.Println("client connection")
+
+		for {
+			select {
+			case <-events:
+				fmt.Println("writing event")
+				fmt.Fprint(res, "data\n\n")
+				res.(http.Flusher).Flush()
+			case <-req.Context().Done():
+				break
+			}
+		}
+	}
 }
