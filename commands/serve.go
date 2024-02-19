@@ -56,16 +56,12 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 		res.Header().Set("Access-Control-Allow-Origin", "*")
 
 		id, events := broker.subscribe()
-		fmt.Println("client connection")
-
 		for {
 			select {
 			case <-events:
-				fmt.Println("writing event")
 				fmt.Fprint(res, "data\n\n")
 				res.(http.Flusher).Flush()
 			case <-req.Context().Done():
-				fmt.Println("unsubscribing")
 				broker.unsubscribe(id)
 				return
 			}
