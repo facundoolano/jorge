@@ -1,0 +1,42 @@
+name: Build Go Binaries
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build Binaries
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+        ext: [ '', '.exe' ]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Get Tag Name
+      id: tag
+      run: echo "::set-output name=TAG_NAME::$(git describe --tags --abbrev=0)"
+
+    - name: Build Binary
+      run: |
+        TAG_NAME=$(echo "${{ steps.tag.outputs.TAG_NAME }}")
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o jorge-${TAG_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+
+    - name: Archive Binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: binaries
+        path: |
+          jorge-*-*
