@@ -186,6 +186,21 @@ blockquote {
     }
 }
 
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+}
+
+table tr {
+    border-bottom: 1px solid #ddd;
+}
+
+td, th {
+    padding: .5rem;
+}
+
+
 hr.footnotes-separatator {
     display:none;
 }
