@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
@@ -24,19 +25,18 @@ func Serve(rootDir string) error {
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, eventsChan, err := setupWatcher(config)
+	watcher, broker, err := setupWatcher(config)
 	if err != nil {
 		return err
 	}
 	defer watcher.Close()
-	defer close(eventsChan)
 
 	// serve the target dir with a file server
 	fs := http.FileServer(HTMLDir{http.Dir(config.TargetDir)})
 	http.Handle("/", http.StripPrefix("/", fs))
 
 	// handle client requests to receive events from the server
-	http.Handle("/_events/", makeServerEventsHandler(eventsChan))
+	http.Handle("/_events/", makeServerEventsHandler(broker))
 
 	addr := fmt.Sprintf("%s:%d", config.ServerHost, config.ServerPort)
 	fmt.Printf("server listening at http://%s\n", addr)
@@ -75,13 +75,13 @@ func (d HTMLDir) Open(name string) (http.File, error) {
 	return f, err
 }
 
-func setupWatcher(config *config.Config) (*fsnotify.Watcher, chan string, error) {
+func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	eventsChan := make(chan string, 10)
+	broker := newEventBroker()
 
 	go func() {
 		for {
@@ -110,7 +110,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, chan string, error)
 					fmt.Println("build error:", err)
 					continue
 				}
-				eventsChan <- "rebuild"
+				broker.publish("rebuild")
 
 				fmt.Println("done\nserver listening at", config.SiteUrl)
 
@@ -125,7 +125,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, chan string, error)
 
 	err = addAll(watcher, config)
 
-	return watcher, eventsChan, err
+	return watcher, broker, err
 }
 
 // Add the layouts and all source directories to the given watcher
@@ -144,13 +144,14 @@ func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
 	return err
 }
 
-func makeServerEventsHandler(events chan string) http.HandlerFunc {
+func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/event-stream")
 		res.Header().Set("Connection", "keep-alive")
 		res.Header().Set("Cache-Control", "no-cache")
 		res.Header().Set("Access-Control-Allow-Origin", "*")
 
+		id, events := broker.subscribe()
 		fmt.Println("client connection")
 
 		for {
@@ -160,7 +161,9 @@ func makeServerEventsHandler(events chan string) http.HandlerFunc {
 				fmt.Fprint(res, "data\n\n")
 				res.(http.Flusher).Flush()
 			case <-req.Context().Done():
-				break
+				fmt.Println("unsubscribing")
+				broker.unsubscribe(id)
+				return
 			}
 		}
 	}
@@ -169,11 +172,12 @@ func makeServerEventsHandler(events chan string) http.HandlerFunc {
 type EventBroker struct {
 	inEvents        chan string
 	inSubscriptions chan Subscription
-	subscribers     map[string]chan string
+	subscribers     map[uint64]chan string
+	idgen           atomic.Uint64
 }
 
 type Subscription struct {
-	id        string
+	id        uint64
 	outEvents chan string
 }
 
@@ -182,7 +186,7 @@ func newEventBroker() *EventBroker {
 	broker := EventBroker{
 		inEvents:        make(chan string),
 		inSubscriptions: make(chan Subscription),
-		subscribers:     map[string]chan string{},
+		subscribers:     map[uint64]chan string{},
 	}
 
 	go func() {
@@ -208,13 +212,14 @@ func newEventBroker() *EventBroker {
 	return &broker
 }
 
-func (broker *EventBroker) subscribe(id string) <-chan string {
+func (broker *EventBroker) subscribe() (uint64, <-chan string) {
+	id := broker.idgen.Add(1)
 	outEvents := make(chan string)
 	broker.inSubscriptions <- Subscription{id, outEvents}
-	return outEvents
+	return id, outEvents
 }
 
-func (broker *EventBroker) unsubscribe(id string) {
+func (broker *EventBroker) unsubscribe(id uint64) {
 	broker.inSubscriptions <- Subscription{id: id, outEvents: nil}
 }
 
