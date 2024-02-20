@@ -12,9 +12,14 @@ jobs:
 
     strategy:
       matrix:
-        goos: [linux, darwin, windows]
         goarch: [amd64, arm64]
-        ext: [ '', '.exe' ]
+        include:
+          - goos: linux
+            ext: ''
+          - goos: darwin
+            ext: ''
+          - goos: windows
+            ext: '.exe'
 
     steps:
     - name: Checkout code
@@ -35,9 +40,7 @@ jobs:
         TAG_NAME=$(echo "${{ steps.tag.outputs.TAG_NAME }}")
         GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o jorge-${TAG_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
 
-    - name: Archive Binaries
-      uses: actions/upload-artifact@v2
+    - name: Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: binaries
-        path: |
-          jorge-*-*
+        files: "jorge-*-*"
