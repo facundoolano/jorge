@@ -1,0 +1,36 @@
+name: Upload release binaries
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build Binaries
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        goos: [linux, darwin, windows]
+        goarch: [amd64, arm64]
+        include:
+          - goos: windows
+            ext: '.exe'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Build Binary
+      run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-s -w" -o jorge-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "jorge-*"

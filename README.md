@@ -1,19 +1,19 @@
 # jorge
-A personal (small + opinionated) site generator with org-mode support.
+A personal (small + opinionated) site generator with [org-mode](https://orgmode.org/) (and markdown) support.
 
 (NOTE: this is stil a WIP, the doc below is a wishlist, not the current behavior.)
 
-Install from binary:
+## Installation
+Download the [latest release binary](https://github.com/facundoolano/jorge/releases/latest) for your platform, for example:
 
-    $ wget https://github.com/facundoolano/jorge/releases/download/latest/jorge-$(uname -m) \
-        -o jorge && chmod +x jorge
+    $ wget https://github.com/facundoolano/jorge/releases/latest/download/jorge-darwin-amd64  \
+        -O jorge && chmod +x jorge && mv jorge /usr/local/bin
 
-Or install with go:
+Alternatively, install with go:
 
-    $ go install github.com/facundoolano/jorge
+    $ go install github.com/facundoolano/jorge@latest
 
-
-Usage:
+## Usage
 
 ```bash
 $ jorge init myblog
