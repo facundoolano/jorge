@@ -45,7 +45,7 @@ $ open http://localhost:4001/blog/my-first-post
 
 # add some content
 $ cat >> src/blog/test.org <<EOF
-# Hello world!
+*** Hello world!
 
 this is my *first* post.
 EOF
