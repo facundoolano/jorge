@@ -12,12 +12,9 @@ jobs:
 
     strategy:
       matrix:
+        goos: [linux, darwin, windows]
         goarch: [amd64, arm64]
         include:
-          - goos: linux
-            ext: ''
-          - goos: darwin
-            ext: ''
           - goos: windows
             ext: '.exe'
 
