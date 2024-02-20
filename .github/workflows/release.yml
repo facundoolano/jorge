@@ -35,7 +35,7 @@ jobs:
     - name: Build Binary
       run: |
         TAG_NAME=$(echo "${{ steps.tag.outputs.TAG_NAME }}")
-        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o jorge-${TAG_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
+        GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -ldflags="-s -w" -o jorge-${TAG_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }} .
 
     - name: Release
       uses: softprops/action-gh-release@v1
