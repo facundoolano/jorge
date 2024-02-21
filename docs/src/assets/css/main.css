@@ -234,5 +234,13 @@ details > summary::-webkit-details-marker {
 }
 
 .silver {
-    color: silver
+    color: silver;
+}
+
+code.index-sample {
+    display: inline-block;
+}
+
+code.index-sample pre {
+    text-align: left;
 }
