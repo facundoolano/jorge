@@ -152,7 +152,7 @@ func Post(root string, title string) error {
 		path = filepath.Join(config.SrcDir, filename)
 	}
 
-	// initialize a template for the post
+	// initialize the post front matter
 	content := fmt.Sprintf(`---
 title: %s
 date: %s
