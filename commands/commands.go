@@ -36,11 +36,12 @@ date: %s
 layout: post
 lang: %s
 tags: []
----`
+---
+`
 
-var DEFAULT_ORG_DIRECTIVES string = `
-#+OPTIONS: toc:nil num:nil
-#+LANGUAGE: %s`
+var DEFAULT_ORG_DIRECTIVES string = `#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: %s
+`
 
 const FILE_RW_MODE = 0777
 
@@ -113,9 +114,9 @@ func Post(root string, title string) error {
 	now := time.Now()
 	slug := slugify(title)
 	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
-	filename = strings.ReplaceAll(filename, ":year", string(now.Year()))
-	filename = strings.ReplaceAll(filename, ":month", string(int(now.Month())))
-	filename = strings.ReplaceAll(filename, ":day", string(now.Day()))
+	filename = strings.ReplaceAll(filename, ":year", fmt.Sprint(now.Year()))
+	filename = strings.ReplaceAll(filename, ":month", fmt.Sprint(int(now.Month())))
+	filename = strings.ReplaceAll(filename, ":day", fmt.Sprint(now.Day()))
 	path := filepath.Join(config.SrcDir, filename)
 
 	// ensure the dir already exists
