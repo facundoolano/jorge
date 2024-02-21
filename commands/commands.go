@@ -20,15 +20,27 @@ import (
 
 //go:embed all:initfiles
 var initfiles embed.FS
-var initConfig string = `name: "%s"
+
+var INIT_CONFIG string = `name: "%s"
 author: "%s"
 url: "%s"
 `
-var initReadme string = `
+var INIT_README string = `
 # %s
 
 A jorge blog by %s.
 `
+var DEFAULT_FRONTMATTER string = `---
+title: %s
+date: %s
+layout: post
+lang: %s
+tags: []
+---`
+
+var DEFAULT_ORG_DIRECTIVES string = `
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: %s`
 
 const FILE_RW_MODE = 0777
 
@@ -44,8 +56,8 @@ func Init(projectDir string) error {
 	// creating config and readme files manually, since I want to use the supplied config values in their
 	// contents. (I don't want to render liquid templates in the WalkDir below since some of the initfiles
 	// are actual templates that should be left as is).
-	configFile := fmt.Sprintf(initConfig, siteName, siteAuthor, siteUrl)
-	readmeFile := fmt.Sprintf(initReadme, siteName, siteAuthor)
+	configFile := fmt.Sprintf(INIT_CONFIG, siteName, siteAuthor, siteUrl)
+	readmeFile := fmt.Sprintf(INIT_README, siteName, siteAuthor)
 	os.WriteFile(filepath.Join(projectDir, "config.yml"), []byte(configFile), site.FILE_RW_MODE)
 	os.WriteFile(filepath.Join(projectDir, "README.md"), []byte(readmeFile), site.FILE_RW_MODE)
 
@@ -115,19 +127,11 @@ func Post(root string, title string) error {
 	}
 
 	// initialize the post front matter
-	content := fmt.Sprintf(`---
-title: %s
-date: %s
-layout: post
-lang: %s
-tags: []
----`, title, now.Format(time.DateTime), config.Lang)
+	content := fmt.Sprintf(DEFAULT_FRONTMATTER, title, now.Format(time.DateTime), config.Lang)
 
 	// org files need some extra boilerplate
 	if filepath.Ext(path) == ".org" {
-		content += fmt.Sprintf(`
-#+OPTIONS: toc:nil num:nil
-#+LANGUAGE: %s`, config.Lang)
+		content += fmt.Sprintf(DEFAULT_ORG_DIRECTIVES, config.Lang)
 	}
 
 	if err := os.WriteFile(path, []byte(content), FILE_RW_MODE); err != nil {
