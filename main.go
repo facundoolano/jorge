@@ -39,8 +39,8 @@ func run(args []string) error {
 			rootDir = os.Args[2]
 		}
 		return commands.Build(rootDir)
-	case "new":
-		return commands.New()
+	case "post":
+		return commands.Post()
 	case "serve":
 		rootDir := "."
 		if len(os.Args) > 2 {

@@ -122,7 +122,7 @@ func prompt(label string) string {
 	return strings.TrimSpace(s)
 }
 
-func New() error {
+func Post() error {
 	// prompt for title
 	// slugify
 	// fail if file already exist
