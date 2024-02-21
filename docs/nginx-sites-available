@@ -1,0 +1,22 @@
+# helper to get a var with the uri with stripped trailing slash
+map $uri $uri_no_trailing_slash {
+    "~^(?P<path>.+?)/$" $path;
+    default $uri;
+}
+
+server {
+
+        charset utf-8;
+
+	root /var/www/jorge;
+
+	server_name jorge.olano.dev;
+
+	location / {
+	    # First attempt to serve request as file, then as directory.
+            # also handle the case where there's a file instead of a dir, but
+            # the request comes with trailing slash --we still want to serve the file in that case.
+            # otherwise respond 404.
+	    try_files $uri $uri.html $uri/ $uri_no_trailing_slash $uri_no_trailing_slash.html =404;
+	}
+}
