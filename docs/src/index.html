@@ -23,7 +23,7 @@ $ jorge build
 
 <br/>
 <hr/>
-<h2><a href="#latest" class="title" id="tutorial">Tutorial</a></h2>
+<h2><a href="/tutorial" class="title" id="tutorial">Tutorial</a></h2>
 <ol>
 {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
     <li>
@@ -32,7 +32,7 @@ $ jorge build
 {% endfor %}
 </ol>
 
-<h2><a href="#latest" class="title" id="devlog">Devlog</a></h2>
+<h2><a href="/blog" class="title" id="devlog">Devlog</a></h2>
 
 {% for post in site.posts limit:3 %}
 {% include post_preview.html %}
@@ -40,7 +40,7 @@ $ jorge build
 
 <p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
 
-<h2><a href="#latest" class="title" id="docs">Docs</a></h2>
+<h2><a href="/docs" class="title" id="docs">Docs</a></h2>
 Coming soon!
 <ul>
     {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}

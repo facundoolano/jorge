@@ -1,0 +1,12 @@
+---
+layout: default
+title: Tutorial
+---
+
+<ol>
+    {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+</ol>
