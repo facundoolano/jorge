@@ -1,8 +1,6 @@
 # jorge
 A personal (small + opinionated) site generator with [org-mode](https://orgmode.org/) (and markdown) support.
 
-(NOTE: this is stil a WIP, the doc below is a wishlist, not the current behavior.)
-
 ## Installation
 Download the [latest release binary](https://github.com/facundoolano/jorge/releases/latest) for your platform, for example:
 
@@ -17,20 +15,22 @@ Alternatively, install with go:
 
 ```bash
 $ jorge init myblog
-> site name: My Blog
-> author: Facundo Olano
-> url: https://myblog.olano.dev
+site name: My Blog
+site url: https://myblog.olano.dev
+author: Facundo Olano
 
-  added myblog/README.md
-  added myblog/.gitignore
-  added myblog/config.yml
-  added myblog/layouts/base.html
-  added myblog/layouts/post.html
-  added myblog/src/index.html
-  added myblog/assets/css/main.css
-  added myblog/src/blog/hello.org
-  added myblog/src/feed.xml
-  added myblog/src/tags.html
+added myblog/.gitignore
+added myblog/includes/post_preview.html
+added myblog/layouts/base.html
+added myblog/layouts/default.html
+added myblog/layouts/post.html
+added myblog/src/assets/css/main.css
+added myblog/src/blog/goodbye-markdown.md
+added myblog/src/blog/hello-org.org
+added myblog/src/blog/index.html
+added myblog/src/blog/tags.html
+added myblog/src/feed.xml
+added myblog/src/index.html
 
 $ cd myblog
 $ jorge post "My First Post"

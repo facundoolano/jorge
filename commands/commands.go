@@ -55,6 +55,7 @@ func Init(projectDir string) error {
 	siteName := Prompt("site name")
 	siteUrl := Prompt("site url")
 	siteAuthor := Prompt("author")
+	fmt.Println()
 
 	// creating config and readme files manually, since I want to use the supplied config values in their
 	// contents. (I don't want to render liquid templates in the WalkDir below since some of the initfiles
@@ -98,7 +99,7 @@ func Init(projectDir string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("added", path)
+		fmt.Println("added", targetPath)
 		return targetFile.Sync()
 	})
 }
