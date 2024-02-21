@@ -17,7 +17,7 @@ body {
 }
 
 .footer {
-    padding-top: 2rem;
+    padding: 2rem 0 1rem;
     margin-top: auto;
 }
 
@@ -231,4 +231,8 @@ details[open] summary h3::after {
 
 details > summary::-webkit-details-marker {
     display: none;
+}
+
+.silver {
+    color: silver
 }
