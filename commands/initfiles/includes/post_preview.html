@@ -1,7 +1,7 @@
 <article class="post">
     <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>
     <div>
-        <a class="title" href="{{ post.external | default:post.url }}">{{ post.title }}</a>
+        <a class="title" href="{{ post.url }}">{{ post.title }}</a>
         <small>
             {% if post.favorite %} <a href="/blog/tags#⭐" style="text-decoration:none">⭐</a> {% endif %}
             <span class="tags hidden-mobile">
