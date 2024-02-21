@@ -338,7 +338,7 @@ func writeToFile(targetPath string, source io.Reader) error {
 		return err
 	}
 
-	fmt.Println("added", targetPath)
+	fmt.Println("wrote", targetPath)
 	return targetFile.Sync()
 }
 

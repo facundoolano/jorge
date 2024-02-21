@@ -27,7 +27,8 @@ type Config struct {
 	DataDir     string
 
 	SiteUrl    string
-	SlugFormat string
+	PostFormat string
+	Lang       string
 
 	Minify     bool
 	LiveReload bool
@@ -53,7 +54,8 @@ func Load(rootDir string) (*Config, error) {
 		LayoutsDir:   filepath.Join(rootDir, "layouts"),
 		IncludesDir:  filepath.Join(rootDir, "includes"),
 		DataDir:      filepath.Join(rootDir, "data"),
-		SlugFormat:   ":title",
+		PostFormat:   "blog/:title.org",
+		Lang:         "en",
 		Minify:       true,
 		LiveReload:   false,
 		LinkStatic:   false,
@@ -80,8 +82,11 @@ func Load(rootDir string) (*Config, error) {
 	if url, found := config.overrides["url"]; found {
 		config.SiteUrl = url.(string)
 	}
-	if slug, found := config.overrides["url"]; found {
-		config.SlugFormat = slug.(string)
+	if format, found := config.overrides["post_format"]; found {
+		config.PostFormat = format.(string)
+	}
+	if format, found := config.overrides["lang"]; found {
+		config.Lang = format.(string)
 	}
 
 	return config, nil

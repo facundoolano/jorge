@@ -7,42 +7,60 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 
 	"embed"
 
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
+	"golang.org/x/text/unicode/norm"
 )
 
 //go:embed all:initfiles
 var initfiles embed.FS
-var initConfig string = `name: "%s"
+
+var INIT_CONFIG string = `name: "%s"
 author: "%s"
 url: "%s"
 `
-var initReadme string = `
+var INIT_README string = `
 # %s
 
 A jorge blog by %s.
 `
+var DEFAULT_FRONTMATTER string = `---
+title: %s
+date: %s
+layout: post
+lang: %s
+tags: []
+---
+`
+
+var DEFAULT_ORG_DIRECTIVES string = `#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: %s
+`
 
 const FILE_RW_MODE = 0777
 
+// Initialize a new jorge project in the given directory,
+// prompting for basic site config and creating default files.
 func Init(projectDir string) error {
 	if err := ensureEmptyProjectDir(projectDir); err != nil {
 		return err
 	}
 
-	siteName := prompt("site name")
-	siteUrl := prompt("site url")
-	siteAuthor := prompt("author")
+	siteName := Prompt("site name")
+	siteUrl := Prompt("site url")
+	siteAuthor := Prompt("author")
 
 	// creating config and readme files manually, since I want to use the supplied config values in their
 	// contents. (I don't want to render liquid templates in the WalkDir below since some of the initfiles
 	// are actual templates that should be left as is).
-	configFile := fmt.Sprintf(initConfig, siteName, siteAuthor, siteUrl)
-	readmeFile := fmt.Sprintf(initReadme, siteName, siteAuthor)
+	configFile := fmt.Sprintf(INIT_CONFIG, siteName, siteAuthor, siteUrl)
+	readmeFile := fmt.Sprintf(INIT_README, siteName, siteAuthor)
 	os.WriteFile(filepath.Join(projectDir, "config.yml"), []byte(configFile), site.FILE_RW_MODE)
 	os.WriteFile(filepath.Join(projectDir, "README.md"), []byte(readmeFile), site.FILE_RW_MODE)
 
@@ -80,8 +98,82 @@ func Init(projectDir string) error {
 		if err != nil {
 			return err
 		}
+		fmt.Println("added", path)
 		return targetFile.Sync()
 	})
+}
+
+// Create a new post template in the given site, with the given title,
+// with pre-filled front matter.
+func Post(root string, title string) error {
+	config, err := config.Load(root)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	slug := slugify(title)
+	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
+	filename = strings.ReplaceAll(filename, ":year", fmt.Sprint(now.Year()))
+	filename = strings.ReplaceAll(filename, ":month", fmt.Sprint(int(now.Month())))
+	filename = strings.ReplaceAll(filename, ":day", fmt.Sprint(now.Day()))
+	path := filepath.Join(config.SrcDir, filename)
+
+	// ensure the dir already exists
+	if err := os.MkdirAll(filepath.Dir(path), FILE_RW_MODE); err != nil {
+		return err
+	}
+
+	// if file already exists, prompt user for a different one
+	if _, err := os.Stat(path); os.IsExist(err) {
+		fmt.Printf("%s already exists\n", path)
+		filename = Prompt("filename")
+		path = filepath.Join(config.SrcDir, filename)
+	}
+
+	// initialize the post front matter
+	content := fmt.Sprintf(DEFAULT_FRONTMATTER, title, now.Format(time.DateTime), config.Lang)
+
+	// org files need some extra boilerplate
+	if filepath.Ext(path) == ".org" {
+		content += fmt.Sprintf(DEFAULT_ORG_DIRECTIVES, config.Lang)
+	}
+
+	if err := os.WriteFile(path, []byte(content), FILE_RW_MODE); err != nil {
+		return err
+	}
+	fmt.Println("added", path)
+	return nil
+}
+
+// Read the files in src/ render them and copy the result to target/
+func Build(root string) error {
+	config, err := config.Load(root)
+	if err != nil {
+		return err
+	}
+
+	site, err := site.Load(*config)
+	if err != nil {
+		return err
+	}
+
+	return site.Build()
+}
+
+// Prompt the user for a string value
+func Prompt(label string) string {
+	// https://dev.to/tidalcloud/interactive-cli-prompts-in-go-3bj9
+	var s string
+	r := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Fprint(os.Stderr, label+": ")
+		s, _ = r.ReadString('\n')
+		if s != "" {
+			break
+		}
+	}
+	return strings.TrimSpace(s)
 }
 
 func ensureEmptyProjectDir(projectDir string) error {
@@ -107,42 +199,15 @@ func ensureEmptyProjectDir(projectDir string) error {
 	return nil
 }
 
-// Prompt the user for a string value
-func prompt(label string) string {
-	// https://dev.to/tidalcloud/interactive-cli-prompts-in-go-3bj9
-	var s string
-	r := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Fprint(os.Stderr, label+": ")
-		s, _ = r.ReadString('\n')
-		if s != "" {
-			break
-		}
-	}
-	return strings.TrimSpace(s)
-}
+var nonWordRegex = regexp.MustCompile(`[^\w-]`)
+var whitespaceRegex = regexp.MustCompile(`\s+`)
 
-func New() error {
-	// prompt for title
-	// slugify
-	// fail if file already exist
-	// create a new .org file with the slug
-	// add front matter and org options
-	fmt.Println("not implemented yet")
-	return nil
-}
+func slugify(title string) string {
+	slug := strings.ToLower(title)
+	slug = strings.TrimSpace(slug)
+	slug = norm.NFD.String(slug)
+	slug = whitespaceRegex.ReplaceAllString(slug, "-")
+	slug = nonWordRegex.ReplaceAllString(slug, "")
 
-// Read the files in src/ render them and copy the result to target/
-func Build(root string) error {
-	config, err := config.Load(root)
-	if err != nil {
-		return err
-	}
-
-	site, err := site.Load(*config)
-	if err != nil {
-		return err
-	}
-
-	return site.Build()
+	return slug
 }
