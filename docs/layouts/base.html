@@ -47,5 +47,18 @@
     </head>
     <body>
         {{ content }}
+        <p class="center-block footer">
+            {% if page.date or page.tags %}
+            <span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
+            <span class="tags">
+                {% for tag in page.tags %}
+                <a href="/blog/tags#{{tag}}">#{{tag}}</a>
+                {% endfor %}
+            </span>
+            <br/>
+            {% endif %}
+            powered by <a href="https://jorge.olano.dev">jorge</a> | <a href="https://github.com/facundoolano/jorge/tree/main/{{page.src_path}}">source</a>
+        </p>
+
     </body>
 </html>

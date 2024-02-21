@@ -1,10 +1,6 @@
 ---
 layout: base
 ---
-<nav>
-    <a href="/">{{ site.config.name }}</a>
-    <a href="/blog">/blog</a>
-</nav>
 
 <div class="content layout-{{ page.layout }}" lang="{{ page.lang | default:site.config.lang | default:'en' }}">
     <header {% if page.cover-img %}class="with-cover"{% endif %}>
