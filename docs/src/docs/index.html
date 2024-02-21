@@ -1,0 +1,15 @@
+---
+layout: default
+title: Devlog
+---
+
+Comming soon!
+
+<ul>
+    {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+</div>

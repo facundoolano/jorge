@@ -232,3 +232,15 @@ details[open] summary h3::after {
 details > summary::-webkit-details-marker {
     display: none;
 }
+
+.silver {
+    color: silver;
+}
+
+code.index-sample {
+    display: inline-block;
+}
+
+code.index-sample pre {
+    text-align: left;
+}

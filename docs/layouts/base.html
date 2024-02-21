@@ -1,0 +1,64 @@
+---
+---
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        {% if page.title %}
+        <title>{{page.head_title|default: page.title }} | {{ site.config.name }}</title>
+        {% else %}
+        <title>{{ site.config.name }}</title>
+        {% endif %}
+        <link type="application/atom+xml" rel="alternate" href="/feed.xml" title="{{ site.config.name }}"/>
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+        <meta name="author" content="{{site.config.author}}">
+        <meta property="og:article:author" content="{{ site.config.author }}">
+        <meta property="og:site_name" content="{{ site.config.title }}">
+
+        {% if page.title %}
+        <meta property="og:title" content="{{ page.title|default: site.config.title }}">
+        <meta name="twitter:title" content="{{ page.title|default: site.config.title }}">
+        {% endif %}
+
+        {% if page.excerpt %}
+        <meta name="description" content="{{ page.excerpt | strip_html | xml_escape }}">
+        <meta name="og:description" content="{{ page.excerpt | strip_html | xml_escape }}">
+        <meta name="twitter:description" content="{{ page.excerpt | strip_html | xml_escape }}">
+        {% endif %}
+
+        {% if page.layout == "post" %}
+        <meta property="og:type" content="article">
+        <meta property="og:article:published_time" content="{{ page.date | date_to_xmlschema }}">
+        <meta property="og:url" content="{{ page.url | absolute_url }}">
+        <link rel="canonical" href="{{ page.url | absolute_url }}">
+        {% else %}
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ page.url | absolute_url }}">
+        <link rel="canonical" href="{{ page.url | absolute_url  }}">
+        {% endif %}
+
+        {% if page.image != "" %}
+        <meta property="og:image" content="{{ page.image | absolute_url }}">
+        <meta name="twitter:image" content="{{ page.image | absolute_url }}">
+        {% endif %}
+
+    </head>
+    <body>
+        {{ content }}
+        <p class="center-block footer">
+            {% if page.date or page.tags %}
+            <span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
+            <span class="tags">
+                {% for tag in page.tags %}
+                <a href="/blog/tags#{{tag}}">#{{tag}}</a>
+                {% endfor %}
+            </span>
+            <br/>
+            {% endif %}
+            powered by <a href="https://jorge.olano.dev">jorge</a> | <a href="https://github.com/facundoolano/jorge/tree/main/{{page.src_path}}">source</a>
+        </p>
+
+    </body>
+</html>

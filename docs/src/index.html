@@ -1,0 +1,63 @@
+---
+layout: base
+---
+
+<div class="content">
+<br/>
+<br/>
+<center>
+    <p><big><b>jorge</b> is a personal (small + opinionated) site generator</big></p>
+    <br/>
+    <code class="index-sample src">
+        <pre>
+$ jorge init .
+> site name: My Blog
+> site url: https://myblog.olano.dev
+> author: Facundo
+  <span class="silver">added layouts/base.html
+  added layouts/post.html
+  added src/assets/css/main.css
+  added src/blog/hello-org.org
+  added src/blog/index.html
+  added src/blog/tags.html
+  added src/feed.xml
+  added src/index.html</span>
+$ jorge post "Hello World!"
+  <span class="silver">added src/blog/my-first-post.org</span>
+$ jorge serve
+  <span class="silver">serving at http://localhost:4001</span>
+        </pre>
+    </code>
+    <p><a href="https://github.com/facundoolano/jorge">Open source</a>, Inspired by <a href="https://jekyllrb.com/">Jekyll</a>, with <a href="https://orgmode.org">org-mode</a> and <a href="https://daringfireball.net/projects/markdown/">Markdown</a> support.</p>
+</center>
+<br/>
+
+<br/>
+<hr/>
+<h2><a href="/tutorial" class="title" id="tutorial">Tutorial</a></h2>
+<ol>
+{% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+{% endfor %}
+</ol>
+
+<h2><a href="/blog" class="title" id="devlog">Devlog</a></h2>
+
+{% for post in site.posts limit:3 %}
+{% include post_preview.html %}
+{% endfor %}
+
+<p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
+
+<h2><a href="/docs" class="title" id="docs">Docs</a></h2>
+Coming soon!
+<ul>
+    {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+</div>

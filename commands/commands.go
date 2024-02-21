@@ -143,7 +143,7 @@ func Post(root string, title string) error {
 	if err := os.WriteFile(path, []byte(content), FILE_RW_MODE); err != nil {
 		return err
 	}
-	fmt.Println("added draft", path)
+	fmt.Println("added", path)
 	return nil
 }
 

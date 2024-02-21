@@ -1,0 +1,16 @@
+---
+layout: default
+title: Tags
+---
+
+{% for tag in site.tags %}
+<details>
+    <summary>
+        <h3><a href="#{{tag[0]}}" class="title" id="{{tag[0]}}">#{{tag[0]}}</a></h3>
+    </summary>
+
+    {% for post in tag[1] %}
+    {% include post_preview.html %}
+    {% endfor %}
+</details>
+{% endfor %}

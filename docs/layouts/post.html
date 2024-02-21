@@ -1,6 +1,7 @@
 ---
 layout: base
 ---
+{% include nav.html %}
 
 <div class="content layout-{{ page.layout }}" lang="{{ page.lang | default:site.config.lang | default:'en' }}">
     <header {% if page.cover-img %}class="with-cover"{% endif %}>
@@ -12,17 +13,3 @@ layout: base
     </header>
     {{ content }}
 </div>
-
-<br/>
-<br/>
-
-<p class="center-block footer">
-    <span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
-    <span class="tags">
-        {% for tag in page.tags %}
-        <a href="/blog/tags#{{tag}}">#{{tag}}</a>
-        {% endfor %}
-    </span>
-    <br/>
-    powered by <a href="https://jorge.olano.dev">jorge</a>
-</p>

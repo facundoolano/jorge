@@ -49,7 +49,7 @@ wrote target/blog/hello-org.html
 wrote target/blog/index.html
 wrote target/index.html
 wrote target/blog/tags.html
-server listening at http://localhost:4001
+serving at http://localhost:4001
 ```
 
 The site is renders the files found at `src/` in the `target/` directory.

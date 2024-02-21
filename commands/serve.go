@@ -42,7 +42,7 @@ func Serve(rootDir string) error {
 	}
 
 	addr := fmt.Sprintf("%s:%d", config.ServerHost, config.ServerPort)
-	fmt.Printf("server listening at http://%s\n", addr)
+	fmt.Printf("serving at http://%s\n", addr)
 	return http.ListenAndServe(addr, nil)
 }
 
@@ -112,7 +112,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 				}
 				broker.publish("rebuild")
 
-				fmt.Println("done\nserver listening at", config.SiteUrl)
+				fmt.Println("done\nserving at", config.SiteUrl)
 
 			case err, ok := <-watcher.Errors:
 				if !ok {

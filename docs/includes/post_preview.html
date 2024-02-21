@@ -1,5 +1,5 @@
 <article class="post">
-    <span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>
+    {% if post.date %}<span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>{% endif %}
     <div>
         <a class="title" href="{{ post.url }}">{{ post.title }}</a>
         <small>
