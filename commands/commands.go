@@ -88,44 +88,6 @@ func Init(projectDir string) error {
 	})
 }
 
-func ensureEmptyProjectDir(projectDir string) error {
-	if err := os.Mkdir(projectDir, 0777); err != nil {
-		// if it fails with dir already exist, check if it's empty
-		// https://stackoverflow.com/a/30708914/993769
-		if os.IsExist(err) {
-			// check if empty
-			dir, err := os.Open(projectDir)
-			if err != nil {
-				return err
-			}
-			defer dir.Close()
-
-			// if directory is non empty, fail
-			_, err = dir.Readdirnames(1)
-			if err == nil {
-				return fmt.Errorf("non empty directory %s", projectDir)
-			}
-			return err
-		}
-	}
-	return nil
-}
-
-// Prompt the user for a string value
-func Prompt(label string) string {
-	// https://dev.to/tidalcloud/interactive-cli-prompts-in-go-3bj9
-	var s string
-	r := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Fprint(os.Stderr, label+": ")
-		s, _ = r.ReadString('\n')
-		if s != "" {
-			break
-		}
-	}
-	return strings.TrimSpace(s)
-}
-
 func Post(root string, title string) error {
 	config, err := config.Load(root)
 	if err != nil {
@@ -175,19 +137,6 @@ tags: []
 	return nil
 }
 
-var nonWordRegex = regexp.MustCompile(`[^\w-]`)
-var whitespaceRegex = regexp.MustCompile(`\s+`)
-
-func slugify(title string) string {
-	slug := strings.ToLower(title)
-	slug = strings.TrimSpace(slug)
-	slug = norm.NFD.String(slug)
-	slug = whitespaceRegex.ReplaceAllString(slug, "-")
-	slug = nonWordRegex.ReplaceAllString(slug, "")
-
-	return slug
-}
-
 // Read the files in src/ render them and copy the result to target/
 func Build(root string) error {
 	config, err := config.Load(root)
@@ -201,4 +150,55 @@ func Build(root string) error {
 	}
 
 	return site.Build()
+}
+
+// Prompt the user for a string value
+func Prompt(label string) string {
+	// https://dev.to/tidalcloud/interactive-cli-prompts-in-go-3bj9
+	var s string
+	r := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Fprint(os.Stderr, label+": ")
+		s, _ = r.ReadString('\n')
+		if s != "" {
+			break
+		}
+	}
+	return strings.TrimSpace(s)
+}
+
+func ensureEmptyProjectDir(projectDir string) error {
+	if err := os.Mkdir(projectDir, 0777); err != nil {
+		// if it fails with dir already exist, check if it's empty
+		// https://stackoverflow.com/a/30708914/993769
+		if os.IsExist(err) {
+			// check if empty
+			dir, err := os.Open(projectDir)
+			if err != nil {
+				return err
+			}
+			defer dir.Close()
+
+			// if directory is non empty, fail
+			_, err = dir.Readdirnames(1)
+			if err == nil {
+				return fmt.Errorf("non empty directory %s", projectDir)
+			}
+			return err
+		}
+	}
+	return nil
+}
+
+var nonWordRegex = regexp.MustCompile(`[^\w-]`)
+var whitespaceRegex = regexp.MustCompile(`\s+`)
+
+func slugify(title string) string {
+	slug := strings.ToLower(title)
+	slug = strings.TrimSpace(slug)
+	slug = norm.NFD.String(slug)
+	slug = whitespaceRegex.ReplaceAllString(slug, "-")
+	slug = nonWordRegex.ReplaceAllString(slug, "")
+
+	return slug
 }
