@@ -1,7 +1,7 @@
 ---
 layout: default
 submenu: [["/feed", "/feed.xml"], ["/tags", "/blog/tags"]]
-title: Blog
+title: Devlog
 ---
 
 {% assign posts_by_year = site.posts | group_by_exp:"post", "post.date | date: '%Y'" %}

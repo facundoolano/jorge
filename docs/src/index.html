@@ -1,9 +1,9 @@
 ---
-layout: default
+layout: base
 submenu: [["github", "https://github.com/facundoolano/jorge/"]]
-hidenav: true
 ---
 
+<div class="content">
 <br/>
 <br/>
 <center>
@@ -21,6 +21,8 @@ $ jorge build
 </center>
 <br/>
 
+<br/>
+<hr/>
 <h2><a href="#latest" class="title" id="tutorial">Tutorial</a></h2>
 <ol>
 {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
@@ -30,16 +32,6 @@ $ jorge build
 {% endfor %}
 </ol>
 
-<h2><a href="#latest" class="title" id="docs">Docs</a></h2>
-<ul>
-    {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}
-    <li>
-        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
-    </li>
-    {% endfor %}
-</ul>
-
-
 <h2><a href="#latest" class="title" id="devlog">Devlog</a></h2>
 
 {% for post in site.posts limit:3 %}
@@ -47,4 +39,14 @@ $ jorge build
 {% endfor %}
 
 <p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
-<br/>
+
+<h2><a href="#latest" class="title" id="docs">Docs</a></h2>
+Coming soon!
+<ul>
+    {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+</div>
