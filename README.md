@@ -74,3 +74,13 @@ For more details see the:
   - [Tutorial](https://jorge.olano.dev#tutorial)
   - [Docs](https://jorge.olano.dev#docs)
   - [Development blog](https://jorge.olano.dev#blog)
+
+## Acknowledgements
+
+jorge started as a Go learning project and was largely inspired by [Jekyll](https://jekyllrb.com/). Most of the heavy lifting is done by external libraries:
+
+* [osteele/liquid](https://github.com/osteele/liquid) to render liquid templates. Some Jekyll-specific filters were also copied from [osteele/gojekyll](https://github.com/osteele/gojekyll/).
+* [niklasfasching/go-org](https://github.com/niklasfasching/go-org) to render org-mode files as HTML.
+* [yuin/goldmark](https://github.com/yuin/goldmark) to render Markdown as HTML.
+* [go-yaml](https://github.com/go-yaml/yaml) to parse YAML files and template headers.
+* [tdewolff/minify](https://github.com/tdewolff/minify) to minify HTML, CSS, XML and JavaScript files.
