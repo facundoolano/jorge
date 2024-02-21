@@ -76,7 +76,7 @@ func (site *Site) loadLayouts() error {
 			path := filepath.Join(site.Config.LayoutsDir, filename)
 			templ, err := templates.Parse(site.templateEngine, path)
 			if err != nil {
-				return err
+				return checkFileError(err)
 			}
 
 			layout_name := strings.TrimSuffix(filename, filepath.Ext(filename))
