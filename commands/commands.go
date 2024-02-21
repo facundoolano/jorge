@@ -7,12 +7,15 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 
 	"embed"
 
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
+	"golang.org/x/text/unicode/norm"
 )
 
 //go:embed all:initfiles
@@ -34,9 +37,9 @@ func Init(projectDir string) error {
 		return err
 	}
 
-	siteName := prompt("site name")
-	siteUrl := prompt("site url")
-	siteAuthor := prompt("author")
+	siteName := Prompt("site name")
+	siteUrl := Prompt("site url")
+	siteAuthor := Prompt("author")
 
 	// creating config and readme files manually, since I want to use the supplied config values in their
 	// contents. (I don't want to render liquid templates in the WalkDir below since some of the initfiles
@@ -80,6 +83,7 @@ func Init(projectDir string) error {
 		if err != nil {
 			return err
 		}
+		fmt.Println("added", path)
 		return targetFile.Sync()
 	})
 }
@@ -108,7 +112,7 @@ func ensureEmptyProjectDir(projectDir string) error {
 }
 
 // Prompt the user for a string value
-func prompt(label string) string {
+func Prompt(label string) string {
 	// https://dev.to/tidalcloud/interactive-cli-prompts-in-go-3bj9
 	var s string
 	r := bufio.NewReader(os.Stdin)
@@ -122,14 +126,66 @@ func prompt(label string) string {
 	return strings.TrimSpace(s)
 }
 
-func Post() error {
-	// prompt for title
-	// slugify
-	// fail if file already exist
-	// create a new .org file with the slug
-	// add front matter and org options
-	fmt.Println("not implemented yet")
+func Post(root string, title string) error {
+	config, err := config.Load(root)
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	slug := slugify(title)
+	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
+	filename = strings.ReplaceAll(config.PostFormat, ":year", string(now.Year()))
+	filename = strings.ReplaceAll(config.PostFormat, ":month", string(int(now.Month())))
+	filename = strings.ReplaceAll(config.PostFormat, ":day", string(now.Day()))
+	path := filepath.Join(config.SrcDir, filename)
+
+	// ensure the dir already exists
+	if err := os.MkdirAll(filepath.Dir(path), FILE_RW_MODE); err != nil {
+		return err
+	}
+
+	// if file already exists, prompt user for a different one
+	if _, err := os.Stat(path); os.IsExist(err) {
+		fmt.Printf("%s already exists\n", path)
+		filename = Prompt("filename")
+		path = filepath.Join(config.SrcDir, filename)
+	}
+
+	// initialize a template for the post
+	content := fmt.Sprintf(`---
+title: %s
+date: %s
+layout: post
+lang: %s
+tags: []
+---`, title, now.Format(time.RFC3339), config.Lang)
+
+	// org files need some extra boilerplate
+	if filepath.Ext(path) == ".org" {
+		content += fmt.Sprintf(`
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: %s`, config.Lang)
+	}
+
+	if err := os.WriteFile(path, []byte(content), FILE_RW_MODE); err != nil {
+		return err
+	}
+	fmt.Println("added", path)
 	return nil
+}
+
+var nonWordRegex = regexp.MustCompile(`[^\w-]`)
+var whitespaceRegex = regexp.MustCompile(`\s+`)
+
+func slugify(title string) string {
+	slug := strings.ToLower(title)
+	slug = strings.TrimSpace(title)
+	slug = norm.NFC.String(slug)
+	slug = nonWordRegex.ReplaceAllString(slug, "")
+	slug = whitespaceRegex.ReplaceAllString(slug, "-")
+
+	return slug
 }
 
 // Read the files in src/ render them and copy the result to target/

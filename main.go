@@ -40,7 +40,14 @@ func run(args []string) error {
 		}
 		return commands.Build(rootDir)
 	case "post":
-		return commands.Post()
+		var title string
+		if len(os.Args) >= 3 {
+			title = os.Args[2]
+		} else {
+			title = commands.Prompt("title")
+		}
+		rootDir := "."
+		return commands.Post(rootDir, title)
 	case "serve":
 		rootDir := "."
 		if len(os.Args) > 2 {
