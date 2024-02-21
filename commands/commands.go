@@ -44,6 +44,8 @@ var DEFAULT_ORG_DIRECTIVES string = `
 
 const FILE_RW_MODE = 0777
 
+// Initialize a new jorge project in the given directory,
+// prompting for basic site config and creating default files.
 func Init(projectDir string) error {
 	if err := ensureEmptyProjectDir(projectDir); err != nil {
 		return err
@@ -100,6 +102,8 @@ func Init(projectDir string) error {
 	})
 }
 
+// Create a new post template in the given site, with the given title,
+// with pre-filled front matter.
 func Post(root string, title string) error {
 	config, err := config.Load(root)
 	if err != nil {
