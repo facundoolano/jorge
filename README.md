@@ -34,7 +34,7 @@ added myblog/src/index.html
 
 $ cd myblog
 $ jorge post "My First Post"
-added draft src/blog/my-first-post.org
+added src/blog/my-first-post.org
 
 # serve the site locally with live reload
 $ jorge serve
@@ -56,9 +56,6 @@ $ cat >> src/blog/my-first-post.org <<EOF
 
 this is my *first* post.
 EOF
-
-# remove the draft flag before publishing
-$ sed -i '' '/^draft: true$/d' src/blog/my-first-post.org
 
 $ jorge build
   wrote target/index.html
