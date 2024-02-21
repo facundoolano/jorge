@@ -1,0 +1,238 @@
+html {
+    color-scheme: light dark;
+    overflow-y: scroll;
+}
+
+body {
+    max-width: 45em;
+    margin: 0 auto;
+    padding: 0 1rem;
+    width: auto;
+    font-family: Tahoma, Verdana, Arial, sans-serif;
+    line-height: 1.5;
+
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    padding-top: 2rem;
+    margin-top: auto;
+}
+
+@media screen and (max-width: 480px) {
+    .hidden-mobile {
+        display: none
+    }
+}
+
+nav {
+    margin: 1rem 0;
+    line-height: 1.8;
+    border-bottom: 1px solid;
+    display: flex;
+}
+.nav-right {
+    margin-left: auto;
+}
+nav a:not(:last-child) {
+    margin-right: 1rem
+}
+nav a:hover {
+    text-decoration: none;
+}
+
+li {
+    line-height: 1.6;
+}
+
+li:not(:last-child) {
+    padding-bottom: .75rem;
+}
+
+a, a:visited {
+    color: LinkText;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline
+}
+
+a.title {
+    color: unset!important;
+    padding-right: .25rem;
+}
+
+.footer, .footer a, .date, .tags, .tags a {
+    color: silver;
+}
+.date {
+    padding-right: .5rem;
+    white-space: nowrap;
+}
+.tags {
+    display: inline-block;
+}
+
+article.post {
+    display: flex;
+    padding-bottom: .5rem;
+}
+
+.center-block {
+    text-align: center;
+}
+
+hr {
+    border: 0;
+    border-top:1px solid;
+}
+
+/* tweaks for post content style */
+.layout-post img {
+    max-width: 75%;
+    max-height: 400px;
+}
+
+img.cover-img {
+    width: 100%;
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+    margin-bottom: -2rem;
+}
+
+.layout-post hr {
+    border: 1px solid silver;
+}
+
+.layout-post {
+    hyphens: auto;
+    text-align: justify;
+    font-size: 1.15rem;
+    line-height: 1.6;
+
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-font-smoothing: antialiased !important;
+    text-rendering: optimizelegibility !important;
+    letter-spacing: .03em;
+}
+
+.layout-post .title {
+    hyphens:none;
+}
+
+.layout-post header {
+    margin: 3rem 0 5rem;
+    text-align: left;
+}
+
+.layout-post header.with-cover {
+    margin-top: -0.5rem;
+}
+
+.src pre {
+    font-size: 1rem;
+    overflow-x: auto;
+    line-height: 1.5;
+    padding-left: 1rem
+}
+
+blockquote {
+    border-left: 2px solid whitesmoke;
+    padding-left: 1rem;
+}
+
+.layout-post p.verse {
+    text-align: right;
+}
+
+.layout-post p {
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.layout-post p + h2 {
+    padding-top: 1.5rem;
+}
+
+.layout-post .center-block {
+    margin: 2rem 0;
+}
+
+/* override in mobile devices for more compact text */
+@media screen and (max-width: 768px) {
+    .layout-post {
+        font-size: 1rem;
+        line-height: 1.2;
+        letter-spacing: unset;
+        hyphens: none;
+        text-align: left;
+    }
+
+    .layout-post p {
+        margin: 0 0 1rem 0;
+        line-height: 1.7;
+    }
+
+    .layout-post p + p {
+        text-indent: 0;
+    }
+
+    .layout-post img {
+        max-width: 100%;
+    }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+}
+
+table tr {
+    border-bottom: 1px solid #ddd;
+}
+
+td, th {
+    padding: .5rem;
+}
+
+
+hr.footnotes-separatator {
+    display:none;
+}
+
+/* makes footnote number and text display in the same line  */
+.footnote-definition {
+    display: block;
+    vertical-align: top;
+    margin-bottom: .4rem;
+}
+.footnote-body, .footnote-body p {
+    display: inline;
+}
+
+/* These control the expand/collapse behavior of the tags page */
+details summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+details summary h3::after {
+    content: "[+]";
+    font-size: small;
+    font-weight: normal;
+    font-family: monospace;
+    vertical-align: middle;
+}
+
+details[open] summary h3::after {
+    content: "[-]"
+}
+
+details > summary::-webkit-details-marker {
+    display: none;
+}

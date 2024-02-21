@@ -1,0 +1,14 @@
+<article class="post">
+    {% if post.date %}<span class="date">{{ post.date | date: "%Y-%m-%d" }}</span>{% endif %}
+    <div>
+        <a class="title" href="{{ post.url }}">{{ post.title }}</a>
+        <small>
+            {% if post.favorite %} <a href="/blog/tags#⭐" style="text-decoration:none">⭐</a> {% endif %}
+            <span class="tags hidden-mobile">
+                {% for tag in post.tags %}
+                <a href="/blog/tags#{{tag}}">#{{tag}}</a>
+                {% endfor %}
+            </span>
+        </small>
+    </div>
+</article>

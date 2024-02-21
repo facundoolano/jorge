@@ -1,0 +1,50 @@
+---
+layout: default
+submenu: [["github", "https://github.com/facundoolano/jorge/"]]
+hidenav: true
+---
+
+<br/>
+<br/>
+<center>
+    <p><big><b>jorge</b> is a personal (small + opinionated) site generator</big></p>
+    <br/>
+    <code class="src" style="display: inline-block;">
+        <pre style="text-align: left;">
+$ jorge init myblog
+$ jorge post "Hello World!"
+$ jorge serve
+$ jorge build
+        </pre>
+    </code>
+    <p>Written in <a href="https://golang.org">Go</a>, inspired by <a href="https://jekyllrb.com/">Jekyll</a>, with <a href="https://orgmode.org">org-mode</a> and <a href="https://daringfireball.net/projects/markdown/">Markdown</a> support.</p>
+</center>
+<br/>
+
+<h2><a href="#latest" class="title" id="tutorial">Tutorial</a></h2>
+<ol>
+{% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+{% endfor %}
+</ol>
+
+<h2><a href="#latest" class="title" id="docs">Docs</a></h2>
+<ul>
+    {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}
+    <li>
+        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+
+<h2><a href="#latest" class="title" id="devlog">Devlog</a></h2>
+
+{% for post in site.posts limit:3 %}
+{% include post_preview.html %}
+{% endfor %}
+
+<p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
+<br/>

@@ -1,0 +1,35 @@
+---
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" {% if site.config.lang %}xml:lang="{{ site.lang }}"{% endif %}>
+    <generator uri="https://jorge.olano.dev/" version="0.0.1">jorge</generator>
+    <link href="{{ page.url | absolute_url}}" rel="self" type="application/atom+xml"/>
+    <link href="{{ site.config.url }}" rel="alternate" type="text/html"/>
+    <updated>{{ "now" | date: "%Y-%m-%d %H:%M" }}</updated>
+    <id>{{ page.url | absolute_url}}</id>
+    <title type="html">{{ site.config.name }}</title>
+    <author>
+        <name>{{ site.config.author }}</name>
+    </author>
+    {% for post in site.posts limit:10 %}
+        <entry {% if post.lang %}xml:lang="{{post.lang}}"{% endif %}>
+            {% assign post_title = post.title | strip_html | normalize_whitespace | xml_escape %}
+            <title type="html">{{ post.title }}</title>
+            <link href="{{ post.url | absolute_url }}" rel="alternate" type="text/html" title="{{ post.title }}"/>
+            <published>{{ post.date | date: "%Y-%m-%d %H:%M" }}</published>
+            <updated>{{ post.date | date: "%Y-%m-%d %H:%M" }}</updated>
+            <id>{{ post.url | absolute_url }}</id>
+            <author>
+                <name>{{ post.author | default:site.config.author }}</name>
+            </author>
+            {% for tag in post.tags %}
+            <category term="{{ tag }}"/>
+            {% endfor %}
+            <summary type="html"><![CDATA[{{ post.excerpt | strip_html | normalize_whitespace }}]]></summary>
+            {% if post.image %}
+            <media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="{{ post.image | absolute_url }}"/>
+            <media:content medium="image" url="{{ post.image | absolute_url }}"  xmlns:media="http://search.yahoo.com/mrss/"/>
+            {% endif %}
+        </entry>
+    {% endfor %}
+</feed>

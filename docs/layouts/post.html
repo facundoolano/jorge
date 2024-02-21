@@ -1,0 +1,32 @@
+---
+layout: base
+---
+<nav>
+    <a href="/">{{ site.config.name }}</a>
+    <a href="/blog">/blog</a>
+</nav>
+
+<div class="content layout-{{ page.layout }}" lang="{{ page.lang | default:site.config.lang | default:'en' }}">
+    <header {% if page.cover-img %}class="with-cover"{% endif %}>
+        <h1 class="title">{{ page.title }}</h1>
+        {% if page.subtitle %}<h3 class="subtitle">{{ page.subtitle }}</h3>{% endif  %}
+        {% if page.cover-img %}
+        <img class="cover-img" src="{{ page.cover-img | absolute_url }}">
+        {% endif %}
+    </header>
+    {{ content }}
+</div>
+
+<br/>
+<br/>
+
+<p class="center-block footer">
+    <span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
+    <span class="tags">
+        {% for tag in page.tags %}
+        <a href="/blog/tags#{{tag}}">#{{tag}}</a>
+        {% endfor %}
+    </span>
+    <br/>
+    powered by <a href="https://jorge.olano.dev">jorge</a> | <a href="https://github.com/facundoolano/jorge/tree/main/{{page.src_path}}">source</a>
+</p>
