@@ -135,9 +135,9 @@ func Post(root string, title string) error {
 	now := time.Now()
 	slug := slugify(title)
 	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
-	filename = strings.ReplaceAll(config.PostFormat, ":year", string(now.Year()))
-	filename = strings.ReplaceAll(config.PostFormat, ":month", string(int(now.Month())))
-	filename = strings.ReplaceAll(config.PostFormat, ":day", string(now.Day()))
+	filename = strings.ReplaceAll(filename, ":year", string(now.Year()))
+	filename = strings.ReplaceAll(filename, ":month", string(int(now.Month())))
+	filename = strings.ReplaceAll(filename, ":day", string(now.Day()))
 	path := filepath.Join(config.SrcDir, filename)
 
 	// ensure the dir already exists
@@ -159,7 +159,7 @@ date: %s
 layout: post
 lang: %s
 tags: []
----`, title, now.Format(time.RFC3339), config.Lang)
+---`, title, now.Format(time.DateTime), config.Lang)
 
 	// org files need some extra boilerplate
 	if filepath.Ext(path) == ".org" {
@@ -180,10 +180,10 @@ var whitespaceRegex = regexp.MustCompile(`\s+`)
 
 func slugify(title string) string {
 	slug := strings.ToLower(title)
-	slug = strings.TrimSpace(title)
-	slug = norm.NFC.String(slug)
-	slug = nonWordRegex.ReplaceAllString(slug, "")
+	slug = strings.TrimSpace(slug)
+	slug = norm.NFD.String(slug)
 	slug = whitespaceRegex.ReplaceAllString(slug, "-")
+	slug = nonWordRegex.ReplaceAllString(slug, "")
 
 	return slug
 }
