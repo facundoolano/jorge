@@ -36,6 +36,7 @@ date: %s
 layout: post
 lang: %s
 tags: []
+draft: true
 ---
 `
 
@@ -143,7 +144,7 @@ func Post(root string, title string) error {
 	if err := os.WriteFile(path, []byte(content), FILE_RW_MODE); err != nil {
 		return err
 	}
-	fmt.Println("added", path)
+	fmt.Println("added draft", path)
 	return nil
 }
 

@@ -34,24 +34,31 @@ added myblog/src/index.html
 
 $ cd myblog
 $ jorge post "My First Post"
-  added draft src/blog/my-first-post.org
+added draft src/blog/my-first-post.org
 
 # serve the site locally with live reload
 $ jorge serve
-  server running at http://localhost:4001/
+wrote target/feed.xml
+wrote target/blog/goodbye-markdown.html
+wrote target/blog/my-first-post.html
+wrote target/blog/hello-org.html
+wrote target/blog/index.html
+wrote target/index.html
+wrote target/blog/tags.html
+server listening at http://localhost:4001
 
 # browse to the new post
 $ open http://localhost:4001/blog/my-first-post
 
 # add some content
-$ cat >> src/blog/test.org <<EOF
+$ cat >> src/blog/my-first-post.org <<EOF
 *** Hello world!
 
 this is my *first* post.
 EOF
 
 # remove the draft flag before publishing
-$ sed -i '/^draft: true$/d' src/blog/my-first-post.org
+$ sed -i '' '/^draft: true$/d' src/blog/my-first-post.org
 
 $ jorge build
   wrote target/index.html
