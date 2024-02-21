@@ -1,10 +1,12 @@
 package site
 
 import (
-	"github.com/facundoolano/jorge/config"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/facundoolano/jorge/config"
 )
 
 func TestLoadAndRenderTemplates(t *testing.T) {
@@ -268,7 +270,58 @@ title: "2. an oldie!"
 }
 
 func TestRenderArchiveWithExcerpts(t *testing.T) {
-	// TODO
+	config := newProject()
+	defer os.RemoveAll(config.RootDir)
+
+	content := `---
+title: hello world!
+date: 2024-01-01
+tags: [web, software]
+---
+<p>the intro paragraph</p>
+<p> and another paragraph>`
+	file := newFile(config.SrcDir, "hello.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: goodbye!
+date: 2024-02-01
+tags: [web]
+excerpt: an overridden excerpt
+---
+<p>goodbye world!</p>
+<p> and another paragraph</p>`
+	file = newFile(config.SrcDir, "goodbye.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: an oldie!
+date: 2023-01-01
+tags: [software]
+---
+`
+	file = newFile(config.SrcDir, "an-oldie.html", content)
+	defer os.Remove(file.Name())
+
+	// add a page (no date)
+	content = `---
+---
+{% for post in site.posts %}
+{{post.title}} - {{post.excerpt}}
+{% endfor %}
+`
+
+	file = newFile(config.SrcDir, "about.html", content)
+	defer os.Remove(file.Name())
+
+	site, err := Load(*config)
+	output, err := site.render(site.templates[file.Name()])
+	assertEqual(t, err, nil)
+	assertEqual(t, strings.TrimSpace(string(output)), `goodbye! - an overridden excerpt
+
+hello world! - the intro paragraph
+
+an oldie! -`)
 }
 
 func TestRenderDataFile(t *testing.T) {
