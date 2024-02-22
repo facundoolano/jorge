@@ -133,7 +133,14 @@ img.cover-img {
     font-size: 1rem;
     overflow-x: auto;
     line-height: 1.5;
-    padding-left: 1rem
+    padding: 1rem;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.src pre::-webkit-scrollbar {
+    display: none;
 }
 
 blockquote {
