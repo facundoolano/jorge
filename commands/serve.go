@@ -22,10 +22,6 @@ func Serve(rootDir string) error {
 		return err
 	}
 
-	if err := rebuildSite(config); err != nil {
-		return err
-	}
-
 	// watch for changes in src and layouts, and trigger a rebuild
 	watcher, broker, err := setupWatcher(config)
 	if err != nil {
@@ -88,6 +84,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 	// which can cause the browser to refresh while another unfinished build is in progress (refreshing to
 	// a missing file)
 	rebuildAfter := time.AfterFunc(0, func() {
+		fmt.Printf("rebuilding site\n")
 
 		// since new nested directories could be triggering this change, and we need to watch those too
 		// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
@@ -117,7 +114,7 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					continue
 				}
 
-				fmt.Printf("\nFile %s changed, rebuilding site.\n", event.Name)
+				fmt.Printf("\nfile %s changed\n", event.Name)
 				rebuildAfter.Stop()
 				rebuildAfter.Reset(100 * time.Millisecond)
 
