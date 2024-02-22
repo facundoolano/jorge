@@ -130,12 +130,16 @@ img.cover-img {
 }
 
 .src pre {
-    font-size: 1rem;
     overflow-x: auto;
     line-height: 1.5;
     padding: 1rem;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+}
+
+.src pre, code {
+    background: whitesmoke;
+    font-size: 1rem;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

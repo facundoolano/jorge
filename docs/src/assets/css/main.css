@@ -138,6 +138,11 @@ img.cover-img {
     scrollbar-width: none;  /* Firefox */
 }
 
+.layout-post .src pre, .layout-post code {
+    background: whitesmoke;
+    font-size: 1rem;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .src pre::-webkit-scrollbar {
     display: none;
