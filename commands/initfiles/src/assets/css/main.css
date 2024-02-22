@@ -140,6 +140,8 @@ img.cover-img {
 .src pre, code {
     background: whitesmoke;
     font-size: 1rem;
+    hyphens: none;
+    white-space: nowrap;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -196,7 +198,7 @@ blockquote {
 table {
     width: 100%;
     border-collapse: collapse;
-
+    font-size: 1.05rem;
 }
 
 table tr {
