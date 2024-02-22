@@ -28,17 +28,17 @@ $ jorge serve
   <span class="silver">serving at http://localhost:4001</span>
         </pre>
     </code>
-    <p><a href="https://github.com/facundoolano/jorge">Open source</a>, Inspired by <a href="https://jekyllrb.com/">Jekyll</a>, with <a href="https://orgmode.org">org-mode</a> and <a href="https://daringfireball.net/projects/markdown/">Markdown</a> support.</p>
+    <p><a href="https://github.com/facundoolano/jorge">Open source</a>, inspired by <a href="https://jekyllrb.com/">Jekyll</a>, with <a href="https://orgmode.org">org-mode</a> and <a href="https://daringfireball.net/projects/markdown/">markdown</a> support.</p>
 </center>
 <br/>
 
 <br/>
 <hr/>
 <h2><a href="/tutorial" class="title" id="tutorial">Tutorial</a></h2>
-<ol>
+<ol start='0'>
 {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
     <li>
-        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+        <a class="title" href="{{ page.url }}">{{ page.title }}{%if page.subtitle%}: {{page.subtitle|downcase}}{%endif%}</a>
     </li>
 {% endfor %}
 </ol>

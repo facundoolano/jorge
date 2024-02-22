@@ -1,9 +1,10 @@
 ---
-title: Getting started
+title: jorge init
+subtitle: Start a new website
 layout: post
 lang: en
 tags: [tutorial]
-index: 1
+index: 2
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
