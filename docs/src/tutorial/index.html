@@ -3,7 +3,7 @@ layout: default
 title: Tutorial
 ---
 
-<ol>
+<ol start="0">
     {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
     <li>
         <a class="title" href="{{ page.url }}">{{ page.title }}</a>

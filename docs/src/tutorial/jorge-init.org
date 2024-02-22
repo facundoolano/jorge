@@ -1,6 +1,6 @@
 ---
 title: jorge init
-subtitle: Start a new website
+subtitle: Start a website
 layout: post
 lang: en
 tags: [tutorial]

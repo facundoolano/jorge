@@ -1,5 +1,5 @@
 ---
-title: Installation
+title: Getting started
 layout: post
 lang: en
 tags: [tutorial]
@@ -7,6 +7,16 @@ index: 1
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
+
+** Introduction
+
+jorge is a personal static site generator, inspired by Jekyll. In this context, I[fn:1] use personal as "small and opinionated". In practical terms, this means that jorge implements the subset of features from Jekyll that I find most useful, and that I defaulted to Jekyll design decisions except in the cases where I had strong differing preferences.
+
+jorge started as a Golang learning project, aimed at streamlining my blogging workflow. It adds native org-mode syntax support and, at least for my website, it turned out to be much faster than Jekyll. jorge should /almost/ work as a drop-in replacement for Jekyll: the directory structure is a bit different but most of the content should render with few changes. Additionally, I tried to add support to generate a fully functional (albeit minimalist and kind of ugly) website from scratch.
+
+This tutorial covers the basics of using jorge, from starting a site to deploying it. I tried to keep it accessible, but you may need to consult with Jekyll or Hugo documentation if you never used a static site generator, want to get the finer-grained details of template rendering, etc.
+
+** Installing jorge
 
 To start using jorge, download the latest binary for your platform from the [[https://github.com/facundoolano/jorge/releases/latest][releases page]], and put it somewhere on your path. For example:
 
@@ -25,4 +35,8 @@ $ go install github.com/facundoolano/jorge@latest
 
 TODO: switch to cobra and show usage output
 
-Next: [[file:jorge-init][start a new website]].
+Next: [[file:jorge-init][start a website]].
+
+* Footnotes
+
+[fn:1] Facundo Olano 👋
