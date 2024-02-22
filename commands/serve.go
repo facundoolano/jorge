@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync/atomic"
+	"time"
 
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
@@ -83,6 +84,25 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 
 	broker := newEventBroker()
 
+	// the rebuild is handled after some delay to prevent bursts of events to trigger repeated rebuilds
+	// which can cause the browser to refresh while another unfinished build is in progress (refreshing to
+	// a missing file)
+	rebuildAfter := time.AfterFunc(0, func() {
+
+		// since new nested directories could be triggering this change, and we need to watch those too
+		// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
+		if err := addAll(watcher, config); err != nil {
+			fmt.Println("couldn't add watchers:", err)
+		}
+
+		if err := rebuildSite(config); err != nil {
+			fmt.Println("build error:", err)
+		}
+		broker.publish("rebuild")
+
+		fmt.Println("done\nserving at", config.SiteUrl)
+	})
+
 	go func() {
 		for {
 			select {
@@ -98,21 +118,8 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 				}
 
 				fmt.Printf("\nFile %s changed, rebuilding site.\n", event.Name)
-
-				// since new nested directories could be triggering this change, and we need to watch those too
-				// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
-				if err := addAll(watcher, config); err != nil {
-					fmt.Println("couldn't add watchers:", err)
-					continue
-				}
-
-				if err := rebuildSite(config); err != nil {
-					fmt.Println("build error:", err)
-					continue
-				}
-				broker.publish("rebuild")
-
-				fmt.Println("done\nserving at", config.SiteUrl)
+				rebuildAfter.Stop()
+				rebuildAfter.Reset(100 * time.Millisecond)
 
 			case err, ok := <-watcher.Errors:
 				if !ok {
