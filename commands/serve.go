@@ -39,7 +39,6 @@ func Serve(rootDir string) error {
 	}
 
 	addr := fmt.Sprintf("%s:%d", config.ServerHost, config.ServerPort)
-	fmt.Printf("serving at http://%s\n", addr)
 	return http.ListenAndServe(addr, nil)
 }
 
@@ -82,22 +81,9 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 
 	// the rebuild is handled after some delay to prevent bursts of events to trigger repeated rebuilds
 	// which can cause the browser to refresh while another unfinished build is in progress (refreshing to
-	// a missing file)
+	// a missing file). The initial build is done immediately.
 	rebuildAfter := time.AfterFunc(0, func() {
-		fmt.Printf("rebuilding site\n")
-
-		// since new nested directories could be triggering this change, and we need to watch those too
-		// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
-		if err := addAll(watcher, config); err != nil {
-			fmt.Println("couldn't add watchers:", err)
-		}
-
-		if err := rebuildSite(config); err != nil {
-			fmt.Println("build error:", err)
-		}
-		broker.publish("rebuild")
-
-		fmt.Println("done\nserving at", config.SiteUrl)
+		rebuildSite(config, watcher, broker)
 	})
 
 	go func() {
@@ -114,6 +100,8 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					continue
 				}
 
+				// Schedule a rebuild to trigger after a delay. If there was another one pending
+				// it will be canceled.
 				fmt.Printf("\nfile %s changed\n", event.Name)
 				rebuildAfter.Stop()
 				rebuildAfter.Reset(100 * time.Millisecond)
@@ -148,17 +136,29 @@ func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
 	return err
 }
 
-func rebuildSite(config *config.Config) error {
+func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *EventBroker) {
+	fmt.Printf("building site\n")
+
+	// since new nested directories could be triggering this change, and we need to watch those too
+	// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
+	if err := addAll(watcher, config); err != nil {
+		fmt.Println("couldn't add watchers:", err)
+	}
+
 	site, err := site.Load(*config)
 	if err != nil {
-		return err
+		fmt.Println("load error:", err)
+		return
 	}
 
 	if err := site.Build(); err != nil {
-		return err
+		fmt.Println("build error:", err)
+		return
 	}
 
-	return nil
+	broker.publish("rebuild")
+
+	fmt.Println("done\nserving at", config.SiteUrl)
 }
 
 // Tweaks the http file system to construct a server that hides the .html suffix from requests.
