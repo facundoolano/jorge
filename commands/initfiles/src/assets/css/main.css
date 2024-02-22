@@ -141,6 +141,9 @@ img.cover-img {
     background: whitesmoke;
     font-size: 1rem;
     hyphens: none;
+}
+
+code {
     white-space: nowrap;
 }
 

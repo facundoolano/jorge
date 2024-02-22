@@ -142,6 +142,9 @@ img.cover-img {
     background: whitesmoke;
     font-size: 1rem;
     hyphens: none;
+}
+
+code {
     white-space: nowrap;
 }
 
@@ -257,4 +260,5 @@ code.index-sample {
 
 code.index-sample pre {
     text-align: left;
+    padding: 0 0 0 1rem;
 }
