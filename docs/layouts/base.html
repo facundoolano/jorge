@@ -48,8 +48,7 @@
     <body>
         {{ content }}
         <p class="center-block footer">
-            {% if page.date or page.tags %}
-            <span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
+            {% if page.date %}<span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
             <span class="tags">
                 {% for tag in page.tags %}
                 <a href="/blog/tags#{{tag}}">#{{tag}}</a>
