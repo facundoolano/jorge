@@ -37,6 +37,6 @@ TODO: switch to cobra and show usage output
 
 Next: [[file:jorge-init][start a website]].
 
-* Footnotes
+*** Notes
 
 [fn:1] Facundo Olano 👋
