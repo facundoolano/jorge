@@ -3,23 +3,25 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/commands"
 )
 
+// TODO use existingdir
 var cli struct {
 	Init struct {
-		Path string `arg:"" help:"directory where to initialize the website project."`
+		ProjectDir string `arg:"" name:"path" help:"directory where to initialize the website project."`
 	} `cmd:"" help:"Initialize a new website project."`
 	Build struct {
-		Path string `arg:"" optional:"" default:"." help:"path to the website project to build."`
+		ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to build."`
 	} `cmd:"" help:"Build a website project."`
 	Post struct {
 		Title string `arg:"" optional:""`
 	} `cmd:"" help:"Initialize a new post template file." help:"title of the new post."`
 	Serve struct {
-		Path string `arg:"" optional:"" default:"." help:"path to the website project to serve."`
+		ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to serve."`
 	} `cmd:"" help:"Run a local server for the website."`
 }
 
@@ -36,24 +38,19 @@ func run() error {
 	ctx := kong.Parse(&cli, kong.UsageOnError())
 	switch ctx.Command() {
 	case "init <path>":
-		rootDir := ctx.Args[0]
-		return commands.Init(rootDir)
-	case "build":
-		rootDir := ctx.Args[0]
-		return commands.Build(rootDir)
+		return commands.Init(cli.Init.ProjectDir)
+	case "build", "build <path>":
+		return commands.Build(cli.Build.ProjectDir)
 	case "post":
-		var title string
-		if len(ctx.Args) > 0 {
-			title = ctx.Args[0]
-		} else {
+		title := cli.Post.Title
+		if strings.TrimSpace(title) == "" {
 			title = commands.Prompt("title")
 		}
 		rootDir := "."
 		return commands.Post(rootDir, title)
-	case "serve":
-		rootDir := ctx.Args[0]
-		return commands.Serve(rootDir)
+	case "serve", "serve <path>":
+		return commands.Serve(cli.Serve.ProjectDir)
 	default:
-		return nil
+		return fmt.Errorf("unexpected input %s", ctx.Command())
 	}
 }
