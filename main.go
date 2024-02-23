@@ -1,15 +1,30 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
+	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/commands"
 )
 
+var cli struct {
+	Init struct {
+		Path string `arg:"" help:"directory where to initialize the website project."`
+	} `cmd:"" help:"Initialize a new website project."`
+	Build struct {
+		Path string `arg:"" optional:"" default:"." help:"path to the website project to build."`
+	} `cmd:"" help:"Build a website project."`
+	Post struct {
+		Title string `arg:"" optional:""`
+	} `cmd:"" help:"Initialize a new post template file." help:"title of the new post."`
+	Serve struct {
+		Path string `arg:"" optional:"" default:"." help:"path to the website project to serve."`
+	} `cmd:"" help:"Run a local server for the website."`
+}
+
 func main() {
-	err := run(os.Args)
+	err := run()
 
 	if err != nil {
 		fmt.Println("error:", err)
@@ -17,45 +32,28 @@ func main() {
 	}
 }
 
-func run(args []string) error {
-	// TODO consider using cobra or something else to make cli more declarative
-	// and get a better ux out of the box
-
-	if len(os.Args) < 2 {
-		// TODO print usage
-		return errors.New("expected subcommand")
-	}
-
-	switch os.Args[1] {
-	case "init":
-		if len(os.Args) < 3 {
-			return errors.New("project directory missing")
-		}
-		rootDir := os.Args[2]
+func run() error {
+	ctx := kong.Parse(&cli, kong.UsageOnError())
+	switch ctx.Command() {
+	case "init <path>":
+		rootDir := ctx.Args[0]
 		return commands.Init(rootDir)
 	case "build":
-		rootDir := "."
-		if len(os.Args) > 2 {
-			rootDir = os.Args[2]
-		}
+		rootDir := ctx.Args[0]
 		return commands.Build(rootDir)
 	case "post":
 		var title string
-		if len(os.Args) >= 3 {
-			title = os.Args[2]
+		if len(ctx.Args) > 0 {
+			title = ctx.Args[0]
 		} else {
 			title = commands.Prompt("title")
 		}
 		rootDir := "."
 		return commands.Post(rootDir, title)
 	case "serve":
-		rootDir := "."
-		if len(os.Args) > 2 {
-			rootDir = os.Args[2]
-		}
+		rootDir := ctx.Args[0]
 		return commands.Serve(rootDir)
 	default:
-		// TODO print usage
-		return errors.New("unknown subcommand")
+		return nil
 	}
 }
