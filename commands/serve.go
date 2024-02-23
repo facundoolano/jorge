@@ -22,6 +22,10 @@ func Serve(rootDir string) error {
 		return err
 	}
 
+	if _, err := os.Stat(config.SrcDir); os.IsNotExist(err) {
+		return fmt.Errorf("missing src directory")
+	}
+
 	// watch for changes in src and layouts, and trigger a rebuild
 	watcher, broker, err := setupWatcher(config)
 	if err != nil {
