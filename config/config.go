@@ -92,7 +92,7 @@ func Load(rootDir string) (*Config, error) {
 	return config, nil
 }
 
-func LoadDev(rootDir string) (*Config, error) {
+func LoadDev(rootDir string, host string, port int, reload bool) (*Config, error) {
 	// TODO revisit is this Load vs LoadDevServer is the best way to handle both modes
 	// TODO some of the options need to be overridable: host, port, live reload at least
 
@@ -102,10 +102,10 @@ func LoadDev(rootDir string) (*Config, error) {
 	}
 
 	// setup serve command specific overrides (these could be eventually tweaked with flags)
-	config.ServerHost = "localhost"
-	config.ServerPort = 4001
+	config.ServerHost = host
+	config.ServerPort = port
+	config.LiveReload = reload
 	config.Minify = false
-	config.LiveReload = true
 	config.LinkStatic = true
 	config.SiteUrl = fmt.Sprintf("http://%s:%d", config.ServerHost, config.ServerPort)
 

@@ -111,12 +111,7 @@ func Init(projectDir string) error {
 
 // Create a new post template in the given site, with the given title,
 // with pre-filled front matter.
-func Post(root string, title string) error {
-	config, err := config.Load(root)
-	if err != nil {
-		return err
-	}
-
+func Post(config *config.Config, title string) error {
 	now := time.Now()
 	slug := slugify(title)
 	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
@@ -153,12 +148,7 @@ func Post(root string, title string) error {
 }
 
 // Read the files in src/ render them and copy the result to target/
-func Build(root string) error {
-	config, err := config.Load(root)
-	if err != nil {
-		return err
-	}
-
+func Build(config *config.Config) error {
 	site, err := site.Load(*config)
 	if err != nil {
 		return err

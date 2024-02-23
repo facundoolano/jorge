@@ -16,12 +16,7 @@ import (
 
 // Generate and serve the site, rebuilding when the source files change
 // and triggering a page refresh on clients browsing it.
-func Serve(rootDir string) error {
-	config, err := config.LoadDev(rootDir)
-	if err != nil {
-		return err
-	}
-
+func Serve(config *config.Config) error {
 	if _, err := os.Stat(config.SrcDir); os.IsNotExist(err) {
 		return fmt.Errorf("missing src directory")
 	}

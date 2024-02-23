@@ -6,9 +6,9 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/commands"
+	"github.com/facundoolano/jorge/config"
 )
 
-// TODO use existingdir
 var cli struct {
 	Init struct {
 		ProjectDir string `arg:"" name:"path" help:"directory where to initialize the website project."`
@@ -33,22 +33,38 @@ func main() {
 	}
 }
 
+// FIXME try to reduce duplication/boilerplate
 func run() error {
 	ctx := kong.Parse(&cli, kong.UsageOnError())
 	switch ctx.Command() {
 	case "init <path>":
 		return commands.Init(cli.Init.ProjectDir)
 	case "build", "build <path>":
-		return commands.Build(cli.Build.ProjectDir)
+		config, err := config.Load(cli.Build.ProjectDir)
+		if err != nil {
+			return err
+		}
+		return commands.Build(config)
 	case "post <title>":
-		rootDir := "."
-		return commands.Post(rootDir, cli.Post.Title)
+		config, err := config.Load(".")
+		if err != nil {
+			return err
+		}
+		return commands.Post(config, cli.Post.Title)
 	case "post":
 		title := commands.Prompt("title")
-		rootDir := "."
-		return commands.Post(rootDir, title)
+		config, err := config.Load(".")
+		if err != nil {
+			return err
+		}
+		return commands.Post(config, title)
 	case "serve", "serve <path>":
-		return commands.Serve(cli.Serve.ProjectDir)
+		// FIXME add flags
+		config, err := config.LoadDev(cli.Serve.ProjectDir, "localhost", 4001, true)
+		if err != nil {
+			return err
+		}
+		return commands.Serve(config)
 	default:
 		return fmt.Errorf("unexpected input %s", ctx.Command())
 	}
