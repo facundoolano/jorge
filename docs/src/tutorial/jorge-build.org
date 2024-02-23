@@ -1,0 +1,64 @@
+---
+title: jorge build
+subtitle: Prepare for production and deploy
+layout: post
+lang: en
+tags: [tutorial]
+index: 5
+---
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: en
+
+So far you've seen how to [[file:jorge-init][start a project]], [[file:jorge-serve][serve it locally]] and [[file:jorge-post][add some content]] to it. The last part of job is to prepare your site for the public, and ~jorge build~ will help with that:
+
+#+begin_src
+$ jorge build
+wrote target/2024-02-23-another-kind-of-post.html
+wrote target/blog/my-own-blog-post.html
+wrote target/blog/goodbye-markdown.html
+wrote target/assets/css/main.css
+wrote target/blog/hello-org.html
+wrote target/blog/tags.html
+wrote target/index.html
+wrote target/feed.xml
+wrote target/blog/index.html
+#+end_src
+
+Just like ~jorge serve~ did before, ~jorge build~ walks your ~src/~ files and renders them into ~target/~, but with a few differences:
+
+- Static files are copied over to ~target/~ instead of just linked.
+- The ~url~ from your ~config.yml~ is used as the root when rendering absolute urls (instead of the ~http://localhost:4001~ used when serving locally).
+- The HTML, XML, CSS and JavaScript files are minified.
+
+Once you have your static site rendered, it's just a matter to putting it out in the internet. There are many ways to publish a static site, and covering them is out of the scope of this tutorial[fn:1]. I suggest going through the [[https://jekyllrb.com/docs/deployment/][Jekyll]] and [[https://gohugo.io/hosting-and-deployment/][Hugo]] docs for inspiration.
+
+But for the sake of completenss, this is how this site is deployed: I have a VPS box running Debian Linux and with the [[https://www.nginx.com/][nginx]] server installed on it. I added this configuration to ~/etc/nginx/sites-enabled/jorge~:
+
+#+begin_src
+server {
+        charset utf-8;
+	root /var/www/jorge;
+	server_name jorge.olano.dev;
+
+	location / {
+	    # First attempt to serve request as file, then as directory. Otherwise respond 404.
+	    try_files $uri $uri.html $uri/ =404;
+	}
+}
+
+#+end_src
+
+I instructed my DNS provider to point ~jorge.olano.dev~ to the box and I ran [[https://certbot.eff.org/instructions?ws=nginx&os=debianbuster][certbot]] to generate certificates for that subdomain.
+
+I then created the ~/var/www/jorge~ directory in the server, and deployed from my laptop using ~rsync~:
+
+#+begin_src
+$ jorge build
+$ rsync -vPrz --delete target/ root@olano.dev:/var/www/jorge
+#+end_src
+
+And that's it!
+
+*** Notes
+
+[fn:1] [[https://github.com/facundoolano/jorge/pulls][PRs]] welcome!

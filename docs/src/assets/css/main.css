@@ -30,7 +30,7 @@ body {
 nav {
     margin: 1rem 0;
     line-height: 1.8;
-    border-bottom: 1px solid;
+    border-bottom: 1px solid lightgray;
     display: flex;
 }
 .nav-right {
@@ -133,7 +133,24 @@ img.cover-img {
     font-size: 1rem;
     overflow-x: auto;
     line-height: 1.5;
-    padding-left: 1rem
+    padding: 1rem;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.layout-post .src pre, .layout-post code {
+    background: whitesmoke;
+    font-size: 1rem;
+    hyphens: none;
+}
+
+code {
+    white-space: nowrap;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.src pre::-webkit-scrollbar {
+    display: none;
 }
 
 blockquote {
@@ -185,7 +202,7 @@ blockquote {
 table {
     width: 100%;
     border-collapse: collapse;
-
+    font-size: 1.05rem;
 }
 
 table tr {
@@ -243,4 +260,5 @@ code.index-sample {
 
 code.index-sample pre {
     text-align: left;
+    padding: 0 0 0 1rem;
 }

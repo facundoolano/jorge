@@ -1,0 +1,92 @@
+---
+title: jorge post
+subtitle: Adding a blog post
+layout: post
+lang: en
+tags: [tutorial]
+index: 4
+---
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: en
+
+** Posts and pages
+
+When jorge walks your ~src/~ directory, building a website to ~target/~ for serving locally or publishing in production, it distinguishes between 3 types of files:
+
+1. Static files: any file that's not a template. These are files that don't contain a front matter header (that don't start with a ~---~ line).
+2. Template files, which can be further divided into:
+   a. Posts: templates that include a ~date~ field in their front matter, and thus can be sorted chronologically.
+   b. Pages: any other template file.
+
+As you can see, the difference between posts and pages is very subtle. The reason why jorge distinguishes posts is that you may want to leverage the chronological nature of posts for things like building a blog archive page or publishing the most recent posts to an RSS feeds[fn:1]. In practical terms, this difference only affects how posts and pages are exposed to templates as liquid variables:
+
+1. Pages are listed without a particular order in the ~site.pages~ variable[fn:2].
+2. Posts are listed in reverse chronological order (most recent first) in the ~site.posts~ variable.
+3. Additionally, posts that declare ~tags~ in their front matter, are included in the ~site.tags~ map.
+4. Each post contains an ~excerpt~ property with a summary of its contents. If ~excerpt~ is included as a key in the front matter, its value will be used; otherwise (assuming it renders to HTML), the post's first paragraph will be used. Excerpts are useful for post previews in the blog archive, in social media links, and in RSS feeds.
+
+** jorge post
+Each website has its own layout so it's hard to predict what you may need to do with a page template. But blogs are different: once the site structure is in place, you more or less repeat the same boilerplate every time you need to add a new blog post. For this reason, jorge provides the ~jorge post~ command to initialize blog post template files. Let's try it out.
+
+From the root directory of your project run ~jorge post "My own blog post"~:
+
+#+begin_src
+$ jorge post "My own blog post"
+added src/blog/my-own-blog-post.org
+#+end_src
+
+If you open the new file with your editor, you should see something like this:
+
+#+begin_src
+---
+title: My own blog post
+date: 2024-02-23 11:45:30
+layout: post
+lang: en
+tags: []
+---
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: en
+#+end_src
+
+Let's look at what the command did for us:
+{% raw %}
+| ~src/blog/my-own-blog-post.org~ | The added file includes a URL-friendly version of the post tile (a "slug"), such that the post will be served at ~/blog/my-own-blog-post~                     |
+| ~title: My own blog post~       | The title we passed to jorge. This will be available to templates as ~{{page.title}}~ and will be used by the post layout to render the header of the page.   |
+| ~date: 2024-02-23 11:45:30~     | The date this post was created, will affect the position it shows up in in ~{{site.posts}}~                                                                   |
+| ~layout: post~                  | The rendered HTML of this template will be embedded as the ~{{contents}}~ of the layout defined in ~layouts/post.html~. |
+| ~lang: en~                      | The language code for the post. This is used by some of the default templates, for instance, to determine how to hyphenate the post content.           |
+| ~tags: []~                      | The post tags, initially empty. the words added to this list will affect which keys of the ~{{site.tags}}~ map this post will be included in.
+| ~#+OPTIONS: toc:nil num:nil~, ~#+LANGUAGE: en~                          | Some default org mode options, to skip the table of contents and define the post language.                                        |
+{% endraw %}
+
+With ~jorge serve~ running, you can start filling in some content on this new post and see it show up in the browser at http://localhost:4001/blog/my-own-blog-post.
+
+** Customizing the post format
+As you may have noticed, the ~jorge post~ command makes a lot of assumptions: where to put it, how to name it, and what format to use. You can control some of these decisions by setting the ~post_format~ configuration key. The default is:
+
+#+begin_src
+post_format: "blog/:title.org"
+#+end_src
+
+Let's say that you want to put posts in the root folder, include the date in them, and use the markdown format by default. Add this key to your ~config.yml~:
+
+#+begin_src
+post_format: ":year-:month-:day-:title.md"
+#+end_src
+
+The, if you add a new post:
+#+begin_src
+$ jorge post "Another kind of post"
+added src/2024-02-23-another-kind-of-post.md
+#+end_src
+
+#+HTML: <br>
+#+ATTR_HTML: :align right
+Next: [[file:jorge-build][prepare for production and deploy]].
+
+*** Notes
+
+[fn:1] Both a blog archive and the RSS feed (technically [[https://en.wikipedia.org/wiki/Atom_(web_standard)][Atom]]) are already implemented in the default site generated by ~jorge init~.
+
+[fn:2] ~index.html~ pages are excluded from this list.

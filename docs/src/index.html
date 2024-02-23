@@ -28,28 +28,38 @@ $ jorge serve
   <span class="silver">serving at http://localhost:4001</span>
         </pre>
     </code>
-    <p><a href="https://github.com/facundoolano/jorge">Open source</a>, Inspired by <a href="https://jekyllrb.com/">Jekyll</a>, with <a href="https://orgmode.org">org-mode</a> and <a href="https://daringfireball.net/projects/markdown/">Markdown</a> support.</p>
+    <p>Inspired by <a href="https://jekyllrb.com/">Jekyll</a>, written in Go, with <a href="https://orgmode.org">org-mode</a> and markdown support.</p>
 </center>
 <br/>
 
 <br/>
-<hr/>
+<nav>
+    <div class="nav-right hidden-mobile">
+        <a href="https://github.com/facundoolano/jorge">github</a>
+        <a href="https://github.com/facundoolano/jorge/releases/latest">download</a>
+    </div>
+</nav>
+
 <h2><a href="/tutorial" class="title" id="tutorial">Tutorial</a></h2>
-<ol>
+<ol start='0'>
 {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
     <li>
-        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
+        <a class="title" href="{{ page.url }}">{{ page.title }}{%if page.subtitle%}: {{page.subtitle|downcase}}{%endif%}</a>
     </li>
 {% endfor %}
 </ol>
 
 <h2><a href="/blog" class="title" id="devlog">Devlog</a></h2>
 
+Coming soon!
+
+{% comment %}
 {% for post in site.posts limit:3 %}
 {% include post_preview.html %}
 {% endfor %}
 
 <p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
+{% endcomment  %}
 
 <h2><a href="/docs" class="title" id="docs">Docs</a></h2>
 Coming soon!
