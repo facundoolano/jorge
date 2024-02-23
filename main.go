@@ -22,8 +22,7 @@ var cli struct {
 	Serve struct {
 		ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to serve."`
 	} `cmd:"" help:"Run a local server for the website." aliases:"s"`
-	Version     struct{} `cmd:"" help:"print version information" aliases:"v"`
-	VersionFlag bool     `name:"version" short:"v"`
+	Version kong.VersionFlag `short:"v"`
 }
 
 func main() {
@@ -37,11 +36,9 @@ func main() {
 
 // FIXME try to reduce duplication/boilerplate
 func run() error {
-	ctx := kong.Parse(&cli, kong.UsageOnError(), kong.HelpOptions{FlagsLast: true})
-	if cli.VersionFlag {
-		printVersion()
-		return nil
-	}
+	// FIXME replace version automatically with git tag
+	ctx := kong.Parse(&cli, kong.UsageOnError(), kong.HelpOptions{FlagsLast: true},
+		kong.Vars{"version": "jorge v.0.1.2"})
 
 	switch ctx.Command() {
 	case "init <path>":
@@ -72,15 +69,7 @@ func run() error {
 			return err
 		}
 		return commands.Serve(config)
-	case "version":
-		printVersion()
-		return nil
 	default:
 		return fmt.Errorf("unexpected input %s", ctx.Command())
 	}
-}
-
-func printVersion() {
-	// FIXME set this automatically when tagging in git
-	fmt.Println("jorge v0.1.2")
 }
