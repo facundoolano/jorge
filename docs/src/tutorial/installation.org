@@ -23,6 +23,8 @@ $ go install github.com/facundoolano/jorge@latest
 #+end_src
 
 
-TODO: switch to cobra and show usage output
+TODO: switch to cli and show usage output
 
+#+HTML: <br>
+#+ATTR_HTML: :align right
 Next: [[file:introduction][Introduction]].

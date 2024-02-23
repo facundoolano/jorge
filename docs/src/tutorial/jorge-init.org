@@ -61,4 +61,7 @@ Note how jorge assumes that index files are to be served as url directories (~sr
 
 If you prefer to build your site from scratch, you can skip running ~jorge init~ altogheter; the rest of the commands only expect a ~src/~ directory to work with.
 
+
+#+HTML: <br>
+#+ATTR_HTML: :align right
 Next: [[file:jorge-serve][browse the site locally]].

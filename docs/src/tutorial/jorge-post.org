@@ -25,7 +25,7 @@ As you can see, the difference between posts and pages is very subtle. The reaso
 3. Additionally, posts that declare ~tags~ in their front matter, are included in the ~site.tags~ map.
 4. Each post contains an ~excerpt~ property with a summary of the post. If ~excerpt~ is included as a key in the post front matter, its contents will be used; otherwise (assuming the posts renders to HTML), the first paragraph of the post will be used. Excerpts are useful for post previews in the blog archive, in social media links and in RSS feeds.
 
-*** jorge post
+** jorge post
 Each website has its own layout so it's hard to predict what you may need to do with a page template. But blogs are different: once the site structure is in place, you more or less repeat the same boilerplate every time you need to add a new blog post. For this reason, jorge provides the ~jorge post~ command to initialize blog post template files. Let's try it out.
 
 From the root directory of your project run ~jorge post "My own blog post"~:
@@ -62,7 +62,7 @@ Let's look at what the command did for us:
 
 With ~jorge serve~ running, you can start filling in some content on this new post and see it show up in the browser at http://localhost:4001/blog/my-own-blog-post.
 
-*** Customizing the post format
+** Customizing the post format
 As you may have noticed, the ~jorge post~ command makes a lot of assumptions: where to put it, how to name it and what format to use. You can control some of this decisions by setting the ~post_format~ configuration key. The default is:
 
 #+begin_src
@@ -81,7 +81,8 @@ $ jorge post "Another kind of post"
 added src/2024-02-23-another-kind-of-post.md
 #+end_src
 
------
+#+HTML: <br>
+#+ATTR_HTML: :align right
 Next: [[file:jorge-build][prepare for production and deploy]].
 
 *** Notes
