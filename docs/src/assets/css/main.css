@@ -30,7 +30,7 @@ body {
 nav {
     margin: 1rem 0;
     line-height: 1.8;
-    border-bottom: 1px solid;
+    border-bottom: 1px solid lightgray;
     display: flex;
 }
 .nav-right {

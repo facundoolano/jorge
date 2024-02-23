@@ -33,7 +33,13 @@ $ jorge serve
 <br/>
 
 <br/>
-<hr/>
+<nav>
+    <div class="nav-right hidden-mobile">
+        <a href="https://github.com/facundoolano/jorge">github</a>
+        <a href="https://github.com/facundoolano/jorge/releases/latest">download</a>
+    </div>
+</nav>
+
 <h2><a href="/tutorial" class="title" id="tutorial">Tutorial</a></h2>
 <ol start='0'>
 {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
