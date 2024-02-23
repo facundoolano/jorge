@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/commands"
@@ -41,11 +40,11 @@ func run() error {
 		return commands.Init(cli.Init.ProjectDir)
 	case "build", "build <path>":
 		return commands.Build(cli.Build.ProjectDir)
+	case "post <title>":
+		rootDir := "."
+		return commands.Post(rootDir, cli.Post.Title)
 	case "post":
-		title := cli.Post.Title
-		if strings.TrimSpace(title) == "" {
-			title = commands.Prompt("title")
-		}
+		title := commands.Prompt("title")
 		rootDir := "."
 		return commands.Post(rootDir, title)
 	case "serve", "serve <path>":
