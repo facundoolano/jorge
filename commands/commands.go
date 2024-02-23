@@ -60,15 +60,15 @@ func Init(projectDir string) error {
 	// creating config and readme files manually, since I want to use the supplied config values in their
 	// contents. (I don't want to render liquid templates in the WalkDir below since some of the initfiles
 	// are actual templates that should be left as is).
-	configDir := filepath.Join(projectDir, "config.yml")
+	configPath := filepath.Join(projectDir, "config.yml")
 	configFile := fmt.Sprintf(INIT_CONFIG, siteName, siteAuthor, siteUrl)
-	os.WriteFile(configDir, []byte(configFile), site.FILE_RW_MODE)
-	fmt.Println("added", configDir)
+	os.WriteFile(configPath, []byte(configFile), site.FILE_RW_MODE)
+	fmt.Println("added", configPath)
 
-	readmeDir := filepath.Join(projectDir, "README.md")
+	readmePath := filepath.Join(projectDir, "README.md")
 	readmeFile := fmt.Sprintf(INIT_README, siteName, siteAuthor)
-	os.WriteFile(readmeDir, []byte(readmeFile), site.FILE_RW_MODE)
-	fmt.Println("added", readmeDir)
+	os.WriteFile(readmePath, []byte(readmeFile), site.FILE_RW_MODE)
+	fmt.Println("added", readmePath)
 
 	// walk over initfiles fs
 	// copy create directories and copy files at target
