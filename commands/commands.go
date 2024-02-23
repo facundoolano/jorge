@@ -120,9 +120,9 @@ func Post(root string, title string) error {
 	now := time.Now()
 	slug := slugify(title)
 	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
-	filename = strings.ReplaceAll(filename, ":year", fmt.Sprint(now.Year()))
-	filename = strings.ReplaceAll(filename, ":month", fmt.Sprint(int(now.Month())))
-	filename = strings.ReplaceAll(filename, ":day", fmt.Sprint(now.Day()))
+	filename = strings.ReplaceAll(filename, ":year", fmt.Sprintf("%d", now.Year()))
+	filename = strings.ReplaceAll(filename, ":month", fmt.Sprintf("%02d", now.Month()))
+	filename = strings.ReplaceAll(filename, ":day", fmt.Sprintf("%02d", now.Day()))
 	path := filepath.Join(config.SrcDir, filename)
 
 	// ensure the dir already exists
