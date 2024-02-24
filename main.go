@@ -1,61 +1,25 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"os"
-
+	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/commands"
 )
 
-func main() {
-	err := run(os.Args)
-
-	if err != nil {
-		fmt.Println("error:", err)
-		os.Exit(1)
-	}
+var cli struct {
+	Init    commands.Init    `cmd:"" help:"Initialize a new website project." aliases:"i"`
+	Build   commands.Build   `cmd:"" help:"Build a website project." aliases:"b"`
+	Post    commands.Post    `cmd:"" help:"Initialize a new post template file." help:"title of the new post." aliases:"p"`
+	Serve   commands.Serve   `cmd:"" help:"Run a local server for the website." aliases:"s"`
+	Version kong.VersionFlag `short:"v"`
 }
 
-func run(args []string) error {
-	// TODO consider using cobra or something else to make cli more declarative
-	// and get a better ux out of the box
-
-	if len(os.Args) < 2 {
-		// TODO print usage
-		return errors.New("expected subcommand")
-	}
-
-	switch os.Args[1] {
-	case "init":
-		if len(os.Args) < 3 {
-			return errors.New("project directory missing")
-		}
-		rootDir := os.Args[2]
-		return commands.Init(rootDir)
-	case "build":
-		rootDir := "."
-		if len(os.Args) > 2 {
-			rootDir = os.Args[2]
-		}
-		return commands.Build(rootDir)
-	case "post":
-		var title string
-		if len(os.Args) >= 3 {
-			title = os.Args[2]
-		} else {
-			title = commands.Prompt("title")
-		}
-		rootDir := "."
-		return commands.Post(rootDir, title)
-	case "serve":
-		rootDir := "."
-		if len(os.Args) > 2 {
-			rootDir = os.Args[2]
-		}
-		return commands.Serve(rootDir)
-	default:
-		// TODO print usage
-		return errors.New("unknown subcommand")
-	}
+func main() {
+	ctx := kong.Parse(
+		&cli,
+		kong.UsageOnError(),
+		kong.HelpOptions{FlagsLast: true},
+		kong.Vars{"version": "jorge v.0.1.2"},
+	)
+	err := ctx.Run()
+	ctx.FatalIfErrorf(err)
 }

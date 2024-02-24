@@ -16,6 +16,7 @@ require (
 )
 
 require (
+	github.com/alecthomas/kong v0.8.1 // indirect
 	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/tdewolff/parse/v2 v2.7.11 // indirect
 	golang.org/x/sys v0.16.0 // indirect

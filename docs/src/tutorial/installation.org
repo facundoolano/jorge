@@ -23,7 +23,31 @@ $ go install github.com/facundoolano/jorge@latest
 #+end_src
 
 
-TODO: switch to cli and show usage output
+Once installed, the help command will provide an overview of what you can do with jorge:
+
+#+begin_src
+$ jorge -h
+Usage: jorge <command>
+
+Commands:
+  init (i) <path>
+    Initialize a new website project.
+
+  build (b) [<path>]
+    Build a website project.
+
+  post (p) [<title>]
+    Initialize a new post template file.
+
+  serve (s) [<path>]
+    Run a local server for the website.
+
+Flags:
+  -h, --help       Show context-sensitive help.
+  -v, --version
+
+Run "jorge <command> --help" for more information on a command.
+#+end_src
 
 #+HTML: <br>
 #+ATTR_HTML: :align right

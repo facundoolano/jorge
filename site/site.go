@@ -120,14 +120,11 @@ func (site *Site) loadDataFiles() error {
 }
 
 func (site *Site) loadTemplates() error {
-	_, err := os.ReadDir(site.Config.SrcDir)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("missing %s directory", site.Config.SrcDir)
-	} else if err != nil {
-		return fmt.Errorf("couldn't read %s", site.Config.SrcDir)
+	if _, err := os.Stat(site.Config.SrcDir); os.IsNotExist(err) {
+		return fmt.Errorf("missing src directory")
 	}
 
-	err = filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	err := filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := templates.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip

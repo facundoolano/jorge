@@ -9,17 +9,27 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
 	"github.com/fsnotify/fsnotify"
 )
 
-// Generate and serve the site, rebuilding when the source files change
-// and triggering a page refresh on clients browsing it.
-func Serve(rootDir string) error {
-	config, err := config.LoadDev(rootDir)
+type Serve struct {
+	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"Path to the website project to serve."`
+	Host       string `short:"h" default:"localhost" help:"Host to run the server on."`
+	Port       int    `short:"p" default:"4001" help:"Port to run the server on."`
+	NoReload   bool   `help:"Disable live reloading."`
+}
+
+func (cmd *Serve) Run(ctx *kong.Context) error {
+	config, err := config.LoadDev(cmd.ProjectDir, cmd.Host, cmd.Port, !cmd.NoReload)
 	if err != nil {
 		return err
+	}
+
+	if _, err := os.Stat(config.SrcDir); os.IsNotExist(err) {
+		return fmt.Errorf("missing src directory")
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
