@@ -27,7 +27,7 @@ var DEFAULT_ORG_DIRECTIVES string = `#+OPTIONS: toc:nil num:nil
 `
 
 type Post struct {
-	Title string `arg:"" optional:""`
+	Title string `arg:"" optional:"" help:"Title of the post"`
 }
 
 // Create a new post template in the given site, with the given title,

@@ -16,12 +16,14 @@ import (
 )
 
 type Serve struct {
-	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to serve."`
+	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"Path to the website project to serve."`
+	Host       string `short:"h" default:"localhost" help:"Host to run the server on."`
+	Port       int    `short:"p" default:"4001" help:"Port to run the server on."`
+	NoReload   bool   `help:"Disable live reloading."`
 }
 
 func (cmd *Serve) Run(ctx *kong.Context) error {
-	// FIXME add flags
-	config, err := config.LoadDev(cmd.ProjectDir, "localhost", 4001, true)
+	config, err := config.LoadDev(cmd.ProjectDir, cmd.Host, cmd.Port, !cmd.NoReload)
 	if err != nil {
 		return err
 	}

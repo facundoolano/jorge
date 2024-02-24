@@ -26,7 +26,7 @@ A jorge blog by %s.
 `
 
 type Init struct {
-	ProjectDir string `arg:"" name:"path" help:"directory where to initialize the website project."`
+	ProjectDir string `arg:"" name:"path" help:"Directory where to initialize the website project."`
 }
 
 // Initialize a new jorge project in the given directory,

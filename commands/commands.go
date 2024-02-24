@@ -14,7 +14,7 @@ import (
 const FILE_RW_MODE = 0777
 
 type Build struct {
-	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to build."`
+	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"Path to the website project to build."`
 }
 
 // Read the files in src/ render them and copy the result to target/
