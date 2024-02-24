@@ -13,6 +13,7 @@ import (
 
 	"embed"
 
+	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
 	"golang.org/x/text/unicode/norm"
@@ -45,10 +46,14 @@ var DEFAULT_ORG_DIRECTIVES string = `#+OPTIONS: toc:nil num:nil
 
 const FILE_RW_MODE = 0777
 
+type Init struct {
+	ProjectDir string `arg:"" name:"path" help:"directory where to initialize the website project."`
+}
+
 // Initialize a new jorge project in the given directory,
 // prompting for basic site config and creating default files.
-func Init(projectDir string) error {
-	if err := ensureEmptyProjectDir(projectDir); err != nil {
+func (cmd *Init) Run(ctx *kong.Context) error {
+	if err := ensureEmptyProjectDir(cmd.ProjectDir); err != nil {
 		return err
 	}
 
@@ -60,12 +65,12 @@ func Init(projectDir string) error {
 	// creating config and readme files manually, since I want to use the supplied config values in their
 	// contents. (I don't want to render liquid templates in the WalkDir below since some of the initfiles
 	// are actual templates that should be left as is).
-	configPath := filepath.Join(projectDir, "config.yml")
+	configPath := filepath.Join(cmd.ProjectDir, "config.yml")
 	configFile := fmt.Sprintf(INIT_CONFIG, siteName, siteAuthor, siteUrl)
 	os.WriteFile(configPath, []byte(configFile), site.FILE_RW_MODE)
 	fmt.Println("added", configPath)
 
-	readmePath := filepath.Join(projectDir, "README.md")
+	readmePath := filepath.Join(cmd.ProjectDir, "README.md")
 	readmeFile := fmt.Sprintf(INIT_README, siteName, siteAuthor)
 	os.WriteFile(readmePath, []byte(readmeFile), site.FILE_RW_MODE)
 	fmt.Println("added", readmePath)
@@ -79,7 +84,7 @@ func Init(projectDir string) error {
 			return nil
 		}
 		subpath, _ := filepath.Rel(initfilesRoot, path)
-		targetPath := filepath.Join(projectDir, subpath)
+		targetPath := filepath.Join(cmd.ProjectDir, subpath)
 
 		// if it's a directory create it at the same location
 		if entry.IsDir() {
@@ -109,9 +114,21 @@ func Init(projectDir string) error {
 	})
 }
 
+type Post struct {
+	Title string `arg:"" optional:""`
+}
+
 // Create a new post template in the given site, with the given title,
 // with pre-filled front matter.
-func Post(config *config.Config, title string) error {
+func (cmd *Post) Run(ctx *kong.Context) error {
+	title := cmd.Title
+	if title == "" {
+		title = Prompt("title")
+	}
+	config, err := config.Load(".")
+	if err != nil {
+		return err
+	}
 	now := time.Now()
 	slug := slugify(title)
 	filename := strings.ReplaceAll(config.PostFormat, ":title", slug)
@@ -147,8 +164,17 @@ func Post(config *config.Config, title string) error {
 	return nil
 }
 
+type Build struct {
+	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to build."`
+}
+
 // Read the files in src/ render them and copy the result to target/
-func Build(config *config.Config) error {
+func (cmd *Build) Run(ctx *kong.Context) error {
+	config, err := config.Load(cmd.ProjectDir)
+	if err != nil {
+		return err
+	}
+
 	site, err := site.Load(*config)
 	if err != nil {
 		return err

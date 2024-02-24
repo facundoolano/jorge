@@ -9,14 +9,23 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/config"
 	"github.com/facundoolano/jorge/site"
 	"github.com/fsnotify/fsnotify"
 )
 
-// Generate and serve the site, rebuilding when the source files change
-// and triggering a page refresh on clients browsing it.
-func Serve(config *config.Config) error {
+type Serve struct {
+	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"path to the website project to serve."`
+}
+
+func (cmd *Serve) Run(ctx *kong.Context) error {
+	// FIXME add flags
+	config, err := config.LoadDev(cmd.ProjectDir, "localhost", 4001, true)
+	if err != nil {
+		return err
+	}
+
 	if _, err := os.Stat(config.SrcDir); os.IsNotExist(err) {
 		return fmt.Errorf("missing src directory")
 	}
