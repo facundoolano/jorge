@@ -23,9 +23,9 @@
         {% endif %}
 
         {% if page.excerpt %}
-        <meta name="description" content="{{ page.excerpt | strip_html | xml_escape }}">
-        <meta name="og:description" content="{{ page.excerpt | strip_html | xml_escape }}">
-        <meta name="twitter:description" content="{{ page.excerpt | strip_html | xml_escape }}">
+        <meta name="description" content="{{ page.excerpt }}">
+        <meta name="og:description" content="{{ page.excerpt }}">
+        <meta name="twitter:description" content="{{ page.excerpt }}">
         {% endif %}
 
         {% if page.layout == "post" %}
