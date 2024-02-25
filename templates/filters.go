@@ -3,7 +3,6 @@ package templates
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net/url"
 	"path/filepath"
 	"reflect"
@@ -33,29 +32,28 @@ func loadJekyllFilters(e *liquid.Engine, siteUrl string, includesDir string) {
 	e.RegisterFilter("keys", keysFilter)
 	e.RegisterFilter("where", whereFilter)
 	e.RegisterFilter("where_exp", whereExpFilter)
-	e.RegisterFilter("xml_escape", xml.Marshal)
 
 	e.RegisterFilter("normalize_whitespace", func(s string) string {
 		wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
 		return wsPattern.ReplaceAllString(s, " ")
 	})
 
-	e.RegisterFilter("markdownify", func(s string) string {
-		// using goldmark here instead of balckfriday, to avoid an extra dependencie
+	e.RegisterFilter("markdownify", func(s string) (string, error) {
+		// using goldmark here instead of balckfriday, to avoid an extra dependency
 		var buf bytes.Buffer
 		err := goldmark.Convert([]byte(s), &buf)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return buf.String()
+		return buf.String(), err
 	})
 
-	e.RegisterFilter("absolute_url", func(path string) string {
-		url, err := url.JoinPath(siteUrl, path)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return url
+	e.RegisterFilter("xml_escape", func(s string) (string, error) {
+		// using goldmark here instead of balckfriday, to avoid an extra dependency
+		var buf bytes.Buffer
+		err := xml.EscapeText(&buf, []byte(s))
+		return buf.String(), err
+	})
+
+	e.RegisterFilter("absolute_url", func(path string) (string, error) {
+		return url.JoinPath(siteUrl, path)
 	})
 
 	e.RegisterFilter("date_to_rfc822", func(date time.Time) string {
