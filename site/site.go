@@ -368,7 +368,7 @@ func getExcerpt(templ *markup.Template) string {
 	if err != nil {
 		return ""
 	}
-	return ExtractFirstParagraph(bytes.NewReader(content))
+	return markup.ExtractFirstParagraph(bytes.NewReader(content))
 }
 
 // if live reload is enabled, inject the reload snippet to html files
@@ -391,5 +391,5 @@ eventSource.onerror = function (event) {
   console.error('An error occurred:', event)
 };`
 	script := fmt.Sprintf(JS_SNIPPET, site.Config.SiteUrl)
-	return InjectScript(contentReader, script)
+	return markup.InjectScript(contentReader, script)
 }
