@@ -267,7 +267,7 @@ func (site *Site) buildFile(path string) error {
 
 	// post process file acording to extension and config
 	targetExt := filepath.Ext(targetPath)
-	contentReader, err = Smartify(targetExt, contentReader)
+	contentReader, err = markup.Smartify(targetExt, contentReader)
 	if err != nil {
 		return err
 	}

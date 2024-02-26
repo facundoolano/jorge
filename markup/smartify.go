@@ -1,4 +1,4 @@
-package site
+package markup
 
 // Implements a naive version of smart quote replacement, see https://daringfireball.net/projects/smartypants/
 // The quote replacement code was adapted from gojekyll's smartify filter to work on entire HTML documents
