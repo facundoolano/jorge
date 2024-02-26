@@ -15,6 +15,18 @@ As you can see, /italics/ and *bold* render as expected, and you can even use fo
 
 All of this is powered by [[https://github.com/niklasfasching/go-org][go-org]], btw[fn:2].
 
+Let's look at some code:
+
+#+begin_src python
+import os
+
+def hello():
+  print("Hello World!")
+  os.exit(0)
+
+hello()
+#+end_src
+
 ** Notes
 
 [fn:1] See?
