@@ -143,10 +143,6 @@ img.cover-img {
     hyphens: none;
 }
 
-code {
-    white-space: nowrap;
-}
-
 /* Hide scrollbar for Chrome, Safari and Opera */
 .src pre::-webkit-scrollbar {
     display: none;
