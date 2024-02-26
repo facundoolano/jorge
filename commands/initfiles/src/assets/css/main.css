@@ -143,6 +143,19 @@ pre {
     scrollbar-width: none;  /* Firefox */
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.src pre::-webkit-scrollbar {
+    display: none;
+}
+
+/*
+hack to fix height weirdness in code snippets
+https://github.com/alecthomas/chroma/issues/617#issuecomment-1063251066
+*/
+code > span[style^="display:flex;"] {
+    display: inline !important;
+}
+
 /* There are several code rendering scenarios that need to be handled reasonably:
 - light vs dark preferred color scheme
 - pre code blocks vs inline code spans
@@ -174,11 +187,6 @@ Need to decide between:
     font-size: 1rem;
     hyphens: none;
     color: black;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.src pre::-webkit-scrollbar {
-    display: none;
 }
 
 blockquote {
