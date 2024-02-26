@@ -266,6 +266,10 @@ func (site *Site) buildFile(path string) error {
 	}
 
 	targetExt := filepath.Ext(targetPath)
+	contentReader, err = Smartify(targetExt, contentReader)
+	if err != nil {
+		return err
+	}
 	contentReader, err = site.injectLiveReload(targetExt, contentReader)
 	if err != nil {
 		return err
