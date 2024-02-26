@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/facundoolano/jorge/config"
-	"github.com/facundoolano/jorge/templates"
+	"github.com/facundoolano/jorge/markup"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,26 +22,26 @@ const FILE_RW_MODE = 0777
 
 type Site struct {
 	Config  config.Config
-	layouts map[string]templates.Template
+	layouts map[string]markup.Template
 	posts   []map[string]interface{}
 	pages   []map[string]interface{}
 	tags    map[string][]map[string]interface{}
 	data    map[string]interface{}
 
-	templateEngine *templates.Engine
-	templates      map[string]*templates.Template
+	templateEngine *markup.Engine
+	templates      map[string]*markup.Template
 
-	minifier Minifier
+	minifier markup.Minifier
 }
 
 func Load(config config.Config) (*Site, error) {
 	site := Site{
-		layouts:        make(map[string]templates.Template),
-		templates:      make(map[string]*templates.Template),
+		layouts:        make(map[string]markup.Template),
+		templates:      make(map[string]*markup.Template),
 		Config:         config,
 		tags:           make(map[string][]map[string]interface{}),
 		data:           make(map[string]interface{}),
-		templateEngine: templates.NewEngine(config.SiteUrl, config.IncludesDir),
+		templateEngine: markup.NewEngine(config.SiteUrl, config.IncludesDir),
 	}
 
 	if err := site.loadDataFiles(); err != nil {
@@ -56,7 +56,7 @@ func Load(config config.Config) (*Site, error) {
 		return nil, err
 	}
 
-	site.loadMinifier()
+	site.minifier = markup.LoadMinifier()
 
 	return &site, nil
 }
@@ -74,7 +74,7 @@ func (site *Site) loadLayouts() error {
 		if !entry.IsDir() {
 			filename := entry.Name()
 			path := filepath.Join(site.Config.LayoutsDir, filename)
-			templ, err := templates.Parse(site.templateEngine, path)
+			templ, err := markup.Parse(site.templateEngine, path)
 			if err != nil {
 				return checkFileError(err)
 			}
@@ -126,7 +126,7 @@ func (site *Site) loadTemplates() error {
 
 	err := filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
-			templ, err := templates.Parse(site.templateEngine, path)
+			templ, err := markup.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip
 			if err != nil || templ == nil {
 				return checkFileError(err)
@@ -265,18 +265,25 @@ func (site *Site) buildFile(path string) error {
 		contentReader = bytes.NewReader(content)
 	}
 
+	// post process file acording to extension and config
 	targetExt := filepath.Ext(targetPath)
+	contentReader, err = markup.Smartify(targetExt, contentReader)
+	if err != nil {
+		return err
+	}
 	contentReader, err = site.injectLiveReload(targetExt, contentReader)
 	if err != nil {
 		return err
 	}
-	contentReader = site.minify(targetExt, contentReader)
+	if site.Config.Minify {
+		contentReader = site.minifier.Minify(targetExt, contentReader)
+	}
 
 	// write the file contents over to target
 	return writeToFile(targetPath, contentReader)
 }
 
-func (site *Site) render(templ *templates.Template) ([]byte, error) {
+func (site *Site) render(templ *markup.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
 			"config": site.Config.AsContext(),
@@ -344,7 +351,7 @@ func writeToFile(targetPath string, source io.Reader) error {
 // Assuming the given template is a post, try to generating an excerpt of it.
 // If it contains an `excerpt` key in its metadata use that, otherwise try
 // to render it as HTML and extract the text of its first <p>
-func getExcerpt(templ *templates.Template) string {
+func getExcerpt(templ *markup.Template) string {
 	if excerpt, ok := templ.Metadata["excerpt"]; ok {
 		return excerpt.(string)
 	}
@@ -361,7 +368,7 @@ func getExcerpt(templ *templates.Template) string {
 	if err != nil {
 		return ""
 	}
-	return ExtractFirstParagraph(bytes.NewReader(content))
+	return markup.ExtractFirstParagraph(bytes.NewReader(content))
 }
 
 // if live reload is enabled, inject the reload snippet to html files
@@ -384,5 +391,5 @@ eventSource.onerror = function (event) {
   console.error('An error occurred:', event)
 };`
 	script := fmt.Sprintf(JS_SNIPPET, site.Config.SiteUrl)
-	return InjectScript(contentReader, script)
+	return markup.InjectScript(contentReader, script)
 }

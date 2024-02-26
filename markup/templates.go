@@ -1,4 +1,4 @@
-package templates
+package markup
 
 import (
 	"bufio"
@@ -33,6 +33,11 @@ func NewEngine(siteUrl string, includesDir string) *Engine {
 	return e
 }
 
+// Try to parse a liquid template at the given location.
+// Files starting with front matter (--- sorrrounded yaml)
+// are considered templates. If the given file is not headed by front matter
+// return (nil, nil).
+// The front matter contents are stored in the returned template's Metadata.
 func Parse(engine *Engine, path string) (*Template, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -97,6 +102,9 @@ func (templ Template) Ext() string {
 	return ext
 }
 
+// Renders the liquid template with the given context as bindings.
+// If the template source is org or md, convert them to html after the
+// liquid rendering.
 func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 	// liquid rendering
 	content, err := templ.liquidTemplate.Render(context)
