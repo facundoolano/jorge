@@ -23,6 +23,9 @@ import (
 
 const FM_SEPARATOR = "---"
 
+// TODO make this overridable via config->arg
+const HIGHLIGHT_THEME = "tango"
+
 type Engine = liquid.Engine
 
 type Template struct {
@@ -138,7 +141,9 @@ func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 		// markdown rendering
 		var buf bytes.Buffer
 		md := goldmark.New(goldmark.WithExtensions(
-			gm_highlight.NewHighlighting(),
+			gm_highlight.NewHighlighting(
+				gm_highlight.WithStyle(HIGHLIGHT_THEME),
+			),
 		))
 		if err := md.Convert(content, &buf); err != nil {
 			return nil, err
@@ -165,7 +170,7 @@ func highlightCodeBlock(source, lang string, inline bool, params map[string]stri
 			options = append(options, html.HighlightLines(ranges))
 		}
 	}
-	_ = html.New(options...).Format(&w, styles.Get("github"), it)
+	_ = html.New(options...).Format(&w, styles.Get(HIGHLIGHT_THEME), it)
 	if inline {
 		return `<div class="highlight-inline">` + "\n" + w.String() + "\n" + `</div>`
 	}
