@@ -1,6 +1,7 @@
 ---
 layout: base
 ---
+{% include nav.html %}
 
 <div class="content layout-{{ page.layout }}" lang="{{ page.lang | default:site.config.lang | default:'en' }}">
     <header {% if page.cover-img %}class="with-cover"{% endif %}>
