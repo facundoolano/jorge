@@ -60,8 +60,13 @@ a:hover {
 }
 
 a.title {
-    color: unset!important;
+    color: black;
     padding-right: .25rem;
+}
+@media (prefers-color-scheme: dark) {
+    a.title {
+        color: white;
+    }
 }
 
 .footer, .footer a, .date, .tags, .tags a {
@@ -153,12 +158,13 @@ Need to decide between:
 .layout-post :not(pre) > code {
     padding: .2em .4em;
     background-color: whitesmoke!important;
+    color: black;
 }
 
 @media (prefers-color-scheme: dark) {
     .layout-post :not(pre) > code {
         background-color: rgba(110, 118, 129, 0.4)!important;
-        color: unset;
+        color: white;
     }
 }
 
@@ -167,14 +173,8 @@ Need to decide between:
     background-color: whitesmoke!important;
     font-size: 1rem;
     hyphens: none;
+    color: black;
 }
-
-@media (prefers-color-scheme: dark) {
-    .layout-post pre, .layout-post code{
-        color: black;
-    }
-}
-
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .src pre::-webkit-scrollbar {
