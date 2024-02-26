@@ -91,7 +91,7 @@ func Load(rootDir string) (*Config, error) {
 	if format, found := config.overrides["lang"]; found {
 		config.Lang = format.(string)
 	}
-	if format, found := config.overrides["highlight_style"]; found {
+	if format, found := config.overrides["highlight_theme"]; found {
 		config.HighlightTheme = format.(string)
 	}
 

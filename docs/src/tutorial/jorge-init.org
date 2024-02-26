@@ -16,7 +16,6 @@ $ jorge init myblog
 > site name: My Blog
 > site url: https://myblog.example.com
 > author: Jorge Blog
-
 added myblog/config.yml
 added myblog/README.md
 added myblog/.gitignore
