@@ -31,7 +31,7 @@ const string = "joe's garage";
 </script>
 </head>
 <body>
-<p>the album is “Joe’s Garage” --by Frank Zappa…</p>
+<p>the album is “Joe’s Garage” –by Frank Zappa…</p>
 
 </body></html>`)
 }
