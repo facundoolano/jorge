@@ -40,8 +40,9 @@ func smartifyHTMLNode(node *html.Node) {
 		}
 		if node.Type == html.TextNode {
 			node.Data = smartifyString(node.Data)
+		} else {
+			smartifyHTMLNode(node)
 		}
-		smartifyHTMLNode(node)
 	}
 }
 
