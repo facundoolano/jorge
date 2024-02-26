@@ -11,7 +11,7 @@ index: 5
 
 So far you've seen how to [[file:jorge-init][start a project]], [[file:jorge-serve][serve it locally]] and [[file:jorge-post][add some content]] to it. The last part of job is to prepare your site for the public, and ~jorge build~ will help with that:
 
-#+begin_src
+#+begin_src console
 $ jorge build
 wrote target/2024-02-23-another-kind-of-post.html
 wrote target/blog/my-own-blog-post.html
@@ -34,7 +34,7 @@ Once you have your static site rendered, it's just a matter to putting it out in
 
 But for the sake of completenss, this is how this site is deployed: I have a VPS box running Debian Linux and with the [[https://www.nginx.com/][nginx]] server installed on it. I added this configuration to ~/etc/nginx/sites-enabled/jorge~:
 
-#+begin_src
+#+begin_src nginx
 server {
         charset utf-8;
 	root /var/www/jorge;
@@ -52,7 +52,7 @@ I instructed my DNS provider to point ~jorge.olano.dev~ to the box and I ran [[h
 
 I then created the ~/var/www/jorge~ directory in the server, and deployed from my laptop using ~rsync~:
 
-#+begin_src
+#+begin_src console
 $ jorge build
 $ rsync -vPrz --delete target/ root@olano.dev:/var/www/jorge
 #+end_src

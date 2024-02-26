@@ -30,14 +30,14 @@ Each website has its own layout so it's hard to predict what you may need to do 
 
 From the root directory of your project run ~jorge post "My own blog post"~:
 
-#+begin_src
+#+begin_src console
 $ jorge post "My own blog post"
 added src/blog/my-own-blog-post.org
 #+end_src
 
 If you open the new file with your editor, you should see something like this:
 
-#+begin_src
+#+begin_src org
 ---
 title: My own blog post
 date: 2024-02-23 11:45:30
@@ -65,18 +65,18 @@ With ~jorge serve~ running, you can start filling in some content on this new po
 ** Customizing the post format
 As you may have noticed, the ~jorge post~ command makes a lot of assumptions: where to put it, how to name it, and what format to use. You can control some of these decisions by setting the ~post_format~ configuration key. The default is:
 
-#+begin_src
+#+begin_src yaml
 post_format: "blog/:title.org"
 #+end_src
 
 Let's say that you want to put posts in the root folder, include the date in them, and use the markdown format by default. Add this key to your ~config.yml~:
 
-#+begin_src
+#+begin_src yaml
 post_format: ":year-:month-:day-:title.md"
 #+end_src
 
 The, if you add a new post:
-#+begin_src
+#+begin_src console
 $ jorge post "Another kind of post"
 added src/2024-02-23-another-kind-of-post.md
 #+end_src
