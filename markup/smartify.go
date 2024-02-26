@@ -55,8 +55,6 @@ var smartifyTransforms = []struct {
 	{regexp.MustCompile(`'`), "’"},
 	{regexp.MustCompile(`(^|[^[:alnum:]])"`), "$1“"},
 	{regexp.MustCompile(`"($|[^[:alnum:]])`), "”$1"},
-	{regexp.MustCompile(`(^|\s|\w)--($|\s|\w)`), "$1–$2"},
-	{regexp.MustCompile(`(^|\s|\w)---($|\s|\w)`), "$1—$2"},
 }
 
 var smartifyReplacer *strings.Replacer
@@ -68,6 +66,10 @@ func init() {
 		"(c)", "©",
 		"(r)", "®",
 		"(tm)", "™",
+		// moving the dashes to straight replacements instead of regex (which weren't accurate)
+		// NOTE: go-org already does dash and ellipsis replacement, remove altogether if it causes issues
+		"---", "—",
+		"--", "–",
 	)
 }
 
