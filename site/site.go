@@ -31,7 +31,7 @@ type Site struct {
 	templateEngine *markup.Engine
 	templates      map[string]*markup.Template
 
-	minifier Minifier
+	minifier markup.Minifier
 }
 
 func Load(config config.Config) (*Site, error) {
@@ -56,7 +56,7 @@ func Load(config config.Config) (*Site, error) {
 		return nil, err
 	}
 
-	site.loadMinifier()
+	site.minifier = markup.LoadMinifier()
 
 	return &site, nil
 }
@@ -265,6 +265,7 @@ func (site *Site) buildFile(path string) error {
 		contentReader = bytes.NewReader(content)
 	}
 
+	// post process file acording to extension and config
 	targetExt := filepath.Ext(targetPath)
 	contentReader, err = Smartify(targetExt, contentReader)
 	if err != nil {
@@ -274,7 +275,9 @@ func (site *Site) buildFile(path string) error {
 	if err != nil {
 		return err
 	}
-	contentReader = site.minify(targetExt, contentReader)
+	if site.Config.Minify {
+		contentReader = site.minifier.Minify(targetExt, contentReader)
+	}
 
 	// write the file contents over to target
 	return writeToFile(targetPath, contentReader)
