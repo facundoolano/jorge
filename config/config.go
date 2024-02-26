@@ -26,9 +26,10 @@ type Config struct {
 	IncludesDir string
 	DataDir     string
 
-	SiteUrl    string
-	PostFormat string
-	Lang       string
+	SiteUrl        string
+	PostFormat     string
+	Lang           string
+	HighlightTheme string
 
 	Minify     bool
 	LiveReload bool
@@ -48,18 +49,19 @@ func Load(rootDir string) (*Config, error) {
 	// TODO allow to disable minify
 
 	config := &Config{
-		RootDir:      rootDir,
-		SrcDir:       filepath.Join(rootDir, "src"),
-		TargetDir:    filepath.Join(rootDir, "target"),
-		LayoutsDir:   filepath.Join(rootDir, "layouts"),
-		IncludesDir:  filepath.Join(rootDir, "includes"),
-		DataDir:      filepath.Join(rootDir, "data"),
-		PostFormat:   "blog/:title.org",
-		Lang:         "en",
-		Minify:       true,
-		LiveReload:   false,
-		LinkStatic:   false,
-		pageDefaults: map[string]interface{}{},
+		RootDir:        rootDir,
+		SrcDir:         filepath.Join(rootDir, "src"),
+		TargetDir:      filepath.Join(rootDir, "target"),
+		LayoutsDir:     filepath.Join(rootDir, "layouts"),
+		IncludesDir:    filepath.Join(rootDir, "includes"),
+		DataDir:        filepath.Join(rootDir, "data"),
+		PostFormat:     "blog/:title.org",
+		Lang:           "en",
+		HighlightTheme: "tango",
+		Minify:         true,
+		LiveReload:     false,
+		LinkStatic:     false,
+		pageDefaults:   map[string]interface{}{},
 	}
 
 	// load overrides from config.yml
@@ -79,6 +81,7 @@ func Load(rootDir string) (*Config, error) {
 	}
 
 	// set user-provided overrides of declared config keys
+	// TODO less copypasty way of declaring config overrides
 	if url, found := config.overrides["url"]; found {
 		config.SiteUrl = url.(string)
 	}
@@ -87,6 +90,9 @@ func Load(rootDir string) (*Config, error) {
 	}
 	if format, found := config.overrides["lang"]; found {
 		config.Lang = format.(string)
+	}
+	if format, found := config.overrides["highlight_style"]; found {
+		config.HighlightTheme = format.(string)
 	}
 
 	return config, nil
