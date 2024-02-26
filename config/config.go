@@ -57,7 +57,7 @@ func Load(rootDir string) (*Config, error) {
 		DataDir:        filepath.Join(rootDir, "data"),
 		PostFormat:     "blog/:title.org",
 		Lang:           "en",
-		HighlightTheme: "tango",
+		HighlightTheme: "github",
 		Minify:         true,
 		LiveReload:     false,
 		LinkStatic:     false,

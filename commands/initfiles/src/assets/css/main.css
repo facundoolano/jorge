@@ -129,7 +129,8 @@ img.cover-img {
     margin-top: -0.5rem;
 }
 
-.src pre {
+pre {
+    font-size: 1rem;
     overflow-x: auto;
     line-height: 1.5;
     padding: 1rem;
@@ -137,11 +138,43 @@ img.cover-img {
     scrollbar-width: none;  /* Firefox */
 }
 
-.src pre, code {
-    background: whitesmoke;
+/* There are several code rendering scenarios that need to be handled reasonably:
+- light vs dark preferred color scheme
+- pre code blocks vs inline code spans
+- language set vs no language set
+- markdown vs org rendering
+
+Need to decide between:
+- fixing the color scheme of the page + using one of chroma's themes
+- supporting both light/dark and disabling syntax highlighting altogether
+- supporting light/dark, picking a theme and patching it to render decently
+  with both preferences (as done below, assuming chroma's github theme)
+*/
+.layout-post :not(pre) > code {
+    padding: .2em .4em;
+    background-color: whitesmoke!important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .layout-post :not(pre) > code {
+        background-color: rgba(110, 118, 129, 0.4)!important;
+        color: unset;
+    }
+}
+
+.layout-post pre, .layout-post code {
+    border-radius: 6px;
+    background-color: whitesmoke!important;
     font-size: 1rem;
     hyphens: none;
 }
+
+@media (prefers-color-scheme: dark) {
+    .layout-post pre, .layout-post code{
+        color: black;
+    }
+}
+
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .src pre::-webkit-scrollbar {
