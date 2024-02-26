@@ -9,9 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
+
 	"github.com/niklasfasching/go-org/org"
 	"github.com/osteele/liquid"
 	"github.com/yuin/goldmark"
+	gm_highlight "github.com/yuin/goldmark-highlighting/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -121,6 +127,7 @@ func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 
 		// make * -> h1, ** -> h2, etc
 		htmlWriter.TopLevelHLevel = 1
+		htmlWriter.HighlightCodeBlock = highlightCodeBlock
 
 		contentStr, err := doc.Write(htmlWriter)
 		if err != nil {
@@ -130,11 +137,37 @@ func (templ Template) Render(context map[string]interface{}) ([]byte, error) {
 	} else if ext == ".md" {
 		// markdown rendering
 		var buf bytes.Buffer
-		if err := goldmark.Convert(content, &buf); err != nil {
+		md := goldmark.New(goldmark.WithExtensions(
+			gm_highlight.NewHighlighting(),
+		))
+		if err := md.Convert(content, &buf); err != nil {
 			return nil, err
 		}
 		content = buf.Bytes()
 	}
 
 	return content, nil
+}
+
+// from https://github.com/niklasfasching/go-org/blob/a32df1461eb34a451b1e0dab71bd9b2558ea5dc4/blorg/util.go#L58
+func highlightCodeBlock(source, lang string, inline bool, params map[string]string) string {
+	var w strings.Builder
+	l := lexers.Get(lang)
+	if l == nil {
+		l = lexers.Fallback
+	}
+	l = chroma.Coalesce(l)
+	it, _ := l.Tokenise(nil, source)
+	options := []html.Option{}
+	if params[":hl_lines"] != "" {
+		ranges := org.ParseRanges(params[":hl_lines"])
+		if ranges != nil {
+			options = append(options, html.HighlightLines(ranges))
+		}
+	}
+	_ = html.New(options...).Format(&w, styles.Get("github"), it)
+	if inline {
+		return `<div class="highlight-inline">` + "\n" + w.String() + "\n" + `</div>`
+	}
+	return `<div class="highlight">` + "\n" + w.String() + "\n" + `</div>`
 }
