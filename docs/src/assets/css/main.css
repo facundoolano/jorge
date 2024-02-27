@@ -245,6 +245,11 @@ table tr {
     border-bottom: 1px solid #ddd;
 }
 
+@media screen and (max-width: 480px) {
+    td { display: inline-block }
+}
+
+
 td, th {
     padding: .5rem;
 }
