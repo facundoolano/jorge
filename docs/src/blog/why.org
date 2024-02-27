@@ -24,16 +24,17 @@ But over the last few years, there has been a shift in how I assign value to tec
 The very reason why I had avoided Go in the past, now compelled me to give it a try:
 Go seemed to be an unpretentious, boring language ---and I mean that as [[https://mcfunley.com/choose-boring-technology][a compliment]]---, one that combined many of the good features I came to value (or miss) elsewhere:
 
-- A static type system that's not astonishing nor bureaucratic.
-- A simple concurrency model that the language is designed around of, rather than an afterthought.
-- Fast-enough without requiring low-level memory management.
-- Compiled to binary, making it easy to distribute and operate.
 - Easy to learn.
+- Fast-enough.
+- Garbage collected.
+- Compiled to binary, making it easy to distribute and operate.
+- With a static type system that's neither astonishing nor bureaucratic.
+- With a powerful concurrency model that's built into the language rather than an afterthought.
 
-If these presumptions turned out to be right, Go could become a reasonable default for a lot of my future projects ---and a good boring tech radar.
-So I wanted to learn the language to test those presumptions.
+That's the idea I had about the language, from reading about it but having never used it. If these presumptions turned out to be right, Go could become a reasonable default for many of my future projects ---and a good boring tech radar.
 
 *** Why a command-line application?
+
 *** Why a static site generator?
 
 ** Notes
