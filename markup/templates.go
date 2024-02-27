@@ -113,6 +113,13 @@ func (templ Template) TargetExt() string {
 	return ext
 }
 
+func (templ Template) IsDraft() bool {
+	if draft, ok := templ.Metadata["draft"]; ok {
+		return draft.(bool)
+	}
+	return false
+}
+
 // Renders the liquid template with the given context as bindings.
 // If the template source is org or md, convert them to html after the
 // liquid rendering.
