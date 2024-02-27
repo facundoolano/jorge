@@ -99,8 +99,13 @@ func Parse(engine *Engine, path string) (*Template, error) {
 	return &templ, nil
 }
 
+// Return the extension of this template's source file.
+func (templ Template) SrcExt() string {
+	return filepath.Ext(templ.SrcPath)
+}
+
 // Return the extension for the output format of this template
-func (templ Template) Ext() string {
+func (templ Template) TargetExt() string {
 	ext := filepath.Ext(templ.SrcPath)
 	if ext == ".org" || ext == ".md" {
 		return ".html"
@@ -118,9 +123,7 @@ func (templ Template) Render(context map[string]interface{}, hlTheme string) ([]
 		return nil, err
 	}
 
-	ext := filepath.Ext(templ.SrcPath)
-
-	if ext == ".org" {
+	if templ.SrcExt() == ".org" {
 		// org-mode rendering
 		doc := org.New().Parse(bytes.NewReader(content), templ.SrcPath)
 		htmlWriter := org.NewHTMLWriter()
@@ -134,7 +137,7 @@ func (templ Template) Render(context map[string]interface{}, hlTheme string) ([]
 			return nil, err
 		}
 		content = []byte(contentStr)
-	} else if ext == ".md" {
+	} else if templ.SrcExt() == ".md" {
 		// markdown rendering
 		var buf bytes.Buffer
 		md := goldmark.New(goldmark.WithExtensions(

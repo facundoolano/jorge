@@ -135,7 +135,7 @@ func (site *Site) loadTemplates() error {
 			// set site related (?) metadata. Not sure if this should go elsewhere
 			relPath, _ := filepath.Rel(site.Config.SrcDir, path)
 			srcPath, _ := filepath.Rel(site.Config.RootDir, path)
-			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.Ext()
+			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
 			templ.Metadata["src_path"] = srcPath
 			templ.Metadata["path"] = relPath
 			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
@@ -261,7 +261,7 @@ func (site *Site) buildFile(path string) error {
 			return err
 		}
 
-		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
+		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.TargetExt()
 		contentReader = bytes.NewReader(content)
 	}
 
@@ -357,7 +357,7 @@ func getExcerpt(templ *markup.Template) string {
 	}
 
 	// if we don't expect this to render to html don't bother parsing it
-	if templ.Ext() != ".html" {
+	if templ.TargetExt() != ".html" {
 		return ""
 	}
 
