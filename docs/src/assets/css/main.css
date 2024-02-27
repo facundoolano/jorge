@@ -60,8 +60,13 @@ a:hover {
 }
 
 a.title {
-    color: unset!important;
+    color: black;
     padding-right: .25rem;
+}
+@media (prefers-color-scheme: dark) {
+    a.title {
+        color: white;
+    }
 }
 
 .footer, .footer a, .date, .tags, .tags a {
@@ -129,7 +134,7 @@ img.cover-img {
     margin-top: -0.5rem;
 }
 
-.src pre {
+pre {
     font-size: 1rem;
     overflow-x: auto;
     line-height: 1.5;
@@ -138,19 +143,50 @@ img.cover-img {
     scrollbar-width: none;  /* Firefox */
 }
 
-.layout-post .src pre, .layout-post code {
-    background: whitesmoke;
-    font-size: 1rem;
-    hyphens: none;
-}
-
-code {
-    white-space: nowrap;
-}
-
 /* Hide scrollbar for Chrome, Safari and Opera */
 .src pre::-webkit-scrollbar {
     display: none;
+}
+
+/*
+hack to fix height weirdness in code snippets
+https://github.com/alecthomas/chroma/issues/617#issuecomment-1063251066
+*/
+code > span[style^="display:flex;"] {
+   display: inline !important;
+}
+
+/* There are several code rendering scenarios that need to be handled reasonably:
+- light vs dark preferred color scheme
+- pre code blocks vs inline code spans
+- language set vs no language set
+- markdown vs org rendering
+
+Need to decide between:
+- fixing the color scheme of the page + using one of chroma's themes
+- supporting both light/dark and disabling syntax highlighting altogether
+- supporting light/dark, picking a theme and patching it to render decently
+  with both preferences (as done below, assuming chroma's github theme)
+*/
+.layout-post :not(pre) > code {
+    padding: .2em .4em;
+    background-color: whitesmoke!important;
+    color: black
+}
+
+@media (prefers-color-scheme: dark) {
+    .layout-post :not(pre) > code {
+        background-color: rgba(110, 118, 129, 0.4)!important;
+        color: white;
+    }
+}
+
+.layout-post pre, .layout-post code {
+    border-radius: 6px;
+    background-color: whitesmoke!important;
+    font-size: 1rem;
+    hyphens: none;
+    color: black;
 }
 
 blockquote {
@@ -208,6 +244,11 @@ table {
 table tr {
     border-bottom: 1px solid #ddd;
 }
+
+@media screen and (max-width: 480px) {
+    td { display: inline-block }
+}
+
 
 td, th {
     padding: .5rem;

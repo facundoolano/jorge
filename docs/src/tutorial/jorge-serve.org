@@ -11,7 +11,7 @@ index: 3
 
 Now that you have some [[file:jorge-init][default files]] in place, let's see how the website looks. Run ~jorge serve~ on the website directory:
 
-#+begin_src
+#+begin_src console
 $ cd myblog
 $ jorge serve
 building site
@@ -31,7 +31,7 @@ If you open your browser at http://localhost:4001 you'll see the website we just
 
 If you open ~src/index.html~ in your editor, you should see something roughly matching what you see on the browser:
 
-#+begin_src
+#+begin_src html
 {% raw %}
 ---
 layout: default
@@ -50,11 +50,13 @@ This file is a [[https://shopify.github.io/][liquid template]] for an HTML file.
 2. The rest of the file contents will be rendered according to the liquid template syntax.
 3. If it's an org-mode or markdown file, its contents will be converted to their corresponding HTML in the target.
 
+{% raw %}
 In the example above, the ~layout: default~ instructs jorge to embed the index.html rendered output inside the layout defined at ~layouts/default.html~. And the liquid variables expressed by ~{{ site.config.name }}~ and ~{{ site.config.author }}~ will be replaced by the values found at ~config.yml~.
+{% endraw %}
 
 If you change the markup in ~src/index.html~, you should see your browser tab refresh automatically to reflect those changes. Try, for instance, changing the title in the first header:
 
-#+begin_src
+#+begin_src html
 <h2><a href="#home" class="title" id="home">Home sweet home</a></h2>
 #+end_src
 

@@ -11,12 +11,11 @@ index: 2
 
 Once jorge is [[file:installation][installed]], you can start a new site with the ~init~ command, specifying a project directory (~myblog~ in the example):
 
-#+begin_src bash
+#+begin_src console
 $ jorge init myblog
-site name: My Blog
-site url: https://myblog.example.com
-author: Jorge Blog
-
+> site name: My Blog
+> site url: https://myblog.example.com
+> author: Jorge Blog
 added myblog/config.yml
 added myblog/README.md
 added myblog/.gitignore
