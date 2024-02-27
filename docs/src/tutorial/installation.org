@@ -3,7 +3,7 @@ title: Installation
 layout: post
 lang: en
 tags: [tutorial]
-index: 0
+index: 1
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -51,4 +51,4 @@ Run "jorge <command> --help" for more information on a command.
 
 #+HTML: <br>
 #+ATTR_HTML: :align right
-Next: [[file:introduction][Introduction]].
+Next: [[file:jorge-init][start a website]].

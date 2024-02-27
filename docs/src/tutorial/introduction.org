@@ -3,21 +3,20 @@ title: Introduction
 layout: post
 lang: en
 tags: [tutorial]
-index: 1
+index: 0
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-jorge is a personal static site generator, inspired by Jekyll. In this context, I[fn:1] use personal as "small and opinionated". In practical terms, this means that jorge implements the subset of features from Jekyll that I find most useful and that I defaulted to Jekyll's design decisions except in the specific cases where I had strong differing preferences.
+jorge is a personal static site generator, inspired by [[https://jekyllrb.com/][Jekyll]]. In this context, I[fn:1] use personal as "small and opinionated". In practical terms, this means that jorge implements the subset of features that I find most useful in a static site generator, and that I defaulted to Jekyll's design except in the specific cases where I had strong differing preferences.
 
-jorge started as a Golang learning project, aimed at streamlining my blogging workflow. It adds native org-mode syntax support and, at least for my website, it turned out to be much faster than Jekyll. jorge should /almost/ work as a drop-in replacement for Jekyll: the directory structure is a bit different but most of the content should render with few changes. Additionally, I tried to add support to generate a fully functional (albeit minimalist and kind of ugly) website from scratch.
+jorge started as a Go learning project, aimed at streamlining my blogging workflow. It adds native org-mode syntax support and doesn't require plugins for common features like RSS feeds, syntax highlighting, and minifiying. It works both as an /almost/ drop-in replacement for Jekyll and to quickly setup fully functional (albeit minimalist and kind of ugly) websites from scratch.
 
-This tutorial covers the basics of using jorge, from starting a site to deploying it. I tried to keep it accessible, but you may need to consult with Jekyll or Hugo documentation if you never used a static site generator, want to get the finer-grained details of template syntax, etc.
-
+This tutorial covers the basics of using jorge, from starting a site to deploying it. I tried to keep it accessible, but you may need to consult with [[https://jekyllrb.com/docs/][Jekyll]] or [[https://gohugo.io/documentation/][Hugo]] documentation if you never used a static site generator, want to get the finer-grained details of template syntax, etc.
 
 #+HTML: <br>
 #+ATTR_HTML: :align right
-Next: [[file:jorge-init][start a website]].
+Next: [[file:installation][install jorge]].
 
 *** Notes
 
