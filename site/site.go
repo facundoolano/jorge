@@ -120,7 +120,7 @@ func (site *Site) loadDataFiles() error {
 }
 
 func (site *Site) loadTemplates() error {
-	if _, err := os.Stat(site.Config.SrcDir); os.IsNotExist(err) {
+	if _, err := os.Stat(site.Config.SrcDir); err != nil {
 		return fmt.Errorf("missing src directory")
 	}
 
@@ -135,37 +135,42 @@ func (site *Site) loadTemplates() error {
 			// set site related (?) metadata. Not sure if this should go elsewhere
 			relPath, _ := filepath.Rel(site.Config.SrcDir, path)
 			srcPath, _ := filepath.Rel(site.Config.RootDir, path)
-			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.Ext()
+			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
 			templ.Metadata["src_path"] = srcPath
 			templ.Metadata["path"] = relPath
 			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
 
-			// posts are templates that can be chronologically sorted --that have a date.
-			// the rest are pages.
-			if _, ok := templ.Metadata["date"]; ok {
+			// if drafts are disabled, exclude from posts, page and tags indexes, but not from site.templates
+			// we want to explicitly exclude the template from the target, rather than treating it as a non template file
+			if !templ.IsDraft() || site.Config.IncludeDrafts {
+				// posts are templates that can be chronologically sorted --that have a date.
+				// the rest are pages.
+				if templ.IsPost() {
 
-				// NOTE: getting the excerpt if not set at the front matter requires rendering the template
-				// which could be too onerous for this stage. Consider postponing setting this and/or caching the
-				// template render result
-				templ.Metadata["excerpt"] = getExcerpt(templ)
-				site.posts = append(site.posts, templ.Metadata)
+					// NOTE: getting the excerpt if not set at the front matter requires rendering the template
+					// which could be too onerous for this stage. Consider postponing setting this and/or caching the
+					// template render result
+					templ.Metadata["excerpt"] = getExcerpt(templ)
+					site.posts = append(site.posts, templ.Metadata)
 
-				// also add to tags index
-				if tags, ok := templ.Metadata["tags"]; ok {
-					for _, tag := range tags.([]interface{}) {
-						tag := tag.(string)
-						site.tags[tag] = append(site.tags[tag], templ.Metadata)
+					// also add to tags index
+					if tags, ok := templ.Metadata["tags"]; ok {
+						for _, tag := range tags.([]interface{}) {
+							tag := tag.(string)
+							site.tags[tag] = append(site.tags[tag], templ.Metadata)
+						}
+					}
+
+				} else {
+					// the index pages should be skipped from the page directory
+					filename := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
+					if filename != "index" {
+						site.pages = append(site.pages, templ.Metadata)
 					}
 				}
-
-			} else {
-				// the index pages should be skipped from the page directory
-				filename := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
-				if filename != "index" {
-					site.pages = append(site.pages, templ.Metadata)
-				}
 			}
+
 			site.templates[path] = templ
 		}
 		return nil
@@ -256,12 +261,17 @@ func (site *Site) buildFile(path string) error {
 		defer srcFile.Close()
 		contentReader = srcFile
 	} else {
+		if templ.IsDraft() && !site.Config.IncludeDrafts {
+			fmt.Println("skipping draft", targetPath)
+			return nil
+		}
+
 		content, err := site.render(templ)
 		if err != nil {
 			return err
 		}
 
-		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.Ext()
+		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.TargetExt()
 		contentReader = bytes.NewReader(content)
 	}
 
@@ -357,7 +367,7 @@ func getExcerpt(templ *markup.Template) string {
 	}
 
 	// if we don't expect this to render to html don't bother parsing it
-	if templ.Ext() != ".html" {
+	if templ.TargetExt() != ".html" {
 		return ""
 	}
 

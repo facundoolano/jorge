@@ -66,6 +66,7 @@ date: 2024-02-21 13:39:59
 layout: post
 lang: en
 tags: []
+draft: true
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -81,6 +82,12 @@ $ cat >> src/blog/my-first-post.org <<EOF
 
 this is my *first* post.
 EOF
+```
+
+Posts created with `jorge post` are drafts by default. Remove the `draft: true` to mark it ready for publication:
+
+``` bash
+$ sed -i '' '/^draft: true$/d' src/blog/my-first-post.org
 ```
 
 Finally, you can render a minified version of your site with `jorge build`:

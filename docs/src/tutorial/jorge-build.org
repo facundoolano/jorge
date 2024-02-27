@@ -13,6 +13,7 @@ So far you've seen how to [[file:jorge-init][start a project]], [[file:jorge-ser
 
 #+begin_src console
 $ jorge build
+skipping draft target/blog/my-own-blog-post.org
 wrote target/2024-02-23-another-kind-of-post.html
 wrote target/blog/my-own-blog-post.html
 wrote target/blog/goodbye-markdown.html
@@ -26,6 +27,7 @@ wrote target/blog/index.html
 
 Just like ~jorge serve~ did before, ~jorge build~ scans your ~src/~ directory and renders its files into ~target/~, but with a few differences:
 
+- Templates flagged as drafts in their front matter are excluded.
 - Static files are copied over to ~target/~ instead of just linked.
 - The ~url~ from your ~config.yml~ is used as the root when rendering absolute urls (instead of the ~http://localhost:4001~ used when serving locally).
 - The HTML, XML, CSS and JavaScript files are minified.

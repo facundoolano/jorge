@@ -31,9 +31,10 @@ type Config struct {
 	Lang           string
 	HighlightTheme string
 
-	Minify     bool
-	LiveReload bool
-	LinkStatic bool
+	Minify        bool
+	LiveReload    bool
+	LinkStatic    bool
+	IncludeDrafts bool
 
 	ServerHost string
 	ServerPort int
@@ -61,6 +62,7 @@ func Load(rootDir string) (*Config, error) {
 		Minify:         true,
 		LiveReload:     false,
 		LinkStatic:     false,
+		IncludeDrafts:  false,
 		pageDefaults:   map[string]interface{}{},
 	}
 
@@ -113,6 +115,7 @@ func LoadDev(rootDir string, host string, port int, reload bool) (*Config, error
 	config.LiveReload = reload
 	config.Minify = false
 	config.LinkStatic = true
+	config.IncludeDrafts = true
 	config.SiteUrl = fmt.Sprintf("http://%s:%d", config.ServerHost, config.ServerPort)
 
 	return config, nil
