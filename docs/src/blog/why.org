@@ -34,7 +34,7 @@ Go seemed to be an unpretentious, boring language ---and I mean that as [[https:
 That's the idea I had about the language, from reading about it but having never used it. If these presumptions turned out to be right, Go could become a reasonable default for many of my future projects ---and a good boring tech radar.
 
 *** Why a command-line application?
-Go is famously good for building server-side software, so that was the first space I turned to when thinking about projects to use it in. I briefly considered just following the Distributed Services with Go book, but I felt that would've yield a project I could hardly get enthusiastic about, one that I wouldn't see through completion. In fact, I suspected that any backend-only project would necessarily turn into a useless toy project I wouldn't care about. I needed something user-facing.
+Go is famously good for building server-side software, so that was the first space I turned to when thinking about projects to use it in. I briefly considered just following the [[https://pragprog.com/titles/tjgo/distributed-services-with-go/][/Distributed Services with Go/ book]], but I felt that would've yield a project I could hardly get enthusiastic about, one that I wouldn't see through completion. In fact, I suspected that any backend-only project would necessarily turn into a useless toy project I wouldn't care about. I needed something user-facing.
 
 Could use Go to implement the backend of a web application? That would've made sense, but I was just [[https://olano.dev/2023-12-12-reclaiming-the-web-with-a-personal-reader/][coming out]] of developing a medium-sized web application[fn:2]. I knew too well that much of the effort would go into the UI, and I wanted a break from it.
 
@@ -42,8 +42,24 @@ What else, then? Other than servers, Go is known to be good at command-line appl
 
 *** Why a static site generator?
 
+I read somewhere that a blog is an ideal learning project for software developers: it can get as simple or as complex as you want, it exposes you to the entire software stack, from server setup to UI design, and then it forces you to write about something (most likely about setting up the blog).
+
+That notion, projected into the CLI application space, yields a static site generator: a command-line tool to set up a blogs. For a number of reasons, this seemed like the kind of project I was looking for:
+
+- I knew it was feasible as a Go project because one of the most popular ones, Hugo, is written in Go.
+- I knew it would be useful, because I've been using one myself (Jekyll) for a few years.
+- Moreover, since I had recently rewritten my blog from scratch, I knew what I wanted to reproduce and what I wanted to change from Jekyll, and I knew that, at least on a first look, it was about the project size I was going for: not so small as to be boring, not so big as to get out of hand.
+
+Assuming I would include the local serving functionality (i.e. ~jekyll serve~), I could even go beyond the file manipulation tasks and touch on some of the concurrency and http features of Go.
+
+Working on a site generator also meant that I could use the project to generate its own documentation and potentially to keep a development blog; to "dogfood", using the software myself as a I was building it.
+
+-----
+
+With the reasoning outlined above, I arrived to a project idea that seemed appropriate for my goals, feasible and interesting to me. This was enough to give me the first push to start working on it, but I would need to think about the interface and outline a plan for an MVP before a few more of the pieces fell into place. I'll get to that in the next post.
+
 ** Notes
 
 [fn:1] I did it before with [[https://github.com/facundoolano/advenjure][Clojure]] and [[https://github.com/facundoolano/rpg-cli][Rust]].
 
-[fn:2] Incidentally, a project that I felt was ideal for Go if only I was already fluent with it.
+[fn:2] Incidentally, a project that I felt was ideal for Go, had I already been fluent with it.
