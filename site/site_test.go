@@ -523,9 +523,9 @@ func newProject() *config.Config {
 	layoutsDir := filepath.Join(projectDir, "layouts")
 	srcDir := filepath.Join(projectDir, "src")
 	dataDir := filepath.Join(projectDir, "data")
-	os.Mkdir(layoutsDir, 0777)
-	os.Mkdir(srcDir, 0777)
-	os.Mkdir(dataDir, 0777)
+	os.Mkdir(layoutsDir, DIR_RWE_MODE)
+	os.Mkdir(srcDir, DIR_RWE_MODE)
+	os.Mkdir(dataDir, DIR_RWE_MODE)
 
 	config, _ := config.Load(projectDir)
 	config.Minify = false

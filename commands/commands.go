@@ -11,7 +11,8 @@ import (
 	"github.com/facundoolano/jorge/site"
 )
 
-const FILE_RW_MODE = 0777
+const FILE_RW_MODE = 0666
+const DIR_RWE_MODE = 0777
 
 type Build struct {
 	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"Path to the website project to build."`

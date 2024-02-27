@@ -52,7 +52,7 @@ func (cmd *Post) Run(ctx *kong.Context) error {
 	path := filepath.Join(config.SrcDir, filename)
 
 	// ensure the dir already exists
-	if err := os.MkdirAll(filepath.Dir(path), FILE_RW_MODE); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), DIR_RWE_MODE); err != nil {
 		return err
 	}
 

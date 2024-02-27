@@ -67,7 +67,7 @@ func (cmd *Init) Run(ctx *kong.Context) error {
 
 		// if it's a directory create it at the same location
 		if entry.IsDir() {
-			return os.MkdirAll(targetPath, FILE_RW_MODE)
+			return os.MkdirAll(targetPath, DIR_RWE_MODE)
 		}
 
 		// TODO duplicated in site, extract to somewhere else
@@ -94,7 +94,7 @@ func (cmd *Init) Run(ctx *kong.Context) error {
 }
 
 func ensureEmptyProjectDir(projectDir string) error {
-	if err := os.Mkdir(projectDir, 0777); err != nil {
+	if err := os.Mkdir(projectDir, DIR_RWE_MODE); err != nil {
 		// if it fails with dir already exist, check if it's empty
 		// https://stackoverflow.com/a/30708914/993769
 		if os.IsExist(err) {

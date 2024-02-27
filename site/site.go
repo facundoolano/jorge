@@ -18,7 +18,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const FILE_RW_MODE = 0777
+const FILE_RW_MODE = 0666
+const DIR_RWE_MODE = 0777
 
 type Site struct {
 	Config  config.Config
@@ -194,7 +195,7 @@ func (site *Site) loadTemplates() error {
 func (site *Site) Build() error {
 	// clear previous target contents
 	os.RemoveAll(site.Config.TargetDir)
-	os.Mkdir(site.Config.SrcDir, FILE_RW_MODE)
+	os.Mkdir(site.Config.SrcDir, DIR_RWE_MODE)
 
 	wg, files := spawnBuildWorkers(site)
 	defer wg.Wait()
@@ -210,7 +211,7 @@ func (site *Site) Build() error {
 
 		// if it's a directory, just create the same at the target
 		if entry.IsDir() {
-			return os.MkdirAll(targetPath, FILE_RW_MODE)
+			return os.MkdirAll(targetPath, DIR_RWE_MODE)
 		}
 		// if it's a file (either static or template) send the path to a worker to build in target
 		files <- path
