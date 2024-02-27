@@ -15,17 +15,17 @@
 
         <meta name="author" content="{{site.config.author}}">
         <meta property="og:article:author" content="{{ site.config.author }}">
-        <meta property="og:site_name" content="{{ site.config.title }}">
+        <meta property="og:site_name" content="{{ site.config.name }}">
 
         {% if page.title %}
-        <meta property="og:title" content="{{ page.title|default: site.config.title }}">
-        <meta name="twitter:title" content="{{ page.title|default: site.config.title }}">
+        <meta property="og:title" content="{{ page.title|default: site.config.name }}">
+        <meta name="twitter:title" content="{{ page.title|default: site.config.name }}">
         {% endif %}
 
-        {% if page.excerpt %}
-        <meta name="description" content="{{ page.excerpt }}">
-        <meta name="og:description" content="{{ page.excerpt }}">
-        <meta name="twitter:description" content="{{ page.excerpt }}">
+        {% if page.excerpt or site.config.description %}
+        <meta name="description" content="{{ page.excerpt | default:site.config.description }}">
+        <meta name="og:description" content="{{ page.excerpt | default:site.config.description }}">
+        <meta name="twitter:description" content="{{ page.excerpt | default:site.config.description }}">
         {% endif %}
 
         {% if page.layout == "post" %}
