@@ -104,9 +104,8 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					return
 				}
 
-				// chmod events are noisy, ignore them. also skip create events
-				// which we assume meaningless until the write that comes next
-				if event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) {
+				// chmod events are noisy, ignore them
+				if event.Has(fsnotify.Chmod) {
 					continue
 				}
 
