@@ -15,7 +15,7 @@ Once jorge is [[file:installation][installed]], you can start a new site with th
 $ jorge init myblog
 > site name: My Blog
 > site url: https://myblog.example.com
-> author: Jorge Blog
+> author: Jorge Luis Blogger
 added myblog/config.yml
 added myblog/README.md
 added myblog/.gitignore
@@ -33,13 +33,13 @@ added myblog/src/feed.xml
 added myblog/src/index.html
 #+end_src
 
-The command will first prompt for some information necessary to fill some content in the default project files:
+The command first prompts for some information to fill the default project files:
 
 - The site name will be used for the HTML title of the pages.
-- The URL will be used when rendering absolute URLs for links, for instance in the default atom feed.
-- The author is used in the site's HTML metadata and the atom feed.
+- The URL will be used when rendering absolute URLs for links, for instance in the default Atom feed.
+- The author is used in the site's HTML metadata and the Atom feed.
 
-You can change those values anytime by editing the ~config.yml~ file, so it doesn't really matter if you're not sure what to put in there.
+You can change those values later by editing the ~config.yml~ file, so don't worry if you haven't decided on a name or domain yet.
 
 Let's look at the files created by init:
 | ~config.yml~                                                                                                                                                                                                                                                     | a YAML file with configuration keys. Some affect how jorge works, and all will be available as variables for rendering templates. |
@@ -47,16 +47,17 @@ Let's look at the files created by init:
 | ~.gitignore~ | the git ignore patterns, initialized to ignore jorge generated files. Both this and the readme are added under the assumption that you'll check your project code into a git repository.                                                           |                                                                                                                                   |
 | ~src/~ | the root of your website. Anything you put in here will, in some way or another, be included in your public site. The source directory is the most important part of a jorge project; in fact, it's the only thing required to build your site.          |                                                                                                                                   |
 | ~src/index.html~ | an HTML template for your website root.                                                                                                                                                                                                        |                                                                                                                                   |
-| ~src/feed.xml~ | a template for an atom feed of the website's most recent posts.                                                                                                                                                                                  |                                                                                                                                   |
-| ~src/assets/css/main.css~ | the default CSS styles.                                                                                                                                                                                                                |                                                                                                                                   |
+| ~src/feed.xml~ | a template for an Atom feed of the website's most recent posts.                                                                                                                                                                                  |                                                                                                                                   |
+| ~src/assets/css/main.css~ | the default CSS styles for the site.                                                                                                                                                                                                   |                                                                                                                                   |
 | ~src/blog/hello-org.org~ | an example blog post using org-mode syntax.                                                                                                                                                                                            |                                                                                                                                   |
 | ~src/blog/goodbye-markdown.md~ | an example blog post using markdown syntax.                                                                                                                                                                                      |                                                                                                                                   |
 | ~src/blog/index.html~ | an HTML template for the full blog archive.                                                                                                                                                                                               |                                                                                                                                   |
-| ~src/blog/tags.html~ | an HTML template for the blog archive organized by tags.                                                                                                                                                                                   |                                                                                                                                   |
+| ~src/blog/tags.html~ | an HTML template for the blog archive, organized by tags.                                                                                                                                                                                  |                                                                                                                                   |
 | ~layouts/*.html~ | HTML templates that can be used by other templates to "fill the blanks" of a default HTML structure. For example, ~base.html~ defines the default layout for the entire website, while ~posts.html~ extends it to determine the layout specific to blog posts. |                                                                                                                            |
 | ~includes/*.html~ | HTML template fragments that can be injected into other templates, to reduce duplication.                                                                                                                                                     |                                                                                                                                   |
 
-Note how jorge assumes that index files are to be served as URL directories (~src/blog/index.html~ will be served at ~/blog/)~ and that the HTML extensions will be omitted (~src/blog/tags.html~ will be served at ~/blog/tags~).
+Note how jorge assumes that the ~.html~ file extension will be omitted when serving your site (eg. ~src/blog/tags.html~ will be served at ~/blog/tags~)
+and that index files represent URL directories (~src/blog/index.html~ will be served as ~/blog/)~.
 
 If you prefer to build your site from scratch, you can skip running ~jorge init~ altogether; the rest of the commands only expect a ~src/~ directory to work with.
 
