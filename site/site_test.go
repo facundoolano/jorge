@@ -424,22 +424,96 @@ layout: base
 }
 
 func TestBuildWithDrafts(t *testing.T) {
+	config := newProject()
+	defer os.RemoveAll(config.RootDir)
+
 	// add base layout
+	content := `---
+---
+<html>
+<head><title>{{page.title}}</title></head>
+<body>
+{{content}}
+</body>
+</html>`
+	newFile(config.LayoutsDir, "base.html", content)
+
 	// add org post
-	// add org post draft
+	content = `---
+layout: base
+title: p1 - hello world!
+date: 2024-01-01
+---
+* Hello world!`
+	newFile(config.SrcDir, "p1.org", content)
+
+	// add markdown post, make it draft
+	content = `---
+layout: base
+title: p2 - goodbye world!
+date: 2024-01-02
+draft: true
+---
+# Goodbye world!`
+	newFile(config.SrcDir, "p2.md", content)
+
 	// add index page
+	content = `---
+layout: base
+---
+<ul>{% for post in site.posts %}
+<li>{{post.title}}</li>{%endfor%}
+</ul>`
+	newFile(config.SrcDir, "index.html", content)
 
 	// build site with drafts
-	// test target/blog/p1.html
-	// test target/blog/p2.html
-	// test target/index.html
+	config.IncludeDrafts = true
+	site, err := Load(*config)
+	assertEqual(t, err, nil)
+	err = site.Build()
+	assertEqual(t, err, nil)
+
+	// test target files generated
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p1.html"))
+	assertEqual(t, err, nil)
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p2.html"))
+	assertEqual(t, err, nil)
+
 	// test index includes p1 and p2
+	output, err := os.ReadFile(filepath.Join(config.TargetDir, "index.html"))
+	assertEqual(t, err, nil)
+	assertEqual(t, string(output), `<html><head><title></title></head>
+<body>
+<ul>
+<li>p2 - goodbye world!</li>
+<li>p1 - hello world!</li>
+</ul>
+
+</body></html>`)
 
 	// build site WITHOUT drafts
-	// test target/blog/p1.html
-	// test NOT target/blog/p2.html
-	// test target/index.html
+	config.IncludeDrafts = false
+	site, err = Load(*config)
+	assertEqual(t, err, nil)
+	err = site.Build()
+	assertEqual(t, err, nil)
+
+	// test only non drafts generated
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p1.html"))
+	assertEqual(t, err, nil)
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p2.html"))
+	assert(t, os.IsNotExist(err))
+
 	// test index includes p1 but  NOT p2
+	output, err = os.ReadFile(filepath.Join(config.TargetDir, "index.html"))
+	assertEqual(t, err, nil)
+	assertEqual(t, string(output), `<html><head><title></title></head>
+<body>
+<ul>
+<li>p1 - hello world!</li>
+</ul>
+
+</body></html>`)
 }
 
 // ------ HELPERS --------
