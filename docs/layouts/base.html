@@ -40,8 +40,8 @@
         {% endif %}
 
         {% if page.image != "" %}
-        <meta property="og:image" content="{{ page.image | absolute_url }}">
-        <meta name="twitter:image" content="{{ page.image | absolute_url }}">
+        <meta property="og:image" content="{{ page.image | default:'/assets/img/jorge.png' | absolute_url }}">
+        <meta name="twitter:image" content="{{ page.image | default:'/assets/img/jorge.png' | absolute_url }}">
         {% endif %}
 
     </head>
