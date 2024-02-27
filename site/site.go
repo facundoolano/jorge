@@ -146,7 +146,7 @@ func (site *Site) loadTemplates() error {
 			if !templ.IsDraft() || site.Config.IncludeDrafts {
 				// posts are templates that can be chronologically sorted --that have a date.
 				// the rest are pages.
-				if _, ok := templ.Metadata["date"]; ok {
+				if templ.IsPost() {
 
 					// NOTE: getting the excerpt if not set at the front matter requires rendering the template
 					// which could be too onerous for this stage. Consider postponing setting this and/or caching the

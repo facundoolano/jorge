@@ -120,6 +120,11 @@ func (templ Template) IsDraft() bool {
 	return false
 }
 
+func (templ Template) IsPost() bool {
+	_, ok := templ.Metadata["date"]
+	return ok
+}
+
 // Renders the liquid template with the given context as bindings.
 // If the template source is org or md, convert them to html after the
 // liquid rendering.
