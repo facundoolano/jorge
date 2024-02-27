@@ -44,6 +44,7 @@ date: 2024-02-23 11:45:30
 layout: post
 lang: en
 tags: []
+draft: true
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -51,13 +52,14 @@ tags: []
 
 Let's look at what the command did for us:
 {% raw %}
-| ~src/blog/my-own-blog-post.org~ | The filename, a URL-friendly version of the post title (a "slug"), such that the post will be served at ~/blog/my-own-blog-post~               |
-| ~title: My own blog post~       | The title we passed to jorge. This will be available to templates as ~{{page.title}}~ and will be used by the default post layout to render the header of the page. |
-| ~date: 2024-02-23 11:45:30~     | The date this post was created. It will affect the position it shows up in in ~{{site.posts}}~                                                                |
-| ~layout: post~                  | The rendered HTML of this template will be embedded as the ~{{contents}}~ of the layout defined in ~layouts/post.html~. |
-| ~lang: en~                      | The language code for the post. This is used by some of the default templates, for instance, to determine how to hyphenate the post content.           |
-| ~tags: []~                      | The post tags, initially empty. The keywords in this list will determine which keys of the ~{{site.tags}}~ map this post will be associated with.
-| ~#+OPTIONS: toc:nil num:nil~, ~#+LANGUAGE: en~                          | Some default org mode options, to skip the table of contents and define the post language.                                        |
+| ~src/blog/my-own-blog-post.org~              | The filename, a URL-friendly version of the post title (a "slug"), such that the post will be served at ~/blog/my-own-blog-post~ |
+| ~title: My own blog post~                    | The title we passed to jorge. This will be available to templates as ~{{page.title}}~ and will be used by the default post layout to render the header of the page. |
+| ~date: 2024-02-23 11:45:30~                  | The date this post was created. It will affect the position it shows up in in ~{{site.posts}}~                                   |
+| ~layout: post~                               | The rendered HTML of this template will be embedded as the ~{{contents}}~ of the layout defined in ~layouts/post.html~.            |
+| ~lang: en~                                   | The language code for the post. This is used by some of the default templates, for instance, to determine how to hyphenate the post content. |
+| ~tags: []~                                   | The post tags, initially empty. The keywords in this list will determine which keys of the ~{{site.tags}}~ map this post will be associated with. |
+| ~draft: true~                          | By default, posts created with ~jorge post~ are marked as drafts. Drafts are included in the site served locally but excluded from the production build. Remove this flag once your post is ready.
+| ~#+OPTIONS: toc:nil num:nil~, ~#+LANGUAGE: en~ | Some default org mode options, to skip the table of contents and define the post language.                                     |
 {% endraw %}
 
 With ~jorge serve~ running, you can start filling in some content on this new post and see it show up in the browser at http://localhost:4001/blog/my-own-blog-post.
