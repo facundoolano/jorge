@@ -9,7 +9,7 @@ index: 3
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-Now that you have some [[file:jorge-init][default files]] in place, let's see how the website looks. Run ~jorge serve~ on the website directory:
+Now that you have some [[file:jorge-init][default files]] in place, let's see how the website looks. Run ~jorge serve~ on the project directory:
 
 #+begin_src console
 $ cd myblog
@@ -26,10 +26,10 @@ serving at http://localhost:4001
 #+end_src
 
 As you can see, jorge reads the files located in your ~src/~ directory and replicates them (with a few changes) at the ~target/~ one.
-If you open your browser at http://localhost:4001 you'll see the website we just created.
+Open your browser at http://localhost:4001 you'll see the website you just created.
 
 
-If you open ~src/index.html~ in your editor, you should see something roughly matching what you see on the browser:
+Now open ~src/index.html~ in your editor. You should see something roughly matching what the browser displayed:
 
 #+begin_src html
 {% raw %}
@@ -44,9 +44,9 @@ layout: default
 {% endraw %}
 #+end_src
 
-This file is a [[https://shopify.github.io/][liquid template]] for an HTML file. jorge treats any file inside ~src/~ that begins with this ~---~ header as a template, regardless of its format. This means that:
+This file is a [[https://shopify.github.io/][liquid template]] for an HTML file. jorge treats any file inside ~src/~ that begins with ~---~ as a template, regardless of its extension. This means that:
 
-1. The header (called front matter by site generators like [[https://jekyllrb.com/docs/front-matter/][Jekyll]] and [[https://gohugo.io/content-management/front-matter/][Hugo]]) will be parsed as YAML and interpreted as post metadata.
+1. The contents of the ~---~ header (called front matter by site generators like [[https://jekyllrb.com/docs/front-matter/][Jekyll]] and [[https://gohugo.io/content-management/front-matter/][Hugo]]) will be parsed as YAML and interpreted as page metadata.
 2. The rest of the file contents will be rendered according to the liquid template syntax.
 3. If it's an org-mode or markdown file, its contents will be converted to their corresponding HTML in the target.
 
@@ -54,7 +54,7 @@ This file is a [[https://shopify.github.io/][liquid template]] for an HTML file.
 In the example above, the ~layout: default~ instructs jorge to embed the index.html rendered output inside the layout defined at ~layouts/default.html~. And the liquid variables expressed by ~{{ site.config.name }}~ and ~{{ site.config.author }}~ will be replaced by the values found at ~config.yml~.
 {% endraw %}
 
-If you change the markup in ~src/index.html~, you should see your browser tab refresh automatically to reflect those changes. Try, for instance, changing the title in the first header:
+If you update the code in ~src/index.html~, you should see your browser tab refresh automatically to show the changes. Try, for instance, changing the title in the first header:
 
 #+begin_src html
 <h2><a href="#home" class="title" id="home">Home sweet home</a></h2>

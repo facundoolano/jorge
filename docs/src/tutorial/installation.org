@@ -3,7 +3,7 @@ title: Installation
 layout: post
 lang: en
 tags: [tutorial]
-index: 0
+index: 1
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -16,7 +16,7 @@ $ chmod +x jorge
 $ mv jorge /usr/local/bin
 #+end_src
 
-Alternatively, if you have Go available in your system, you can install with:
+Alternatively, if you have Go available in your system, you can install it with:
 
 #+begin_src bash
 $ go install github.com/facundoolano/jorge@latest
@@ -51,4 +51,4 @@ Run "jorge <command> --help" for more information on a command.
 
 #+HTML: <br>
 #+ATTR_HTML: :align right
-Next: [[file:introduction][Introduction]].
+Next: [[file:jorge-init][start a website]].
