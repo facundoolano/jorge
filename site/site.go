@@ -120,7 +120,7 @@ func (site *Site) loadDataFiles() error {
 }
 
 func (site *Site) loadTemplates() error {
-	if _, err := os.Stat(site.Config.SrcDir); os.IsNotExist(err) {
+	if _, err := os.Stat(site.Config.SrcDir); err != nil {
 		return fmt.Errorf("missing src directory")
 	}
 
