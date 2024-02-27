@@ -8,3 +8,34 @@ draft: true
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
+
+I'm set out to write a little static site generator, but why?
+
+*** Why this project?
+I wanted to learn the Go programming language, and my preferred way to learn a new language is to apply it on some open source project I'm interested in[fn:1].
+
+*** Why Go?
+
+In the past I studied new programming languages to broaden my horizons,
+to add better, more sophisticated tools to my toolbox: new programming paradigms, concurrency models or type systems. Because I never used it in college and never needed it for work, and because it seemed to lack this "novelty factor", I never got around to trying Go.
+
+But over the last few years, there has been a shift in how I assign value to technology. For all of the learning value of trying different things and broadening your horizons, I find the choice of sophisticated technology hard to justify for most real-world projects; in the long-term, the complexity they add outweighs the value they bring. And, in turn, I've became less and less enthusiastic about studying technology that I don't expect to ever use ---that I wouldn't dare to inflict to the real-world.
+
+The very reason why I had avoided Go in the past, now compelled me to give it a try:
+Go seemed to be an unpretentious, boring language ---and I mean that as [[https://mcfunley.com/choose-boring-technology][a compliment]]---, one that combined many of the good features I came to value (or miss) elsewhere:
+
+- A static type system that's not astonishing nor bureaucratic.
+- A simple concurrency model that the language is designed around of, rather than an afterthought.
+- Fast-enough without requiring low-level memory management.
+- Compiled to binary, making it easy to distribute and operate.
+- Easy to learn.
+
+If these presumptions turned out to be right, Go could become a reasonable default for a lot of my future projects ---and a good boring tech radar.
+So I wanted to learn the language to test those presumptions.
+
+*** Why a command-line application?
+*** Why a static site generator?
+
+** Notes
+
+[fn:1] I did it before with [[https://github.com/facundoolano/advenjure][Clojure]] and [[https://github.com/facundoolano/rpg-cli][Rust]].
