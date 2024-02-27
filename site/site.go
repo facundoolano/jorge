@@ -306,7 +306,7 @@ func (site *Site) render(templ *markup.Template) ([]byte, error) {
 	}
 
 	ctx["page"] = templ.Metadata
-	content, err := templ.Render(ctx, site.Config.HighlightTheme)
+	content, err := templ.RenderWith(ctx, site.Config.HighlightTheme)
 	if err != nil {
 		return nil, err
 	}
@@ -317,7 +317,7 @@ func (site *Site) render(templ *markup.Template) ([]byte, error) {
 		if layout_templ, ok := site.layouts[layout.(string)]; ok {
 			ctx["layout"] = layout_templ.Metadata
 			ctx["content"] = content
-			content, err = layout_templ.Render(ctx, site.Config.HighlightTheme)
+			content, err = layout_templ.RenderWith(ctx, site.Config.HighlightTheme)
 			if err != nil {
 				return nil, err
 			}
@@ -372,10 +372,7 @@ func getExcerpt(templ *markup.Template) string {
 		return ""
 	}
 
-	ctx := map[string]interface{}{
-		"page": templ.Metadata,
-	}
-	content, err := templ.Render(ctx, "tango")
+	content, err := templ.Render()
 	if err != nil {
 		return ""
 	}

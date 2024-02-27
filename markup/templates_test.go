@@ -26,7 +26,7 @@ tags: ["software", "web"]
 	assertEqual(t, templ.Metadata["tags"].([]interface{})[0], "software")
 	assertEqual(t, templ.Metadata["tags"].([]interface{})[1], "web")
 
-	content, err := templ.Render(nil, "github")
+	content, err := templ.Render()
 	assertEqual(t, err, nil)
 	assertEqual(t, string(content), "<p>Hello World!</p>")
 }
@@ -102,8 +102,7 @@ tags: ["software", "web"]
 
 	templ, err := Parse(NewEngine("https://olano.dev", "includes"), file.Name())
 	assertEqual(t, err, nil)
-	ctx := map[string]interface{}{"page": templ.Metadata}
-	content, err := templ.Render(ctx, "github")
+	content, err := templ.Render()
 	assertEqual(t, err, nil)
 	expected := `<h1>my new post</h1>
 <h2>a blog post</h2>
@@ -133,7 +132,7 @@ tags: ["software", "web"]
 	templ, err := Parse(NewEngine("https://olano.dev", "includes"), file.Name())
 	assertEqual(t, err, nil)
 
-	content, err := templ.Render(nil, "github")
+	content, err := templ.Render()
 	assertEqual(t, err, nil)
 	expected := `<div id="outline-container-headline-1" class="outline-1">
 <h1 id="headline-1">
@@ -175,7 +174,7 @@ tags: ["software", "web"]
 	templ, err := Parse(NewEngine("https://olano.dev", "includes"), file.Name())
 	assertEqual(t, err, nil)
 
-	content, err := templ.Render(nil, "github")
+	content, err := templ.Render()
 	assertEqual(t, err, nil)
 	expected := `<h1>My title</h1>
 <h2>my Subtitle</h2>

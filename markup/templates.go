@@ -22,6 +22,7 @@ import (
 )
 
 const FM_SEPARATOR = "---"
+const NO_SYNTAX_HIGHLIGHTING = ""
 
 type Engine = liquid.Engine
 
@@ -125,10 +126,18 @@ func (templ Template) IsPost() bool {
 	return ok
 }
 
+// Renders the liquid template with default bindings.
+func (templ Template) Render() ([]byte, error) {
+	ctx := map[string]interface{}{
+		"page": templ.Metadata,
+	}
+	return templ.RenderWith(ctx, NO_SYNTAX_HIGHLIGHTING)
+}
+
 // Renders the liquid template with the given context as bindings.
 // If the template source is org or md, convert them to html after the
 // liquid rendering.
-func (templ Template) Render(context map[string]interface{}, hlTheme string) ([]byte, error) {
+func (templ Template) RenderWith(context map[string]interface{}, hlTheme string) ([]byte, error) {
 	// liquid rendering
 	content, err := templ.liquidTemplate.Render(context)
 	if err != nil {
@@ -142,7 +151,9 @@ func (templ Template) Render(context map[string]interface{}, hlTheme string) ([]
 
 		// make * -> h1, ** -> h2, etc
 		htmlWriter.TopLevelHLevel = 1
-		htmlWriter.HighlightCodeBlock = highlightCodeBlock(hlTheme)
+		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
+			htmlWriter.HighlightCodeBlock = highlightCodeBlock(hlTheme)
+		}
 
 		contentStr, err := doc.Write(htmlWriter)
 		if err != nil {
@@ -152,11 +163,14 @@ func (templ Template) Render(context map[string]interface{}, hlTheme string) ([]
 	} else if templ.SrcExt() == ".md" {
 		// markdown rendering
 		var buf bytes.Buffer
-		md := goldmark.New(goldmark.WithExtensions(
-			gm_highlight.NewHighlighting(
+
+		options := make([]goldmark.Option, 0)
+		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
+			options = append(options, goldmark.WithExtensions(gm_highlight.NewHighlighting(
 				gm_highlight.WithStyle(hlTheme),
-			),
-		))
+			)))
+		}
+		md := goldmark.New(options...)
 		if err := md.Convert(content, &buf); err != nil {
 			return nil, err
 		}
