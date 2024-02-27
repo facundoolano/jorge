@@ -58,9 +58,9 @@ func (cmd *Post) Run(ctx *kong.Context) error {
 
 	// if file already exists, prompt user for a different one
 	if _, err := os.Stat(path); err == nil {
-		fmt.Printf("%s already exists\n", path)
+		fmt.Printf("%s already exists, choose another path\n", path)
 		filename = Prompt("filename")
-		path = filepath.Join(config.SrcDir, filename)
+		path = filepath.Join(filename)
 	}
 
 	// initialize the post front matter
