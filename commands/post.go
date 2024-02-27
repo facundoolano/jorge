@@ -19,6 +19,7 @@ date: %s
 layout: post
 lang: %s
 tags: []
+draft: true
 ---
 `
 
