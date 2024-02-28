@@ -106,7 +106,8 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					return
 				}
 
-				// chmod events are noisy, ignore them
+				// chmod events are noisy, ignore them.
+				// Also ignore dot file events, which are usually spurious (e.g .DS_Store, emacs temp files)
 				isDotFile := strings.HasPrefix(filepath.Base(event.Name), ".")
 				if event.Has(fsnotify.Chmod) || isDotFile {
 					continue
