@@ -56,14 +56,4 @@ $ jorge serve
 {% endfor %}
 
 <p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
-
-<h2><a href="/docs" class="title" id="docs">Docs</a></h2>
-Coming soon!
-<ul>
-    {% for page in site.pages|where:"dir", "/docs"|sort:"index" %}
-    <li>
-        <a class="title" href="{{ page.url }}">{{ page.title }}</a>
-    </li>
-    {% endfor %}
-</ul>
 </div>
