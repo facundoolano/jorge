@@ -1,4 +1,4 @@
-.PHONY: bump_version major minor patch
+.PHONY: bump_version major minor patch docs
 
 major:
 	@$(MAKE) TYPE=major bump_version
