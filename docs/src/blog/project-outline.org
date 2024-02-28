@@ -1,0 +1,147 @@
+---
+title: Project outline
+date: 2024-02-29
+layout: post
+lang: en
+tags: [project]
+draft: true
+---
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: en
+
+** User interface
+When I'm toying with the idea for a new project, I start by picturing what is it going to look like from the perspective of the user, what interface is it going to offer. For web applications this means deciding on what users should see, what actions could they perform, what menus and buttons I need to offer to them, and making some drawings of how all of that could be laid out in the page[fn:1].
+
+For command-line applications it gets much easier. I just need to come up with the right list of subcommands, some of the flags, and a couple of usage examples. As soon as I decided to work on a static site generator, I narrowed down the commands I needed to support to four: ~init~, ~build~, ~serve~ and ~new~. Below is a transcript of my notebook, showing how I first imagined the commands (at this point I was calling the project ~glob~):
+
+#+begin_src
+$ golb init
+$ golb init +now -rss -tags
+$ golb init +now +rss +tags
+
+$ golb init empty
+$ golb init index
+$ golb init blog
+#+end_src
+
+~init~ would be in charge of initializing a new project. I wanted this command to optionally "scaffold" a fully-featured website, and the first way I picture that was with an extensible system of flags (~+rss~ turns the RSS feed on, ~-tags~ disables the tag list page, etc.), then with site profiles (a standalone ~index~, a full ~blog~, etc.). I later realized that both of those options would just confuse the user and over-complicate the implementation, so I left ~init~ without arguments, always creating the same default site (including RSS, tags, etc.). If users wanted an empty project instead they could just skip the ~init~ command altogether.
+
+#+begin_src
+$ golb build [--mini]
+$ golb serve [--drafts] [--future]
+#+end_src
+
+TODO
+
+#+begin_src
+$ golb new
+> title:
+> tags:
+$ golb new post
+$ golb new note
+#+end_src
+
+The ~new~ command was a helper to add new blog post pages with some of the boilerplate (e.g. the date in the front matter) already filled. I later renamed this subcommand to ~golb post~ and dropped most of its options.
+
+** Project plan
+<I can give some thought to each, trying to superficially imagine how could I go about implementing the command, what parts sound easy, which complicated, which I wasn't yet sure how I would tackle, what work I'd prefer to delegate on external libraries, where I suspect the "unknown-unknowns" of the project could be lurking>
+
+#+begin_src
+** Tasks
+
+1. setup go and emacs
+2. hello world
+3. first stab at golb init
+4. dummy golb build command
+5. deploy to server
+6. accept markdown as input
+7. treat input files as templates
+8. add some sort of layouts or template inheritance
+9. parse input front matter
+10. golb new to add a new blog post
+11. tags
+12. generate rss with build
+13. --draft and --future support
+14. some way of opting in and out of features on golb init
+15. golb serve
+16. post pagination
+17. golb serve watch/autorefresh
+
+** Nice to haves
+
+1. minify output html and css
+2. yaml data files
+3. org-mode support
+4. permalink override
+5. add features after first initialization
+6. optional per-tag rss feed
+#+end_src
+
+Some things to note from this list:
+- this was a speculative outline, not necessarily the exact tasks in the exact order I wound end up working on, but more of guide to decide where to start and what needed some more thinking, as well as another chance to verify that the scope of the project seemed to match my expectations
+- I separated the main list of tasks I consider at this point necessary from a minimum viable product from some nice to haves that sounded interesting or fun to implement, but were not critical for the project to make sense, and perhaps I wasn't sure how feasible they were.
+- at this point the org-mode support was a nice to have, primarily because I didn't know there was a go library available to parse org syntax and export as html. As I'll explain in another post, knowing that org mode support was a realistic option would lead me to change the goals of the project.
+
+** Some code
+
+<The list of CLI subcommands easily translates to the top-level layer of the program code, each offering a good starting point for the coding part of the project.
+
+<this is what the main.go file looked like in [[https://github.com/facundoolano/jorge/commit/16cbf1d10ea890df216b74ad9231a1b70ad102c3#diff-2873f79a86c0d8b3335cd7731b0ecf7dd4301eb19a82ef7a1cba7589b5252261][one of the first commits]] [link]
+<the comments give another idea
+#+begin_src go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		printAndExit()
+	}
+
+	switch os.Args[1] {
+
+	case "init":
+		// get working directory
+		// default to .
+		// if not exist, create directory
+		// copy over default files
+		fmt.Println("not implemented yet")
+	case "build":
+		// delete target if exist
+		// create target dir
+		// walk through files in src dir
+		// copy them over to target
+		// (later render templates and org)
+		// (later minify)
+		fmt.Println("not implemented yet")
+	case "new":
+		// prompt for title
+		// slugify
+		// fail if file already exist
+		// create a new .org file with the slug
+		// add front matter and org options
+		fmt.Println("not implemented yet")
+	case "serve":
+		// build
+		// serve target with file server
+		// (later watch and live reload)
+		fmt.Println("not implemented yet")
+	default:
+		printAndExit()
+	}
+}
+
+func printAndExit() {
+	// TODO print usage
+	fmt.Println("expected a subcommand")
+	os.Exit(1)
+}
+#+end_src
+
+
+** Notes
+
+[fn:1] Then hitting a bunch of walls trying to make that happen with CSS.
