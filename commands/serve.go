@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -69,6 +70,7 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 				// send an event to the connected client.
 				// data\n\n just means send an empty, unnamed event
 				// since we only need to support the single reload operation.
+				fmt.Fprint(res, "retry: 1000\n")
 				fmt.Fprint(res, "data\n\n")
 				res.(http.Flusher).Flush()
 			case <-req.Context().Done():
@@ -104,9 +106,10 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 					return
 				}
 
-				// chmod events are noisy, ignore them. also skip create events
-				// which we assume meaningless until the write that comes next
-				if event.Has(fsnotify.Chmod) || event.Has(fsnotify.Create) {
+				// chmod events are noisy, ignore them.
+				// Also ignore dot file events, which are usually spurious (e.g .DS_Store, emacs temp files)
+				isDotFile := strings.HasPrefix(filepath.Base(event.Name), ".")
+				if event.Has(fsnotify.Chmod) || isDotFile {
 					continue
 				}
 

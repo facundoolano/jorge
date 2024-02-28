@@ -387,17 +387,22 @@ func (site *Site) injectLiveReload(extension string, contentReader io.Reader) (i
 
 	const JS_SNIPPET = `
 const url = '%s/_events/'
-const eventSource = new EventSource(url);
-
-eventSource.onmessage = function () {
-  location.reload()
-};
-window.onbeforeunload = function() {
-  eventSource.close();
+var eventSource;
+function newSSE() {
+  console.log("connecting to server events");
+  eventSource = new EventSource(url);
+  eventSource.onmessage = function () {
+    location.reload()
+  };
+  window.onbeforeunload = function() {
+    eventSource.close();
+  }
+  eventSource.onerror = function (event) {
+    console.error('An error occurred:', event);
+    setTimeout(newSSE, 1000)
+  };
 }
-eventSource.onerror = function (event) {
-  console.error('An error occurred:', event)
-};`
+newSSE();`
 	script := fmt.Sprintf(JS_SNIPPET, site.Config.SiteUrl)
 	return markup.InjectScript(contentReader, script)
 }
