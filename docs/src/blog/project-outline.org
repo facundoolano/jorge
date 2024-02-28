@@ -4,15 +4,16 @@ date: 2024-02-29
 layout: post
 lang: en
 tags: [project]
-draft: true
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
 ** User interface
-When I'm toying with the idea for a new project, I start by picturing what is it going to look like from the perspective of the user, what interface is it going to offer. For web applications this means deciding on what users should see, what actions could they perform, what menus and buttons I need to offer to them, and making some drawings of how all of that could be laid out in the page[fn:1].
+When I'm toying with the idea for a new project, I start by picturing what it should look like from the perspective of the user: what the interface will be. For web applications, this means deciding what actions will I make available to users, what menus and buttons and what information I need to display on a given view; and then making some sketches to figure how to fit all that into a web page layout[fn:1].
 
-For command-line applications it gets much easier. I just need to come up with the right list of subcommands, some of the flags, and a couple of usage examples. As soon as I decided to work on a static site generator, I narrowed down the commands I needed to support to four: ~init~, ~build~, ~serve~ and ~new~. Below is a transcript of my notebook, showing how I first imagined the commands (at this point I was calling the project ~glob~):
+For command-line applications it gets much easier: I just need to come up with the right list of program subcommands, some of its flags, and a couple of usage examples. As soon as I [[file:why][decided to work on a static site generator]], I narrowed the commands I needed to support down to four: ~init~, ~build~, ~serve~ and ~new~.
+
+Below are some transcripts of my notebook, showing how I first imagined the commands would work (at this point I was calling the program ~golb~):
 
 #+begin_src
 $ golb init
@@ -24,14 +25,14 @@ $ golb init index
 $ golb init blog
 #+end_src
 
-~init~ would be in charge of initializing a new project. I wanted this command to optionally "scaffold" a fully-featured website, and the first way I picture that was with an extensible system of flags (~+rss~ turns the RSS feed on, ~-tags~ disables the tag list page, etc.), then with site profiles (a standalone ~index~, a full ~blog~, etc.). I later realized that both of those options would just confuse the user and over-complicate the implementation, so I left ~init~ without arguments, always creating the same default site (including RSS, tags, etc.). If users wanted an empty project instead they could just skip the ~init~ command altogether.
+~init~ would be in charge of creating a new project with default files. I wanted this command to optionally "scaffold" a fully-featured website. The first way I pictured that was with an extensible system of flags (~+rss~ turns the RSS feed on, ~-tags~ disables the tag list page, etc.); later I considered using site profiles (a standalone ~index~, a full ~blog~, etc.). I eventually realized that both of those options would just confuse the user and over-complicate the implementation, so I left ~init~ without flags, always creating the same default site (including RSS, tag index, etc.). If users wanted an empty project instead they could just skip the ~init~ command altogether.
 
 #+begin_src
-$ golb build [--mini]
-$ golb serve [--drafts] [--future]
+$ golb serve [--drafts] [--future] [--no-reload]
+$ golb build [--minify]
 #+end_src
 
-TODO
+The ~serve~ command would run a local file server for previewing the website, while ~build~ would prepare the files for production. I wrote down some flags to help me picture what other features those commands would support (minifying the output, live reloading the browser upon file changes, etc.). I ended up implementing most of those extra options by default, but dropped the flags to keep the command-line interface simple.
 
 #+begin_src
 $ golb new
@@ -41,10 +42,10 @@ $ golb new post
 $ golb new note
 #+end_src
 
-The ~new~ command was a helper to add new blog post pages with some of the boilerplate (e.g. the date in the front matter) already filled. I later renamed this subcommand to ~golb post~ and dropped most of its options.
+The ~new~ command would be a helper to add new blog post pages, with some of the boilerplate (e.g. the date in the front matter) already filled in. I eventually renamed this subcommand to ~post~ and dropped most of its options.
 
 ** Project plan
-<I can give some thought to each, trying to superficially imagine how could I go about implementing the command, what parts sound easy, which complicated, which I wasn't yet sure how I would tackle, what work I'd prefer to delegate on external libraries, where I suspect the "unknown-unknowns" of the project could be lurking>
+Based on the CLI outline, I gave some thought to each of the subcommands and flags I planned to implement, trying to imagine, at a high-level, which operations they should consist of, what parts seemed easy or complicated to program, which ones I wasn't yet sure how I could tackle, what work I expected to delegate to third-party libraries, and where I suspected the "unknown-unknowns" of the project could be lurking. This exercise yielded a preliminary list of tasks, that I added to my project board:
 
 #+begin_src
 ** Tasks
@@ -78,16 +79,15 @@ The ~new~ command was a helper to add new blog post pages with some of the boile
 #+end_src
 
 Some things to note from this list:
-- this was a speculative outline, not necessarily the exact tasks in the exact order I wound end up working on, but more of guide to decide where to start and what needed some more thinking, as well as another chance to verify that the scope of the project seemed to match my expectations
-- I separated the main list of tasks I consider at this point necessary from a minimum viable product from some nice to haves that sounded interesting or fun to implement, but were not critical for the project to make sense, and perhaps I wasn't sure how feasible they were.
-- at this point the org-mode support was a nice to have, primarily because I didn't know there was a go library available to parse org syntax and export as html. As I'll explain in another post, knowing that org mode support was a realistic option would lead me to change the goals of the project.
+- This wasn't a strict plan I expected to follow but rather the necessary work I already identified, a guide to see what needed some thinking and another chance to validate my assumptions about the scope of the project.
+- The initial order of the tasks was influenced by the user journey I imaged (e.g. start with ~golb init~), but as soon as I started working on the project I realized I should prioritize the "mission critical" features (~golb build~) then the most complex ones (~golb serve~).
+- I captured some "nice to have" tasks that sounded interesting or fun to implement, but were not required for the project to make sense, and in some cases I didn't know if they were feasible. One such case was the org-mode support; as I'll explain in another post, learning that there already was a Go library to parse org-mode syntax would lead me to redefine the goals of the project.
 
 ** Some code
+One nice quality of command-line programs is that their interfaces tend to easily translate into top layer of the program design, each subcommand offering a good spot to start coding.
 
-<The list of CLI subcommands easily translates to the top-level layer of the program code, each offering a good starting point for the coding part of the project.
+Looking at the ~main.go~ file from [[https://github.com/facundoolano/jorge/commit/16cbf1d10ea890df216b74ad9231a1b70ad102c3#diff-2873f79a86c0d8b3335cd7731b0ecf7dd4301eb19a82ef7a1cba7589b5252261][one early commit]] shows much of the initial project plan already stubbed in the code:
 
-<this is what the main.go file looked like in [[https://github.com/facundoolano/jorge/commit/16cbf1d10ea890df216b74ad9231a1b70ad102c3#diff-2873f79a86c0d8b3335cd7731b0ecf7dd4301eb19a82ef7a1cba7589b5252261][one of the first commits]] [link]
-<the comments give another idea
 #+begin_src go
 package main
 
