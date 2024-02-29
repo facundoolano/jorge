@@ -8,7 +8,7 @@ import (
 var cli struct {
 	Init    commands.Init    `cmd:"" help:"Initialize a new website project." aliases:"i"`
 	Build   commands.Build   `cmd:"" help:"Build a website project." aliases:"b"`
-	Post    commands.Post    `cmd:"" help:"Initialize a new post template file." help:"title of the new post." aliases:"p"`
+	Post    commands.Post    `cmd:"" help:"Initialize a new post template file." aliases:"p"`
 	Serve   commands.Serve   `cmd:"" help:"Run a local server for the website." aliases:"s"`
 	Version kong.VersionFlag `short:"v"`
 }

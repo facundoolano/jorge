@@ -69,7 +69,7 @@ title: about
 
 	// add a static file (no front matter)
 	content = `go away!`
-	file = newFile(config.SrcDir, "robots.txt", content)
+	newFile(config.SrcDir, "robots.txt", content)
 
 	site, err := Load(*config)
 
@@ -155,7 +155,7 @@ date: 2023-01-01
 	file = newFile(config.SrcDir, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(*config)
+	site, _ := Load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -208,7 +208,7 @@ tags: [software]
 	file = newFile(config.SrcDir, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(*config)
+	site, _ := Load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<h1>software</h1>
@@ -259,7 +259,7 @@ title: "2. an oldie!"
 	file = newFile(config.SrcDir, "index.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(*config)
+	site, _ := Load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -314,7 +314,7 @@ tags: [software]
 	file = newFile(config.SrcDir, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(*config)
+	site, _ := Load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, strings.TrimSpace(string(output)), `goodbye! - an overridden excerpt
@@ -347,7 +347,7 @@ func TestRenderDataFile(t *testing.T) {
 	file = newFile(config.SrcDir, "projects.html", content)
 	defer os.Remove(file.Name())
 
-	site, err := Load(*config)
+	site, _ := Load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
