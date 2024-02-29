@@ -51,7 +51,7 @@ $ jorge serve
 
 <h2><a href="/blog" class="title" id="devlog">Devlog</a></h2>
 
-{% for post in site.posts | reverse limit:5  %}
+{% for post in site.posts | reverse  %}
 {% include post_preview.html %}
 {% endfor %}
 
