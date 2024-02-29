@@ -105,7 +105,6 @@ $ jorge build
 And that's about it. For more details see the:
 
   - [Tutorial](https://jorge.olano.dev#tutorial)
-  - [Docs](https://jorge.olano.dev#docs)
   - [Development blog](https://jorge.olano.dev#devlog)
 
 ## Acknowledgements
