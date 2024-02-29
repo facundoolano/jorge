@@ -1,6 +1,6 @@
 ---
 title: jorge build
-subtitle: Prepare for production and deploy
+subtitle: Prepare for production
 layout: post
 lang: en
 tags: [tutorial]

@@ -1,6 +1,6 @@
 ---
 title: jorge post
-subtitle: Adding a blog post
+subtitle: Add a blog post
 layout: post
 lang: en
 tags: [tutorial]
@@ -85,7 +85,7 @@ added src/2024-02-23-another-kind-of-post.md
 
 #+HTML: <br>
 #+ATTR_HTML: :align right
-Next: [[file:jorge-build][prepare for production and deploy]].
+Next: [[file:jorge-build][prepare for production]].
 
 *** Notes
 
