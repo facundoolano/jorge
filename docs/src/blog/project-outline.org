@@ -9,7 +9,7 @@ tags: [project]
 #+LANGUAGE: en
 
 ** User interface
-When I'm toying with the idea for a new project, I start by picturing what it could look like from the perspective of the users: what the interface will be. For web applications, this means deciding what actions will I make available to them, what menus and buttons, and what information I need to display on a given view. Then I make some sketches to figure out how to fit all that into a web page layout[fn:1]. For command-line applications it gets much easier: I just need to come up with the right list of program subcommands, some of its flags, and a couple of usage examples.
+When I'm toying with the idea for a new project, I start by picturing what it could look like from the perspective of the users: what the interface will be. For web applications, this means deciding what actions will I make available to them, what menus and buttons, and what information I need to display on a given view. Then I make some sketches to figure out how to fit all that into a web page layout[fn:1]. For command-line applications it gets much easier: I just need to come up with the right list of subcommands, some of the flags, and a couple of usage examples.
 
 As soon as I [[file:why][decided to work on a static site generator]], I narrowed the commands I needed to support down to four: ~init~, ~build~, ~serve~, and ~new~. Below are some transcripts of my notebook, showing how I first imagined these commands would work (at this point I was calling the program ~golb~):
 
