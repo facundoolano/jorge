@@ -399,7 +399,8 @@ function newSSE() {
   }
   eventSource.onerror = function (event) {
     console.error('An error occurred:', event);
-    setTimeout(newSSE, 1000)
+    eventSource.close();
+    setTimeout(newSSE, 5000)
   };
 }
 newSSE();`
