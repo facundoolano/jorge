@@ -135,18 +135,17 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 
 // Add the layouts and all source directories to the given watcher
 func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
-	err := watcher.Add(config.LayoutsDir)
-	err = watcher.Add(config.DataDir)
-	err = watcher.Add(config.IncludesDir)
+	watcher.Add(config.LayoutsDir)
+	watcher.Add(config.DataDir)
+	watcher.Add(config.IncludesDir)
 	// fsnotify watches all files within a dir, but non recursively
 	// this walks through the src dir and adds watches for each found directory
-	filepath.WalkDir(config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	return filepath.WalkDir(config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if entry.IsDir() {
 			watcher.Add(path)
 		}
 		return nil
 	})
-	return err
 }
 
 func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *EventBroker) {

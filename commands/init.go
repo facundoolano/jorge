@@ -59,6 +59,9 @@ func (cmd *Init) Run(ctx *kong.Context) error {
 
 	initfilesRoot := "initfiles"
 	return fs.WalkDir(initfiles, initfilesRoot, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 		if path == initfilesRoot {
 			return nil
 		}

@@ -1,6 +1,6 @@
 module github.com/facundoolano/jorge
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/alecthomas/chroma/v2 v2.5.0
@@ -12,8 +12,8 @@ require (
 	github.com/tdewolff/minify/v2 v2.20.16
 	github.com/yuin/goldmark v1.7.0
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
-	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
-	golang.org/x/text v0.3.3
+	golang.org/x/net v0.14.0
+	golang.org/x/text v0.12.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )

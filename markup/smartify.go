@@ -58,7 +58,6 @@ var smartifyTransforms = []struct {
 }
 
 var smartifyReplacer *strings.Replacer
-var smartifyReplaceSpans = map[string]string{}
 
 func init() {
 	smartifyReplacer = strings.NewReplacer(
