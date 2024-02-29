@@ -43,7 +43,7 @@ What else, then? Other than servers, Go is known to be good at command-line appl
 
 I read somewhere that a blog is the ideal learning project for software developers: it can get as simple or as complex as you want, it exposes you to the entire web stack, from server setup to UI design, and when it's working you are encouraged to write about something (most likely about setting up a blog).
 
-That notion, projected into the CLI application space, yields a static site generator: a command-line tool to set up blogs. For a number of reasons, this seemed like the kind of project I was looking for:
+That notion, projected into the CLI application space, yields a static site generator: a command-line tool to set up blogs. For several reasons, this seemed like the kind of project I was looking for:
 
 - I knew static site generators were useful because I'd been using one (Jekyll) for years.
 - Moreover, since I had recently rewritten my blog from scratch, I knew what I'd like to reproduce and what to change from Jekyll, and I knew that, at least on a first look, it was about the project size I was looking for: not so small as to be boring, not so big as to get out of hand.
