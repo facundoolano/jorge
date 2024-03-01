@@ -9,40 +9,42 @@ draft: true
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-Up until I started coding ---while I was [[file:getting-started-with-go-and-emacs][setting up my environment]] and going through a couple Go tutorials--- I captured the concept I had for the project in a couple of slogans:
+Before I started to code, when I was scribbling [[project-outline][usage examples]] in my notebook,
+I summarized my idea of the project with a couple of slogans:
 
-- golb is a small, opinionated static site generator written in Go and inspired by Jekyll.
-- The golb blog is a blog about learning go by implementing a blog generator.
+#+begin_quote
+~golb~ is a small, opinionated static site generator written in Go and inspired by Jekyll.
 
-There were some problems with this project idea:
+The ~golb~ blog is a blog about learning go by implementing a blog generator.
+#+end_quote
+
+
+There were some problems with this concept:
 
 1. The ~golb~ name stank.
-   #+ATTR_HTML: :type a
-   a. Apart from stinking, this name choice showed that the project was rather generic: its remarkable features were that it would be written in Go (an implementation detail) and that it would have some facilities for blogging (as was the case for every other static site generator).
-2. It was actually two projects in one: a site generator and a development blog.
-   #+ATTR_HTML: :type a
-   a. Previous experience has showed me that trying to keep a devlog while I  work on a project distracts me from the actual work on the project.
+2. Apart from stinking, the name choice revealed that the project lacked personality: its remarkable features were that it would be written in Go (an implementation detail) and that it would offer some blogging facilities (as was the case for every other static site generator).
+3. It was actually two projects in one: a site generator and a development blog. Previous experience has showed me that trying to keep a devlog while I  work on a project distracts me from the actual work on that project.
 
-/Wait/, you may ask, /isn't this the devlog of the project?/ It is, but I cheated: I'm writing this retrospectively, based on a few notes I took during development <and offloading ideas I've been carrying for days>, after finishing most of the work I planned for the project.
+/Wait/, you may ask, /isn't this the devlog of the project?/ It is, but I cheated: I'm writing this retrospectively, based on a few notes I took during development, offloading ideas I've been carrying in my head for days, after finishing most of the work I had planned for.
 
-I love writing as much as software building, and because of that I'm always inclined to write about what I build, but writing is as absorbing and demanding as programming is to me; if I attempt both in parallel, the writing suffers and the programming suffers.
+I love writing as much as software building and, because of that, I'm always inclined to write about what I build; but writing is as absorbing and demanding as programming to me: if I attempt both in parallel, the writing suffers and the programming suffers.
 
-Not only it takes time and mental real estate away from the programming; writing as I build feels off to me for the same reasons why I don't like to introduce abstractions or factor the code early on, or why test-driven development isn't appealing to me: they make me focus and get attached to particular solutions before being confident enough that they will work, even before understanding the problem I'm trying to solve.
+Not only does it take time and mental real estate away from the programming; writing as I build feels off for the same reasons why I don't like to introduce abstractions or factor the code early on, or why test-driven development isn't appealing to me: it forces me to focus on, and get attached to specific solutions before being confident that they work ---before fully understanding the problem I'm trying to solve.
 
 -----
 
-The problems went away when I found out that exporting org-mode files to HTML was feasible in go. I had thrown in /org-mode support/ as a "nice to have" feature in my preliminary plan, not knowing what kind of work that would entail. But some googling revealed that Hugo already supported org-mode posts, relying on an [[https://github.com/niklasfasching/go-org][external library]] that I could use myself.
+Those problems went away when I discovered that parsing org-mode files was feasible in Go. I had thrown in /org-mode support/ as an optional, nice to have feature in my preliminary plan, not knowing what kind of work it entailed. But some googling revealed that Hugo supports the org-mode syntax, relying on an [[https://github.com/niklasfasching/go-org][external library]] that I could use myself.
 
-Adding first-class support for org-mode syntax for blog posts made a lot of sense:
-- It would make the project feel less "generic". This was confirmed by a name change, first to ~blorg~, which I dropped because it was used elsewhere, then to ~jorge~, which also had /org/ in the name, sounded like it could be Hugo's distant cousin, and paid homage to two of my [[https://en.wikipedia.org/wiki/Jorge_Luis_Borges][favorite]] [[https://en.wikipedia.org/wiki/Jorge_Garcia][artists]].
-- It would it make useful to me, more rather than just an learning project, since I blog by writing org-mode files and, in fact, that was the source of the few rough edges of my current Jekyll workflow[fn:1]. My static site generator would implement my exact blogging workflow out of the box.
-- I could use my current Jekyll blog as a reference and as test input, planning to "dogfood" by ultimately migrating it to ~jorge~. This would, in turn, remove the need to write a devlog to test the site generator.
+First-class support of org-mode posts made a lot of sense for my project:
+- It would make the static site generator feel less "generic". This was confirmed by the name changes it prompted, first to ~blorg~ ---which I dropped because it was already taken--- then to ~jorge~ ---which I liked because it had /org/ in it, sounded like it could be Hugo's distant cousin, and paid homage to two of my [[https://en.wikipedia.org/wiki/Jorge_Luis_Borges][favorite]] [[https://en.wikipedia.org/wiki/Jorge_Garcia][artists]].
+- It would make the project useful to me, beyond its learning purposes, since I blog by writing org-mode files in Emacs. In fact, the few rough edges of my current blogging workflow came precisely from forcing org-mode exports into Jekyll[fn:1]. I could make ~jorge~ support my workflow out of the box.
+- I could use my current website as a reference and as test input, planning to "dogfood" by ultimately migrating it to ~jorge~. This would, in turn, remove the pressure to write a devlog as an excuse to test the site generator.
 
-This change immediately made the project more interesting, because I was producing a tool that I was interested in using myself and, if I succeeded, maybe someone else could find it useful too. There already were plenty of ways to blog with org-mode, and I imagine most org-mode hackers would prefer to write some emacs-lisp to install an external program, but there may be some value in a tool that:
+If I succeeded in making a tool I wanted to use myself, maybe other people could find it useful too. There are [[https://orgmode.org/worg/org-blog-wiki.html][plenty of methods]] to blog with org-mode already, and I imagine most hackers would prefer to write some emacs-lisp to installing an external program, but there may be some value in a tool that:
 
 1. Allows you to start an org-mode-centric blog with a single command.
-2. Allows you to add org-mode support to a pre-existing jekyll blog without much effort.
+2. Allows you to add org-mode to a pre-existing Jekyll blog with low configuration effort.
 
 *** Notes
 
-[fn:1] Namely: it required me some extra project setup to instruct emacs how to export my org files; since the default org to HTML export produced an awkward HTML structure, I was using org to markdown and letting Jekyll turn markdown to HTML; I had to manually export files before they were picked up by the ~jekyll serve~ live reload feature; renaming, changing dates and moving out of draft  required changing both the .org and the .md source files.
+[fn:1] Namely: I had to define an org project in my configuration to instruct Emacs how to export my org files; since the default org to HTML export produces an awkward HTML structure (on that, for instance, is not properly parsed by browser readers), I had to export org to markdown and let Jekyll convert the markdown to HTML; I had to manually publish my org files before for ~jekyll serve~  to pick up  the changes; renaming, changing dates and moving out of draft required updating both the .org and the .md file names.
