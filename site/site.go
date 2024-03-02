@@ -181,14 +181,23 @@ func (site *Site) loadTemplates() error {
 		return err
 	}
 
-	// sort posts by reverse chronological order
-	Compare := func(a map[string]interface{}, b map[string]interface{}) int {
-		return b["date"].(time.Time).Compare(a["date"].(time.Time))
+	// sort by reverse chronological order when date is present
+	// otherwise by path alphabetical
+	CompareTemplates := func(a map[string]interface{}, b map[string]interface{}) int {
+		if bdate, ok := b["date"]; ok {
+			if adate, ok := a["date"]; ok {
+				return bdate.(time.Time).Compare(adate.(time.Time))
+			}
+		}
+		return strings.Compare(a["path"].(string), b["path"].(string))
 	}
-	slices.SortFunc(site.posts, Compare)
+
+	slices.SortFunc(site.posts, CompareTemplates)
+	slices.SortFunc(site.pages, CompareTemplates)
 	for _, posts := range site.tags {
-		slices.SortFunc(posts, Compare)
+		slices.SortFunc(posts, CompareTemplates)
 	}
+
 	return nil
 }
 
