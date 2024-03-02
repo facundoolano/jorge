@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -210,10 +211,18 @@ func (site *Site) addPrevNext(posts []map[string]interface{}) {
 
 		// only consider them part of the same collection if they share the directory
 		if i > 0 && post["dir"] == posts[i-1]["dir"] {
-			site.templates[path].Metadata["previous"] = posts[i-1]
+			// make a copy of the map, without prev/next (to avoid weird recursion)
+			previous := maps.Clone(posts[i-1])
+			delete(previous, "previous")
+			delete(previous, "next")
+			site.templates[path].Metadata["previous"] = previous
 		}
+
 		if i < len(posts)-1 && post["dir"] == posts[i+1]["dir"] {
-			site.templates[path].Metadata["next"] = posts[i+1]
+			next := maps.Clone(posts[i+1])
+			delete(next, "previous")
+			delete(next, "next")
+			site.templates[path].Metadata["next"] = next
 		}
 	}
 }
