@@ -117,6 +117,112 @@ title: about
 
 }
 
+func TestPreviousNext(t *testing.T) {
+	config := newProject()
+	defer os.RemoveAll(config.RootDir)
+
+	// prev next distinguish between series in different dirs
+	// add two different blog dirs and two different page dirs (tutorials)
+	blog1 := filepath.Join(config.SrcDir, "blog1")
+	blog2 := filepath.Join(config.SrcDir, "blog2")
+	tutorial1 := filepath.Join(config.SrcDir, "tutorial1")
+	tutorial2 := filepath.Join(config.SrcDir, "tutorial2")
+	os.Mkdir(blog1, DIR_RWE_MODE)
+	os.Mkdir(blog2, DIR_RWE_MODE)
+	os.Mkdir(tutorial1, DIR_RWE_MODE)
+	os.Mkdir(tutorial2, DIR_RWE_MODE)
+
+	newFile(blog1, "p1-1.html", `---
+date: 2024-01-01
+---`)
+	newFile(blog1, "p1-2.html", `---
+date: 2024-01-02
+---`)
+	newFile(blog1, "p1-3.html", `---
+date: 2024-01-03
+---`)
+
+	newFile(blog2, "p2-1.html", `---
+date: 2024-02-01
+---`)
+	newFile(blog2, "p2-2.html", `---
+date: 2024-02-02
+---`)
+	newFile(blog2, "p2-3.html", `---
+date: 2024-02-03
+---`)
+
+	newFile(tutorial1, "1-first-part.html", `---
+---`)
+	newFile(tutorial1, "2-another-entry.html", `---
+---`)
+	newFile(tutorial1, "3-goodbye.html", `---
+---`)
+
+	newFile(tutorial2, "index.html", `---
+---`)
+	newFile(tutorial2, "the-end.html", `---
+---`)
+	newFile(tutorial2, "another-entry.html", `---
+---`)
+
+	site, err := Load(*config)
+	// helper method to map a filename to its prev next keys (if any)
+	getPrevNext := func(dir string, filename string) (interface{}, interface{}) {
+		path := filepath.Join(dir, filename)
+		templ := site.templates[path]
+		return templ.Metadata["previous"], templ.Metadata["next"]
+	}
+	// tests for posts (sorted reverse chronologically, most recent one first)
+	assertEqual(t, err, nil)
+	prev, next := getPrevNext(blog1, "p1-3.html")
+	assertEqual(t, prev, nil)
+	assertEqual(t, next.(map[string]interface{})["url"], "/blog1/p1-2")
+
+	prev, next = getPrevNext(blog1, "p1-2.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/blog1/p1-3")
+	assertEqual(t, next.(map[string]interface{})["url"], "/blog1/p1-1")
+
+	prev, next = getPrevNext(blog1, "p1-1.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/blog1/p1-2")
+	assertEqual(t, next, nil)
+
+	assertEqual(t, err, nil)
+	prev, next = getPrevNext(blog2, "p2-3.html")
+	assertEqual(t, prev, nil)
+	assertEqual(t, next.(map[string]interface{})["url"], "/blog2/p2-2")
+
+	prev, next = getPrevNext(blog2, "p2-2.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/blog2/p2-3")
+	assertEqual(t, next.(map[string]interface{})["url"], "/blog2/p2-1")
+
+	prev, next = getPrevNext(blog2, "p2-1.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/blog2/p2-2")
+	assertEqual(t, next, nil)
+
+	// test for pages based on filename
+	prev, next = getPrevNext(tutorial1, "1-first-part.html")
+	assertEqual(t, prev, nil)
+	assertEqual(t, next.(map[string]interface{})["url"], "/tutorial1/2-another-entry")
+
+	prev, next = getPrevNext(tutorial1, "2-another-entry.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/tutorial1/1-first-part")
+	assertEqual(t, next.(map[string]interface{})["url"], "/tutorial1/3-goodbye")
+
+	prev, next = getPrevNext(tutorial1, "3-goodbye.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/tutorial1/2-another-entry")
+	assertEqual(t, next, nil)
+
+	// ensure alphabetical and index skipped
+	prev, next = getPrevNext(tutorial2, "another-entry.html")
+	assertEqual(t, prev, nil)
+	assertEqual(t, next.(map[string]interface{})["url"], "/tutorial2/the-end")
+
+	prev, next = getPrevNext(tutorial2, "the-end.html")
+	assertEqual(t, prev.(map[string]interface{})["url"], "/tutorial2/another-entry")
+	assertEqual(t, next, nil)
+}
+
 func TestRenderArchive(t *testing.T) {
 	config := newProject()
 	defer os.RemoveAll(config.RootDir)
