@@ -46,7 +46,9 @@
 
     </head>
     <body>
-        {{ content }}
+        <div class="content">
+            {{ content }}
+        </div>
         <p class="center-block footer">
             {% if page.date %}<span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
             <span class="tags">

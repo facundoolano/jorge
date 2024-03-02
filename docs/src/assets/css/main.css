@@ -16,6 +16,14 @@ body {
     flex-direction: column;
 }
 
+.content {
+    /* https://stackoverflow.com/a/38347131/993769 */
+    text-size-adjust: none;
+    -ms-text-size-adjust: none;
+    -moz-text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+}
+
 .footer {
     padding: 2rem 0 1rem;
     margin-top: auto;
@@ -150,14 +158,6 @@ pre {
 /* Hide scrollbar for Chrome, Safari and Opera */
 .src pre::-webkit-scrollbar {
     display: none;
-}
-
-/*
-hack to fix height weirdness in code snippets
-https://github.com/alecthomas/chroma/issues/617#issuecomment-1063251066
-*/
-code > span[style^="display:flex;"] {
-   display: inline !important;
 }
 
 /* There are several code rendering scenarios that need to be handled reasonably:
