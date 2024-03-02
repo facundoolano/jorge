@@ -4,7 +4,7 @@ title: Tutorial
 ---
 
 <ol start='0'>
-    {% for page in site.pages|where:"dir", "/tutorial"|sort:"index" %}
+    {% for page in site.pages|where:"dir", "/tutorial" %}
     <li>
         <a class="title" href="{{ page.url }}">{{ page.title }}{%if page.subtitle%}: {{page.subtitle|downcase}}{%endif%}</a>
     </li>
