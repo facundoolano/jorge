@@ -3,7 +3,6 @@ title: Introduction
 layout: post
 lang: en
 tags: [tutorial]
-index: 0
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en

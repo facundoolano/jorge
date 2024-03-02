@@ -4,7 +4,6 @@ subtitle: Add a blog post
 layout: post
 lang: en
 tags: [tutorial]
-index: 4
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en

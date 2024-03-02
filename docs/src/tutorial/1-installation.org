@@ -3,7 +3,6 @@ title: Installation
 layout: post
 lang: en
 tags: [tutorial]
-index: 1
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en

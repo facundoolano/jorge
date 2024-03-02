@@ -4,7 +4,6 @@ subtitle: Browse the site locally
 layout: post
 lang: en
 tags: [tutorial]
-index: 3
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
