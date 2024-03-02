@@ -191,20 +191,38 @@ func (site *Site) loadTemplates() error {
 		}
 		return strings.Compare(a["path"].(string), b["path"].(string))
 	}
-
 	slices.SortFunc(site.posts, CompareTemplates)
 	slices.SortFunc(site.pages, CompareTemplates)
 	for _, posts := range site.tags {
 		slices.SortFunc(posts, CompareTemplates)
 	}
 
+	// populate previous and next in template index
+	site.addPrevNext(site.pages)
+	site.addPrevNext(site.posts)
+
 	return nil
+}
+
+func (site *Site) addPrevNext(posts []map[string]interface{}) {
+	for i, post := range posts {
+		path := filepath.Join(site.Config.RootDir, post["src_path"].(string))
+
+		// only consider them part of the same collection if they share the directory
+		if i > 0 && post["dir"] == posts[i-1]["dir"] {
+			site.templates[path].Metadata["previous"] = posts[i-1]
+		}
+		if i < len(posts)-1 && post["dir"] == posts[i+1]["dir"] {
+			site.templates[path].Metadata["next"] = posts[i+1]
+		}
+	}
 }
 
 func (site *Site) Build() error {
 	// clear previous target contents
 	os.RemoveAll(site.Config.TargetDir)
-	os.Mkdir(site.Config.SrcDir, DIR_RWE_MODE)
+	os.Mkdir(site.Config.
+		SrcDir, DIR_RWE_MODE)
 
 	wg, files := spawnBuildWorkers(site)
 	defer wg.Wait()
