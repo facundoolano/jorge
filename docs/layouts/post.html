@@ -12,4 +12,17 @@ layout: base
         {% endif %}
     </header>
     {{ content }}
+
+    <br/>
+    <br/>
+    <div class="pagination" style="display:flex">
+        {% if page.previous %}
+        <span>← <a href="{{page.previous.url}}"> {{ page.previous.subtitle | default:page.previous.title}}</a></span>
+        {% endif %}
+
+        {% if page.next %}
+        <span style="margin-left: auto"><a href="{{page.next.url}}">{{ page.next.subtitle | default:page.next.title}}</a> →</p>
+            {% endif %}
+    </div>
+
 </div>

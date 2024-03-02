@@ -60,7 +60,3 @@ If you update the code in ~src/index.html~, you should see your browser tab refr
 #+end_src
 
 The new title should show up on the browser page.
-
-#+HTML: <br>
-#+ATTR_HTML: :align right
-Next: [[file:jorge-post][add a blog post]].
