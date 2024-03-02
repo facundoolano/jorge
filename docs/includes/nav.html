@@ -1,7 +1,9 @@
 <nav>
     <a href="/">{{ site.config.name }}</a>
-    <a href="/tutorial/">tutorial</a>
-    <a href="/blog/">devlog</a>
+
+    {% assign section = page.path|split:"/" | first  %}
+    <a {% if section == "tutorial" %}style="font-weight:bold"{% endif %} href="/tutorial/">tutorial</a>
+    <a {% if section == "blog" %}style="font-weight:bold"{% endif %} href="/blog/">devlog</a>
 
     <div class="nav-right hidden-mobile">
         <a href="https://github.com/facundoolano/jorge">github</a>

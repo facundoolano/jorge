@@ -3,7 +3,6 @@ title: Introduction
 layout: post
 lang: en
 tags: [tutorial]
-index: 0
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -13,10 +12,6 @@ jorge is a personal static site generator, inspired by [[https://jekyllrb.com/][
 jorge started as a Go learning project, aimed at streamlining my blogging workflow. It adds native org-mode syntax support and doesn't require plugins for common features like RSS feeds, syntax highlighting, and minifiying. It works both as an /almost/ drop-in replacement for Jekyll and to quickly setup fully functional (albeit minimalist and kind of ugly) websites from scratch.
 
 This tutorial covers the basics of using jorge, from starting a site to deploying it. I tried to keep it accessible, but you may need to consult with [[https://jekyllrb.com/docs/][Jekyll]] or [[https://gohugo.io/documentation/][Hugo]] documentation if you never used a static site generator, want to get the finer-grained details of template syntax, etc.
-
-#+HTML: <br>
-#+ATTR_HTML: :align right
-Next: [[file:installation][install jorge]].
 
 *** Notes
 

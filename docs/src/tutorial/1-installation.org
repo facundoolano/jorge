@@ -1,9 +1,8 @@
 ---
-title: Installation
+title: Install jorge
 layout: post
 lang: en
 tags: [tutorial]
-index: 1
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -48,7 +47,3 @@ Flags:
 
 Run "jorge <command> --help" for more information on a command.
 #+end_src
-
-#+HTML: <br>
-#+ATTR_HTML: :align right
-Next: [[file:jorge-init][start a website]].

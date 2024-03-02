@@ -4,7 +4,6 @@ subtitle: Add a blog post
 layout: post
 lang: en
 tags: [tutorial]
-index: 4
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -82,10 +81,6 @@ Thus, next time you add a post:
 $ jorge post "Another kind of post"
 added src/2024-02-23-another-kind-of-post.md
 #+end_src
-
-#+HTML: <br>
-#+ATTR_HTML: :align right
-Next: [[file:jorge-build][prepare for production]].
 
 *** Notes
 

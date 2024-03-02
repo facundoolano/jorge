@@ -12,4 +12,29 @@ layout: base
         {% endif %}
     </header>
     {{ content }}
+
+    <br/>
+    <br/>
+
+    {% comment%}
+      if page.date then it's a post, and we want to invert the prev/next for the controls:
+      the next arrow should take you to the newer post, which appears fist in the site.posts list.
+    {%endcomment%}
+    {% if page.date %}
+    {% assign previous = page.next %}
+    {% assign next = page.previous %}
+    {% else %}
+    {% assign previous = page.previous %}
+    {% assign next = page.next %}
+    {% endif %}
+    <div class="pagination" style="display:flex">
+        {% if previous %}
+        <span>← <a class="title" href="{{previous.url}}"> {{ previous.subtitle | default:previous.title}}</a></span>
+        {% endif %}
+
+        {% if next %}
+        <span style="margin-left: auto"><a class="title" href="{{next.url}}">{{ next.subtitle | default:next.title}}</a> →</p>
+        {% endif %}
+    </div>
+
 </div>

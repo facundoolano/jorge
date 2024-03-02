@@ -4,7 +4,6 @@ subtitle: Start a website
 layout: post
 lang: en
 tags: [tutorial]
-index: 2
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -60,8 +59,3 @@ Note how jorge assumes that the ~.html~ file extension will be omitted when serv
 and that index files represent URL directories (~src/blog/index.html~ will be served as ~/blog/)~.
 
 If you prefer to build your site from scratch, you can skip running ~jorge init~ altogether; the rest of the commands only expect a ~src/~ directory to work with.
-
-
-#+HTML: <br>
-#+ATTR_HTML: :align right
-Next: [[file:jorge-serve][browse the site locally]].

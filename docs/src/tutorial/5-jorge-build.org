@@ -4,7 +4,6 @@ subtitle: Prepare for production
 layout: post
 lang: en
 tags: [tutorial]
-index: 5
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en

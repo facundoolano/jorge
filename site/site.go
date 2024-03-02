@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -181,21 +182,56 @@ func (site *Site) loadTemplates() error {
 		return err
 	}
 
-	// sort posts by reverse chronological order
-	Compare := func(a map[string]interface{}, b map[string]interface{}) int {
-		return b["date"].(time.Time).Compare(a["date"].(time.Time))
+	// sort by reverse chronological order when date is present
+	// otherwise by path alphabetical
+	CompareTemplates := func(a map[string]interface{}, b map[string]interface{}) int {
+		if bdate, ok := b["date"]; ok {
+			if adate, ok := a["date"]; ok {
+				return bdate.(time.Time).Compare(adate.(time.Time))
+			}
+		}
+		return strings.Compare(a["path"].(string), b["path"].(string))
 	}
-	slices.SortFunc(site.posts, Compare)
+	slices.SortFunc(site.posts, CompareTemplates)
+	slices.SortFunc(site.pages, CompareTemplates)
 	for _, posts := range site.tags {
-		slices.SortFunc(posts, Compare)
+		slices.SortFunc(posts, CompareTemplates)
 	}
+
+	// populate previous and next in template index
+	site.addPrevNext(site.pages)
+	site.addPrevNext(site.posts)
+
 	return nil
+}
+
+func (site *Site) addPrevNext(posts []map[string]interface{}) {
+	for i, post := range posts {
+		path := filepath.Join(site.Config.RootDir, post["src_path"].(string))
+
+		// only consider them part of the same collection if they share the directory
+		if i > 0 && post["dir"] == posts[i-1]["dir"] {
+			// make a copy of the map, without prev/next (to avoid weird recursion)
+			previous := maps.Clone(posts[i-1])
+			delete(previous, "previous")
+			delete(previous, "next")
+			site.templates[path].Metadata["previous"] = previous
+		}
+
+		if i < len(posts)-1 && post["dir"] == posts[i+1]["dir"] {
+			next := maps.Clone(posts[i+1])
+			delete(next, "previous")
+			delete(next, "next")
+			site.templates[path].Metadata["next"] = next
+		}
+	}
 }
 
 func (site *Site) Build() error {
 	// clear previous target contents
 	os.RemoveAll(site.Config.TargetDir)
-	os.Mkdir(site.Config.SrcDir, DIR_RWE_MODE)
+	os.Mkdir(site.Config.
+		SrcDir, DIR_RWE_MODE)
 
 	wg, files := spawnBuildWorkers(site)
 	defer wg.Wait()
