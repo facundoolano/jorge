@@ -18,7 +18,7 @@ import (
 
 type Serve struct {
 	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"Path to the website project to serve."`
-	Host       string `short:"h" default:"localhost" help:"Host to run the server on."`
+	Host       string `short:"H" default:"localhost" help:"Host to run the server on."`
 	Port       int    `short:"p" default:"4001" help:"Port to run the server on."`
 	NoReload   bool   `help:"Disable live reloading."`
 }
