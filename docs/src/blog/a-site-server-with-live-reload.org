@@ -29,8 +29,77 @@ The beauty of the ~serve~ command was that I could start with the most naive imp
 
 *** Watching for changes
 - fsnotify to trigger builds
-- optimization: ln static files
 - optimization: worker pool
+
+#+begin_src go
+func (site *Site) Build() error {
+	// clear previous target contents
+	os.RemoveAll(site.Config.TargetDir)
+
+	// walk the source directory, creating directories and files at the target dir
+	return filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+		targetPath := filepath.Join(site.Config.TargetDir, subpath)
+
+		// if it's a directory, just create the same at the target
+		if entry.IsDir() {
+			return os.MkdirAll(targetPath, FILE_RW_MODE)
+		}
+
+		// render or copy the source file at target
+		return site.buildFile(path, targetPath)
+	})
+}
+#+end_src
+
+#+begin_src go
+// Create a channel to send paths to build and a worker pool to handle them concurrently
+func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
+	var wg sync.WaitGroup
+	files := make(chan string, 20)
+
+	for range runtime.NumCPU() {
+		wg.Add(1)
+		go func(files <-chan string) {
+			defer wg.Done()
+			for path := range files {
+				site.buildFile(path)
+			}
+		}(files)
+	}
+	return &wg, files
+}
+#+end_src
+
+#+begin_src go
+func (site *site) build() error {
+	// clear previous target contents
+	os.RemoveAll(site.config.TargetDir)
+
+	wg, files := spawnBuildWorkers(site)
+	defer wg.Wait()
+	defer close(files)
+
+	// walk the source directory, creating directories and files at the target dir
+	return filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		subpath, _ := filepath.Rel(site.config.SrcDir, path)
+		targetPath := filepath.Join(site.config.TargetDir, subpath)
+
+		// if it's a directory, just create the same at the target
+		if entry.IsDir() {
+			return os.MkdirAll(targetPath, DIR_RWE_MODE)
+		}
+		// if it's a file (either static or template) send the path to a worker to build in target
+		files <- path
+		return nil
+	})
+}
+#+end_src
+
+- optimization: ln static files
 
 *** Live reload
 
