@@ -25,12 +25,7 @@ func (cmd *Build) Run(ctx *kong.Context) error {
 		return err
 	}
 
-	site, err := site.Load(*config)
-	if err != nil {
-		return err
-	}
-
-	return site.Build()
+	return site.Build(*config)
 }
 
 // Prompt the user for a string value

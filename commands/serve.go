@@ -157,13 +157,7 @@ func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *Event
 		fmt.Println("couldn't add watchers:", err)
 	}
 
-	site, err := site.Load(*config)
-	if err != nil {
-		fmt.Println("load error:", err)
-		return
-	}
-
-	if err := site.Build(); err != nil {
+	if err := site.Build(*config); err != nil {
 		fmt.Println("build error:", err)
 		return
 	}
