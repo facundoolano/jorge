@@ -246,8 +246,6 @@ func (site *site) addPrevNext(posts []map[string]interface{}) {
 func (site *site) build() error {
 	// clear previous target contents
 	os.RemoveAll(site.config.TargetDir)
-	os.Mkdir(site.config.
-		SrcDir, DIR_RWE_MODE)
 
 	wg, files := spawnBuildWorkers(site)
 	defer wg.Wait()
