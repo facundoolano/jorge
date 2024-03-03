@@ -252,7 +252,7 @@ func (site *site) build() error {
 	defer close(files)
 
 	// walk the source directory, creating directories and files at the target dir
-	err := filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	return filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -267,8 +267,6 @@ func (site *site) build() error {
 		files <- path
 		return nil
 	})
-
-	return err
 }
 
 // Create a channel to send paths to build and a worker pool to handle them concurrently
