@@ -23,6 +23,7 @@ import (
 
 const FM_SEPARATOR = "---"
 const NO_SYNTAX_HIGHLIGHTING = ""
+const CODE_TABWIDTH = 4
 
 type Engine = liquid.Engine
 
@@ -168,6 +169,7 @@ func (templ Template) RenderWith(context map[string]interface{}, hlTheme string)
 		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
 			options = append(options, goldmark.WithExtensions(gm_highlight.NewHighlighting(
 				gm_highlight.WithStyle(hlTheme),
+				gm_highlight.WithFormatOptions(html.TabWidth(CODE_TABWIDTH)),
 			)))
 		}
 		md := goldmark.New(options...)
@@ -190,7 +192,9 @@ func highlightCodeBlock(hlTheme string) func(source string, lang string, inline 
 		}
 		l = chroma.Coalesce(l)
 		it, _ := l.Tokenise(nil, source)
-		options := []html.Option{}
+		options := []html.Option{
+			html.TabWidth(CODE_TABWIDTH),
+		}
 		if params[":hl_lines"] != "" {
 			ranges := org.ParseRanges(params[":hl_lines"])
 			if ranges != nil {
