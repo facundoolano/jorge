@@ -22,6 +22,23 @@ The beauty of the ~serve~ command was that I could start with the most naive imp
 
 ** 2. Context
 
+In terms of the ~jorge~ source code, for the purposes of the ~serve~ command implemented below it should suffice to know that there's a ~site~ package with an associated ~Site~ struct. It's public interface looks like this:
+
+#+begin_src go
+type Site struct {
+        Config  config.Config
+}
+
+// Create a new site instance by scanning the project directories
+// pointed by `config`, loading layouts, templates and data files.
+func Load(config config.Config) (*Site, error)
+
+// Walk `config.SrcDir` and reproduce it at `config.TargetDir`,
+// rendering template files and copying static ones.
+// The previous target dir contents are deleted.
+func (site *Site) Build() error
+#+end_src
+
 ** 3. Implementation
 
 *** A basic file server
