@@ -22,8 +22,8 @@ import (
 const FILE_RW_MODE = 0666
 const DIR_RWE_MODE = 0777
 
-type Site struct {
-	Config  config.Config
+type site struct {
+	config  config.Config
 	layouts map[string]markup.Template
 	posts   []map[string]interface{}
 	pages   []map[string]interface{}
@@ -48,11 +48,11 @@ func Build(config config.Config) error {
 
 // Create a new site instance by scanning the project directories
 // pointed by `config`,  loading layouts, templates and data files.
-func load(config config.Config) (*Site, error) {
-	site := Site{
+func load(config config.Config) (*site, error) {
+	site := site{
 		layouts:        make(map[string]markup.Template),
 		templates:      make(map[string]*markup.Template),
-		Config:         config,
+		config:         config,
 		tags:           make(map[string][]map[string]interface{}),
 		data:           make(map[string]interface{}),
 		templateEngine: markup.NewEngine(config.SiteUrl, config.IncludesDir),
@@ -75,8 +75,8 @@ func load(config config.Config) (*Site, error) {
 	return &site, nil
 }
 
-func (site *Site) loadLayouts() error {
-	files, err := os.ReadDir(site.Config.LayoutsDir)
+func (site *site) loadLayouts() error {
+	files, err := os.ReadDir(site.config.LayoutsDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -87,7 +87,7 @@ func (site *Site) loadLayouts() error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(site.Config.LayoutsDir, filename)
+			path := filepath.Join(site.config.LayoutsDir, filename)
 			templ, err := markup.Parse(site.templateEngine, path)
 			if err != nil {
 				return checkFileError(err)
@@ -101,8 +101,8 @@ func (site *Site) loadLayouts() error {
 	return nil
 }
 
-func (site *Site) loadDataFiles() error {
-	files, err := os.ReadDir(site.Config.DataDir)
+func (site *site) loadDataFiles() error {
+	files, err := os.ReadDir(site.config.DataDir)
 
 	if os.IsNotExist(err) {
 		return nil
@@ -113,7 +113,7 @@ func (site *Site) loadDataFiles() error {
 	for _, entry := range files {
 		if !entry.IsDir() {
 			filename := entry.Name()
-			path := filepath.Join(site.Config.DataDir, filename)
+			path := filepath.Join(site.config.DataDir, filename)
 
 			yamlContent, err := os.ReadFile(path)
 			if err != nil {
@@ -133,12 +133,12 @@ func (site *Site) loadDataFiles() error {
 	return nil
 }
 
-func (site *Site) loadTemplates() error {
-	if _, err := os.Stat(site.Config.SrcDir); err != nil {
+func (site *site) loadTemplates() error {
+	if _, err := os.Stat(site.config.SrcDir); err != nil {
 		return fmt.Errorf("missing src directory")
 	}
 
-	err := filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	err := filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := markup.Parse(site.templateEngine, path)
 			// if something fails or this is not a template, skip
@@ -147,8 +147,8 @@ func (site *Site) loadTemplates() error {
 			}
 
 			// set site related (?) metadata. Not sure if this should go elsewhere
-			relPath, _ := filepath.Rel(site.Config.SrcDir, path)
-			srcPath, _ := filepath.Rel(site.Config.RootDir, path)
+			relPath, _ := filepath.Rel(site.config.SrcDir, path)
+			srcPath, _ := filepath.Rel(site.config.RootDir, path)
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
 			templ.Metadata["src_path"] = srcPath
 			templ.Metadata["path"] = relPath
@@ -157,7 +157,7 @@ func (site *Site) loadTemplates() error {
 
 			// if drafts are disabled, exclude from posts, page and tags indexes, but not from site.templates
 			// we want to explicitly exclude the template from the target, rather than treating it as a non template file
-			if !templ.IsDraft() || site.Config.IncludeDrafts {
+			if !templ.IsDraft() || site.config.IncludeDrafts {
 				// posts are templates that can be chronologically sorted --that have a date.
 				// the rest are pages.
 				if templ.IsPost() {
@@ -217,9 +217,9 @@ func (site *Site) loadTemplates() error {
 	return nil
 }
 
-func (site *Site) addPrevNext(posts []map[string]interface{}) {
+func (site *site) addPrevNext(posts []map[string]interface{}) {
 	for i, post := range posts {
-		path := filepath.Join(site.Config.RootDir, post["src_path"].(string))
+		path := filepath.Join(site.config.RootDir, post["src_path"].(string))
 
 		// only consider them part of the same collection if they share the directory
 		if i > 0 && post["dir"] == posts[i-1]["dir"] {
@@ -241,10 +241,10 @@ func (site *Site) addPrevNext(posts []map[string]interface{}) {
 
 // Walk the `site.Config.SrcDir` directory and reproduce it at `site.Config.TargetDir`,
 // rendering template files and copying static ones. The previous target dir contents are deleted.
-func (site *Site) build() error {
+func (site *site) build() error {
 	// clear previous target contents
-	os.RemoveAll(site.Config.TargetDir)
-	os.Mkdir(site.Config.
+	os.RemoveAll(site.config.TargetDir)
+	os.Mkdir(site.config.
 		SrcDir, DIR_RWE_MODE)
 
 	wg, files := spawnBuildWorkers(site)
@@ -252,12 +252,12 @@ func (site *Site) build() error {
 	defer close(files)
 
 	// walk the source directory, creating directories and files at the target dir
-	err := filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+	err := filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
-		targetPath := filepath.Join(site.Config.TargetDir, subpath)
+		subpath, _ := filepath.Rel(site.config.SrcDir, path)
+		targetPath := filepath.Join(site.config.TargetDir, subpath)
 
 		// if it's a directory, just create the same at the target
 		if entry.IsDir() {
@@ -272,7 +272,7 @@ func (site *Site) build() error {
 }
 
 // Create a channel to send paths to build and a worker pool to handle them concurrently
-func spawnBuildWorkers(site *Site) (*sync.WaitGroup, chan string) {
+func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
 
 	var wg sync.WaitGroup
 	files := make(chan string, 20)
@@ -289,16 +289,16 @@ func spawnBuildWorkers(site *Site) (*sync.WaitGroup, chan string) {
 	return &wg, files
 }
 
-func (site *Site) buildFile(path string) error {
-	subpath, _ := filepath.Rel(site.Config.SrcDir, path)
-	targetPath := filepath.Join(site.Config.TargetDir, subpath)
+func (site *site) buildFile(path string) error {
+	subpath, _ := filepath.Rel(site.config.SrcDir, path)
+	targetPath := filepath.Join(site.config.TargetDir, subpath)
 
 	var contentReader io.Reader
 	var err error
 	templ, found := site.templates[path]
 	if !found {
 		// if no template found at location, treat the file as static write its contents to target
-		if site.Config.LinkStatic {
+		if site.config.LinkStatic {
 			// dev optimization: link static files instead of copying them
 			abs, _ := filepath.Abs(path)
 			err = os.Symlink(abs, targetPath)
@@ -312,7 +312,7 @@ func (site *Site) buildFile(path string) error {
 		defer srcFile.Close()
 		contentReader = srcFile
 	} else {
-		if templ.IsDraft() && !site.Config.IncludeDrafts {
+		if templ.IsDraft() && !site.config.IncludeDrafts {
 			fmt.Println("skipping draft", targetPath)
 			return nil
 		}
@@ -336,7 +336,7 @@ func (site *Site) buildFile(path string) error {
 	if err != nil {
 		return err
 	}
-	if site.Config.Minify {
+	if site.config.Minify {
 		contentReader = site.minifier.Minify(targetExt, contentReader)
 	}
 
@@ -344,10 +344,10 @@ func (site *Site) buildFile(path string) error {
 	return writeToFile(targetPath, contentReader)
 }
 
-func (site *Site) render(templ *markup.Template) ([]byte, error) {
+func (site *site) render(templ *markup.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
-			"config": site.Config.AsContext(),
+			"config": site.config.AsContext(),
 			"posts":  site.posts,
 			"tags":   site.tags,
 			"pages":  site.pages,
@@ -356,7 +356,7 @@ func (site *Site) render(templ *markup.Template) ([]byte, error) {
 	}
 
 	ctx["page"] = templ.Metadata
-	content, err := templ.RenderWith(ctx, site.Config.HighlightTheme)
+	content, err := templ.RenderWith(ctx, site.config.HighlightTheme)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +367,7 @@ func (site *Site) render(templ *markup.Template) ([]byte, error) {
 		if layout_templ, ok := site.layouts[layout.(string)]; ok {
 			ctx["layout"] = layout_templ.Metadata
 			ctx["content"] = content
-			content, err = layout_templ.RenderWith(ctx, site.Config.HighlightTheme)
+			content, err = layout_templ.RenderWith(ctx, site.config.HighlightTheme)
 			if err != nil {
 				return nil, err
 			}
@@ -430,8 +430,8 @@ func getExcerpt(templ *markup.Template) string {
 }
 
 // if live reload is enabled, inject the reload snippet to html files
-func (site *Site) injectLiveReload(extension string, contentReader io.Reader) (io.Reader, error) {
-	if !site.Config.LiveReload || extension != ".html" {
+func (site *site) injectLiveReload(extension string, contentReader io.Reader) (io.Reader, error) {
+	if !site.config.LiveReload || extension != ".html" {
 		return contentReader, nil
 	}
 
@@ -454,6 +454,6 @@ function newSSE() {
   };
 }
 newSSE();`
-	script := fmt.Sprintf(JS_SNIPPET, site.Config.SiteUrl)
+	script := fmt.Sprintf(JS_SNIPPET, site.config.SiteUrl)
 	return markup.InjectScript(contentReader, script)
 }
