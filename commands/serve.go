@@ -170,15 +170,15 @@ func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *Event
 // Tweaks the http file system to construct a server that hides the .html suffix from requests.
 // Based on https://stackoverflow.com/a/57281956/993769
 type HTMLFileSystem struct {
-	d http.Dir
+	dirFS http.Dir
 }
 
-func (d HTMLFileSystem) Open(name string) (http.File, error) {
+func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
 	// Try name as supplied
-	f, err := d.d.Open(name)
+	f, err := htmlFS.dirFS.Open(name)
 	if os.IsNotExist(err) {
 		// Not found, try with .html
-		if f, err := d.d.Open(name + ".html"); err == nil {
+		if f, err := htmlFS.dirFS.Open(name + ".html"); err == nil {
 			return f, nil
 		}
 	}
