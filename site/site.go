@@ -36,7 +36,9 @@ type site struct {
 	minifier markup.Minifier
 }
 
-// TODO
+// Load the site project pointed by `config`, then walk `config.SrcDir`
+// and recreate it at `config.TargetDir` by rendering template files and copying static ones.
+// The previous target dir contents are deleted.
 func Build(config config.Config) error {
 	site, err := load(config)
 	if err != nil {
@@ -47,7 +49,7 @@ func Build(config config.Config) error {
 }
 
 // Create a new site instance by scanning the project directories
-// pointed by `config`,  loading layouts, templates and data files.
+// pointed by `config`, loading layouts, templates and data files.
 func load(config config.Config) (*site, error) {
 	site := site{
 		layouts:        make(map[string]markup.Template),
@@ -240,7 +242,7 @@ func (site *site) addPrevNext(posts []map[string]interface{}) {
 }
 
 // Walk the `site.Config.SrcDir` directory and reproduce it at `site.Config.TargetDir`,
-// rendering template files and copying static ones. The previous target dir contents are deleted.
+// rendering template files and copying static ones.
 func (site *site) build() error {
 	// clear previous target contents
 	os.RemoveAll(site.config.TargetDir)

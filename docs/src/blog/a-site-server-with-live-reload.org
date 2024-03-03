@@ -9,7 +9,7 @@ draft: true
 #+OPTIONS: toc:nil num:1
 #+LANGUAGE: en
 
-** 1. Introduction
+** Introduction
 
 The core of the static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML--- and write the output for serving to the web. <This is where I started with ~jorge~, not only because it was the fundamental feature but because I needed to see the org-mode parsing output as early as possible to know whether I could reasonably expect this project to ultimately replace my Jekyll + org-export setup.
 
@@ -20,26 +20,7 @@ I knew it was a feasible feature because other generators have it, but I didn't 
 
 The beauty of the ~serve~ command was that I could start with the most naive implementation and iterate towards the ideal one, keeping a usable command at every step. With ~build~ and ~serve~ out of the way, I'd be almost done with the project, the rest being nice to have features and UX improvements.
 
-** 2. Context
-
-In terms of the ~jorge~ source code, for the purposes of the ~serve~ command implemented below it should suffice to know that there's a ~site~ package with an associated ~Site~ struct. It's public interface looks like this:
-
-#+begin_src go
-type Site struct {
-        Config  config.Config
-}
-
-// Create a new site instance by scanning the project directories
-// pointed by `config`, loading layouts, templates and data files.
-func Load(config config.Config) (*Site, error)
-
-// Walk `config.SrcDir` and reproduce it at `config.TargetDir`,
-// rendering template files and copying static ones.
-// The previous target dir contents are deleted.
-func (site *Site) Build() error
-#+end_src
-
-** 3. Implementation
+** Implementation
 
 *** A basic file server
 
