@@ -230,6 +230,10 @@ blockquote {
         line-height: 1.7;
     }
 
+    .layout-post pre, .layout-post code {
+        font-size: 0.9rem;
+    }
+
     .layout-post p + p {
         text-indent: 0;
     }
