@@ -25,10 +25,51 @@ The beauty of the ~serve~ command was that I could start with the most naive imp
 *** A basic file server
 
 - basic fs server implementaion
+#+begin_src go
+func Serve(config config.Config) error {
+	// load and build the project
+	if err := site.Build(config); err != nil {
+		return err
+	}
+
+	// serve target with file server
+	fs := http.FileServer(http.Dir(config.TargetDir))
+	http.Handle("/", fs)
+
+	fmt.Println("server listening at http://localhost:4001/")
+	return http.ListenAndServe(":4001", nil)
+}
+#+end_src
+
 - improve for directory and html handling
+  https://stackoverflow.com/a/57281956/993769
+#+begin_src go
+type HTMLFileSystem struct {
+	dirFS http.Dir
+}
+
+func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
+	// Try name as supplied
+	f, err := htmlFS.dirFS.Open(name)
+	if os.IsNotExist(err) {
+		// Not found, try with .html
+		if f, err := htmlFS.dirFS.Open(name + ".html"); err == nil {
+			return f, nil
+		}
+	}
+	return f, err
+}
+#+end_src
+
+#+begin_src go
+fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
+http.Handle("/", fs)
+#+end_src
 
 *** Watching for changes
 - fsnotify to trigger builds
+
+*** Build optimizations
 - optimization: worker pool
 
 #+begin_src go
@@ -103,6 +144,7 @@ func (site *site) build() error {
 
 *** Live reload
 
+- intro sse (vs ws)
 - naive implementation
 - event broker
   - is this name right?
@@ -111,3 +153,4 @@ func (site *site) build() error {
 - don't stop on errors
 - ignore chmod and temp file events
 - delay to prevent bursts
+- make the js
