@@ -178,7 +178,95 @@ func (site *site) build() error {
 *** Live reload
 
 - intro sse (vs ws)
-- naive implementation
+- sse boilerplate
+
+#+begin_src diff
+	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
+	http.Handle("/", fs)
++	http.Handle("/_events/", ServerEventsHandler)
+#+end_src
+
+#+begin_src go
+func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "text/event-stream")
+	res.Header().Set("Connection", "keep-alive")
+	res.Header().Set("Cache-Control", "no-cache")
+	res.Header().Set("Access-Control-Allow-Origin", "*")
+
+	for {
+		select {
+		case <-time.After(5 * time.Second):
+			// send an event to the connected client.
+			// data\n\n just means send an empty, unnamed event
+			fmt.Fprint(res, "data\n\n")
+			res.(http.Flusher).Flush()
+		case <-req.Context().Done():
+			// client connection closed
+			return
+		}
+	}
+}
+#+end_src
+
+- client boilerplate
+
+#+begin_src javascript
+var eventSource;
+
+function newSSE() {
+  console.log("connecting to server events");
+  eventSource = new EventSource('http://localhost:4001/_events/');
+
+  // when the server sends an event, refresh the page
+  eventSource.onmessage = function () {
+    location.reload()
+  };
+
+  // close connection before refreshing the page
+  window.onbeforeunload = function() {
+    eventSource.close();
+  }
+
+  // on errors disconnect and attempt reconnection after a delay
+  // this handles server restarting, laptop sleeping, etc.
+  eventSource.onerror = function (event) {
+    console.error('an error occurred:', event);
+    eventSource.close();
+    setTimeout(newSSE, 5000)
+  };
+}
+
+newSSE();
+  #+end_src
+
 - event broker
+  - explain need
   - is this name right?
+  - show api + link implementation
+  - show updated handler
+  - show updated watcher
+
+#+begin_src diff
+-func runWatcher(config *config.Config) {
++func runWatcher(config *config.Config) *EventBroker {
+	watcher, _ := fsnotify.NewWatcher()
+	defer watchProjectFiles(watcher, config)
++	broker := newEventBroker()
+
+	go func() {
+		for event := range watcher.Events {
+			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+
+			// new src directories could be triggering this event
+			// so project files need to be re-added every time
+			watchProjectFiles(watcher, config)
+
+			site.Build(*config)
++			broker.publish("rebuild")
+		}
+	}()
+
++	return broker
+}
+#+end_src
 - delay to prevent bursts
