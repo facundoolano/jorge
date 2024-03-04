@@ -9,18 +9,14 @@ draft: true
 #+OPTIONS: toc:nil num:1
 #+LANGUAGE: en
 
-** Introduction
+The core of the static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML--- and write the output for serving to the web. This is where I started with ~jorge~, not only because it was core functionality but because I needed to see the org-mode output as early as possible to learn if I could expect this project to ultimately replace my Jekyll setup.
 
-The core of the static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML--- and write the output for serving to the web. <This is where I started with ~jorge~, not only because it was the fundamental feature but because I needed to see the org-mode parsing output as early as possible to know whether I could reasonably expect this project to ultimately replace my Jekyll + org-export setup.
+You could say that I had a working static site generator as soon as the ~build~ command was done, but for it to be minimally useful I needed some facility to preview a site while working on it: a ~serve~ command. It could be as simple as running a local file server of the ~build~ output files, but ideally I it would also watch for changes and live-reload the browser tabs looking at them.
 
-Although you could say that I had a working static site generator as soon I had the ~build~ command, for it to be minimally useful I needed some facility to preview a site while working on it: a ~serve~ command. It could be as simple as running local file server of the ~build~ output files, but ideally I would make it watch for changes and live reload the browser tabs looking at them.
+I was aiming for more than the basics here because ~serve~ was the only non-trivial command I had planned for: the one with the most Go learning potential ---and the most fun. For similar reasons, I wanted to tackle it as early as possible: since it wasn't immediately obvious how I would implement it, it was here where unknown-unknowns and blockers were most likely to come up.
+With ~build~ and ~serve~ out of the way, I'd be almost done with the project, the rest being nice-to-have features and UX improvements.
 
-I was aiming for more than the basics here because ~serve~ was the only non-trivial command I had planned for: the one with the most potential to learn other Go features ---and the most fun. For similar reasons I wanted to tackle it as early as possible: since it wasn't immediately obvious how I would implement it, it was here where unknown-unknowns and blockers were most likely to come up.
-I knew it was a feasible feature because other generators have it, but I didn't want to just copy whatever Hugo or gojekyll were doing, I wanted to figure it out for myself.
-
-The beauty of the ~serve~ command was that I could start with the most naive implementation and iterate towards the ideal one, keeping a usable command at every step. With ~build~ and ~serve~ out of the way, I'd be almost done with the project, the rest being nice to have features and UX improvements.
-
-** Implementation
+The beauty of the ~serve~ command was that I could start with the most naive implementation and iterate towards the ideal one, keeping a usable command at every step. Below is a summary of that process.
 
 *** A basic file server
 
@@ -76,7 +72,7 @@ func runWatcher(config *config.Config) {
 
 	go func() {
 		for event := range watcher.Events {
-			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+			fmt.Printf("file %s changed\n", event.Name)
 
 			// new src directories could be triggering this event
 			// so project files need to be re-added every time
@@ -114,7 +110,7 @@ func runWatcher(config *config.Config) {
 
 	go func() {
 		for event := range watcher.Events {
-			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+			fmt.Printf("file %s changed\n", event.Name)
 
 -			watchProjectFiles(watcher, config)
 -			site.Build(*config)
@@ -341,7 +337,7 @@ func (broker *EventBroker) publish(event string)
 
 	go func() {
 		for event := range watcher.Events {
-			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+			fmt.Printf("file %s changed\n", event.Name)
 
 			// Schedule a rebuild to trigger after a delay.
 			// If there was another one pending it will be canceled.
