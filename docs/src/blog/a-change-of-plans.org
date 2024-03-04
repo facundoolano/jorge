@@ -4,7 +4,6 @@ date: 2024-03-02
 layout: post
 lang: en
 tags: [project, emacs]
-draft: true
 excerpt: The project concept, as I originally planned it, had a few problems, but they went away when I found out I could parse org-mode files in Go.
 ---
 #+OPTIONS: toc:nil num:nil
