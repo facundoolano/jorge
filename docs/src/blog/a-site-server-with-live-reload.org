@@ -9,7 +9,7 @@ draft: true
 #+OPTIONS: toc:nil num:1
 #+LANGUAGE: en
 
-** 1. Introduction
+** Introduction
 
 The core of the static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML--- and write the output for serving to the web. <This is where I started with ~jorge~, not only because it was the fundamental feature but because I needed to see the org-mode parsing output as early as possible to know whether I could reasonably expect this project to ultimately replace my Jekyll + org-export setup.
 
@@ -20,27 +20,253 @@ I knew it was a feasible feature because other generators have it, but I didn't 
 
 The beauty of the ~serve~ command was that I could start with the most naive implementation and iterate towards the ideal one, keeping a usable command at every step. With ~build~ and ~serve~ out of the way, I'd be almost done with the project, the rest being nice to have features and UX improvements.
 
-** 2. Context
-
-** 3. Implementation
+** Implementation
 
 *** A basic file server
 
 - basic fs server implementaion
+#+begin_src go
+func Serve(config config.Config) error {
+	// load and build the project
+	if err := site.Build(config); err != nil {
+		return err
+	}
+
+	// serve target with file server
+	fs := http.FileServer(http.Dir(config.TargetDir))
+	http.Handle("/", fs)
+
+	fmt.Println("server listening at http://localhost:4001/")
+	return http.ListenAndServe(":4001", nil)
+}
+#+end_src
+
 - improve for directory and html handling
+  https://stackoverflow.com/a/57281956/993769
+#+begin_src go
+type HTMLFileSystem struct {
+	dirFS http.Dir
+}
+
+func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
+	// Try name as supplied
+	f, err := htmlFS.dirFS.Open(name)
+	if os.IsNotExist(err) {
+		// Not found, try with .html
+		if f, err := htmlFS.dirFS.Open(name + ".html"); err == nil {
+			return f, nil
+		}
+	}
+	return f, err
+}
+#+end_src
+
+#+begin_src go
+fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
+http.Handle("/", fs)
+#+end_src
 
 *** Watching for changes
 - fsnotify to trigger builds
-- optimization: ln static files
+
+#+begin_src go
+func runWatcher(config *config.Config) {
+	watcher, _ := fsnotify.NewWatcher()
+	defer watchProjectFiles(watcher, config)
+
+	go func() {
+		for event := range watcher.Events {
+			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+
+			// new src directories could be triggering this event
+			// so project files need to be re-added every time
+			watchProjectFiles(watcher, config)
+
+			site.Build(*config)
+		}
+	}()
+}
+
+// Configure the given watcher to notify for changes
+// in the project source files
+func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) {
+	// fsnotify watches all files within a dir, but non recursively
+	// this walks through the src dir and adds watches for each found directory
+	filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
+		if entry.IsDir() {
+			watcher.Add(path)
+		}
+		return nil
+	})
+}
+#+end_src
+
+*** Build optimizations
 - optimization: worker pool
+
+#+begin_src go
+func (site *Site) Build() error {
+	// clear previous target contents
+	os.RemoveAll(site.Config.TargetDir)
+
+	// walk the source directory, creating directories and files at the target dir
+	return filepath.WalkDir(site.Config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+		targetPath := filepath.Join(site.Config.TargetDir, subpath)
+
+		// if it's a directory, just create the same at the target
+		if entry.IsDir() {
+			return os.MkdirAll(targetPath, FILE_RW_MODE)
+		}
+
+		// if it's a file render or copy it at the target
+		return site.buildFile(path, targetPath)
+	})
+}
+#+end_src
+
+#+begin_src go
+// Create a channel to send paths to build and a worker pool to handle them concurrently
+func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
+	var wg sync.WaitGroup
+	files := make(chan string, 20)
+
+	for range runtime.NumCPU() {
+		wg.Add(1)
+		go func(files <-chan string) {
+			defer wg.Done()
+			for path := range files {
+				site.buildFile(path)
+			}
+		}(files)
+	}
+	return &wg, files
+}
+#+end_src
+
+#+begin_src diff
+func (site *site) build() error {
+	// clear previous target contents
+	os.RemoveAll(site.Config.TargetDir)
+
++	wg, files := spawnBuildWorkers(site)
++	defer wg.Wait()
++	defer close(files)
+
+	// walk the source directory, creating directories and files at the target dir
+	return filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+		targetPath := filepath.Join(site.Config.TargetDir, subpath)
+
+		// if it's a directory, just create the same at the target
+		if entry.IsDir() {
+			return os.MkdirAll(targetPath, FILE_RW_MODE)
+		}
+
+-		// if it's a file render or copy it at the target
+-		return site.buildFile(path, targetPath)
++		// if it's a file send the path to a worker
++		// to render or copy it at the target
++		files <- path
++		return nil
+	})
+}
+#+end_src
+
+- optimization: ln static files
 
 *** Live reload
 
-- naive implementation
-- event broker
-  - is this name right?
+- intro sse (vs ws)
+- sse boilerplate
 
-*** Refinements
-- don't stop on errors
-- ignore chmod and temp file events
+#+begin_src diff
+	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
+	http.Handle("/", fs)
++	http.Handle("/_events/", ServerEventsHandler)
+#+end_src
+
+#+begin_src go
+func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
+	res.Header().Set("Content-Type", "text/event-stream")
+	res.Header().Set("Connection", "keep-alive")
+	res.Header().Set("Cache-Control", "no-cache")
+	res.Header().Set("Access-Control-Allow-Origin", "*")
+
+	for {
+		select {
+		case <-time.After(5 * time.Second):
+			// send an event to the connected client.
+			// data\n\n just means send an empty, unnamed event
+			fmt.Fprint(res, "data\n\n")
+			res.(http.Flusher).Flush()
+		case <-req.Context().Done():
+			// client connection closed
+			return
+		}
+	}
+}
+#+end_src
+
+- client boilerplate
+
+#+begin_src javascript
+var eventSource;
+
+function newSSE() {
+  console.log("connecting to server events");
+  eventSource = new EventSource('http://localhost:4001/_events/');
+
+  // when the server sends an event, refresh the page
+  eventSource.onmessage = function () {
+    location.reload()
+  };
+
+  // close connection before refreshing the page
+  window.onbeforeunload = function() {
+    eventSource.close();
+  }
+
+  // on errors disconnect and attempt reconnection after a delay
+  // this handles server restarting, laptop sleeping, etc.
+  eventSource.onerror = function (event) {
+    console.error('an error occurred:', event);
+    eventSource.close();
+    setTimeout(newSSE, 5000)
+  };
+}
+
+newSSE();
+  #+end_src
+
+- event broker
+  - explain need
+  - is this name right?
+  - show api + link implementation
+  - show updated handler
+  - show updated watcher
+
+#+begin_src diff
+-func runWatcher(config *config.Config) {
++func runWatcher(config *config.Config) *EventBroker {
+	watcher, _ := fsnotify.NewWatcher()
+	defer watchProjectFiles(watcher, config)
++	broker := newEventBroker()
+
+	go func() {
+		for event := range watcher.Events {
+			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+
+			// new src directories could be triggering this event
+			// so project files need to be re-added every time
+			watchProjectFiles(watcher, config)
+
+			site.Build(*config)
++			broker.publish("rebuild")
+		}
+	}()
+
++	return broker
+}
+#+end_src
 - delay to prevent bursts

@@ -71,7 +71,7 @@ title: about
 	content = `go away!`
 	newFile(config.SrcDir, "robots.txt", content)
 
-	site, err := Load(*config)
+	site, err := load(*config)
 
 	assertEqual(t, err, nil)
 
@@ -166,7 +166,7 @@ date: 2024-02-03
 	newFile(tutorial2, "another-entry.html", `---
 ---`)
 
-	site, err := Load(*config)
+	site, err := load(*config)
 	// helper method to map a filename to its prev next keys (if any)
 	getPrevNext := func(dir string, filename string) (interface{}, interface{}) {
 		path := filepath.Join(dir, filename)
@@ -261,7 +261,7 @@ date: 2023-01-01
 	file = newFile(config.SrcDir, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, _ := Load(*config)
+	site, _ := load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -314,7 +314,7 @@ tags: [software]
 	file = newFile(config.SrcDir, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, _ := Load(*config)
+	site, _ := load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<h1>software</h1>
@@ -365,7 +365,7 @@ title: "2. an oldie!"
 	file = newFile(config.SrcDir, "index.html", content)
 	defer os.Remove(file.Name())
 
-	site, _ := Load(*config)
+	site, _ := load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -420,7 +420,7 @@ tags: [software]
 	file = newFile(config.SrcDir, "about.html", content)
 	defer os.Remove(file.Name())
 
-	site, _ := Load(*config)
+	site, _ := load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, strings.TrimSpace(string(output)), `goodbye! - an overridden excerpt
@@ -453,7 +453,7 @@ func TestRenderDataFile(t *testing.T) {
 	file = newFile(config.SrcDir, "projects.html", content)
 	defer os.Remove(file.Name())
 
-	site, _ := Load(*config)
+	site, _ := load(*config)
 	output, err := site.render(site.templates[file.Name()])
 	assertEqual(t, err, nil)
 	assertEqual(t, string(output), `<ul>
@@ -505,9 +505,9 @@ layout: base
 	newFile(config.SrcDir, "index.html", content)
 
 	// build site
-	site, err := Load(*config)
+	site, err := load(*config)
 	assertEqual(t, err, nil)
-	err = site.Build()
+	err = site.build()
 	assertEqual(t, err, nil)
 
 	// test target files generated
@@ -574,9 +574,9 @@ layout: base
 
 	// build site with drafts
 	config.IncludeDrafts = true
-	site, err := Load(*config)
+	site, err := load(*config)
 	assertEqual(t, err, nil)
-	err = site.Build()
+	err = site.build()
 	assertEqual(t, err, nil)
 
 	// test target files generated
@@ -599,9 +599,9 @@ layout: base
 
 	// build site WITHOUT drafts
 	config.IncludeDrafts = false
-	site, err = Load(*config)
+	site, err = load(*config)
 	assertEqual(t, err, nil)
-	err = site.Build()
+	err = site.build()
 	assertEqual(t, err, nil)
 
 	// test only non drafts generated

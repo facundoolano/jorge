@@ -34,7 +34,7 @@ func (cmd *Serve) Run(ctx *kong.Context) error {
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, broker, err := setupWatcher(config)
+	watcher, broker, err := runWatcher(config)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (cmd *Serve) Run(ctx *kong.Context) error {
 
 	// serve the target dir with a file server
 	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
-	http.Handle("/", http.StripPrefix("/", fs))
+	http.Handle("/", fs)
 
 	if config.LiveReload {
 		// handle client requests to listen to server-sent events
@@ -83,11 +83,12 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 
 // Sets up a watcher that will publish changes in the site source files
 // to the returned event broker.
-func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
+func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, nil, err
 	}
+	defer watchProjectFiles(watcher, config)
 
 	broker := newEventBroker()
 
@@ -99,42 +100,27 @@ func setupWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error
 	})
 
 	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-
-				// chmod events are noisy, ignore them.
-				// Also ignore dot file events, which are usually spurious (e.g .DS_Store, emacs temp files)
-				isDotFile := strings.HasPrefix(filepath.Base(event.Name), ".")
-				if event.Has(fsnotify.Chmod) || isDotFile {
-					continue
-				}
-
-				// Schedule a rebuild to trigger after a delay. If there was another one pending
-				// it will be canceled.
-				fmt.Printf("\nfile %s changed\n", event.Name)
-				rebuildAfter.Stop()
-				rebuildAfter.Reset(100 * time.Millisecond)
-
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
-				fmt.Println("error:", err)
+		for event := range watcher.Events {
+			// chmod events are noisy, ignore them.
+			// Also ignore dot file events, which are usually spurious (e.g .DS_Store, emacs temp files)
+			isDotFile := strings.HasPrefix(filepath.Base(event.Name), ".")
+			if event.Has(fsnotify.Chmod) || isDotFile {
+				continue
 			}
+
+			// Schedule a rebuild to trigger after a delay. If there was another one pending
+			// it will be canceled.
+			fmt.Printf("\nfile %s changed\n", event.Name)
+			rebuildAfter.Stop()
+			rebuildAfter.Reset(100 * time.Millisecond)
 		}
 	}()
-
-	err = addAll(watcher, config)
 
 	return watcher, broker, err
 }
 
-// Add the layouts and all source directories to the given watcher
-func addAll(watcher *fsnotify.Watcher, config *config.Config) error {
+// Configure the given watcher to notify for changes in the project source files
+func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) error {
 	watcher.Add(config.LayoutsDir)
 	watcher.Add(config.DataDir)
 	watcher.Add(config.IncludesDir)
@@ -153,17 +139,11 @@ func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *Event
 
 	// since new nested directories could be triggering this change, and we need to watch those too
 	// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
-	if err := addAll(watcher, config); err != nil {
+	if err := watchProjectFiles(watcher, config); err != nil {
 		fmt.Println("couldn't add watchers:", err)
 	}
 
-	site, err := site.Load(*config)
-	if err != nil {
-		fmt.Println("load error:", err)
-		return
-	}
-
-	if err := site.Build(); err != nil {
+	if err := site.Build(*config); err != nil {
 		fmt.Println("build error:", err)
 		return
 	}
@@ -176,15 +156,15 @@ func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *Event
 // Tweaks the http file system to construct a server that hides the .html suffix from requests.
 // Based on https://stackoverflow.com/a/57281956/993769
 type HTMLFileSystem struct {
-	d http.Dir
+	dirFS http.Dir
 }
 
-func (d HTMLFileSystem) Open(name string) (http.File, error) {
+func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
 	// Try name as supplied
-	f, err := d.d.Open(name)
+	f, err := htmlFS.dirFS.Open(name)
 	if os.IsNotExist(err) {
 		// Not found, try with .html
-		if f, err := d.d.Open(name + ".html"); err == nil {
+		if f, err := htmlFS.dirFS.Open(name + ".html"); err == nil {
 			return f, nil
 		}
 	}
