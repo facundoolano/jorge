@@ -9,18 +9,18 @@ draft: true
 #+OPTIONS: toc:nil num:1
 #+LANGUAGE: en
 
-The core of the static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML--- and write the output for serving to the web. This is where I started with ~jorge~, not only because it was core functionality but because I needed to see the org-mode output as early as possible to learn if I could expect this project to ultimately replace my Jekyll setup.
+The core of my static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML--- and write the output for serving to the web. This is where I started with ~jorge~, not only because it was core functionality but because I needed to see the org-mode output as early as possible, to learn if I could expect this project to ultimately replace my Jekyll setup.
 
-You could say that I had a working static site generator as soon as the ~build~ command was done, but for it to be minimally useful I needed some facility to preview a site while working on it: a ~serve~ command. It could be as simple as running a local file server of the ~build~ output files, but ideally I it would also watch for changes and live-reload the browser tabs looking at them.
+You could say that I had a working static site generator as soon as the ~build~ command was done, but for it to be minimally useful I needed some facility to preview a site while working on it: the ~serve~ command. It could be as simple as running a local file server of the ~build~ output, but ideally it would also watch for changes in the source files and live-reload the browser tabs looking at them.
 
-I was aiming for more than the basics here because ~serve~ was the only non-trivial command I had planned for: the one with the most Go learning potential ---and the most fun. For similar reasons, I wanted to tackle it as early as possible: since it wasn't immediately obvious how I would implement it, it was here where unknown-unknowns and blockers were most likely to come up.
-With ~build~ and ~serve~ out of the way, I'd be almost done with the project, the rest being nice-to-have features and UX improvements.
+I was aiming for more than the basics here because ~serve~ was the only non-trivial command of the project: the one with the most Go learning potential ---and the most fun. For similar reasons, I wanted to tackle it as early as possible: since it wasn't immediately obvious how I would implement it, it was here where unknown-unknowns and blockers were most likely to come up.
+Once ~build~ and ~serve~ were out of the way, I'd be almost done with the project, the rest being nice-to-have features and UX improvements.
 
-The beauty of the ~serve~ command was that I could start with the most naive implementation and iterate towards the ideal one, keeping a usable command at every step. Below is a summary of that process.
+The beauty of the ~serve~ command was that I could start with a naive implementation and iterate towards the ideal one, keeping a usable command at every step. Below is a summary of that process.
 
 *** A basic file server
 
-The minimum viable implementation of the ~serve~ command consisted in rendering the site by calling ~site.Build(config)~ and serving the target site directory with a local server. Go's standard ~net/http~ already provides facilities for local file servers:
+At its simplest, the ~serve~ command consisted of building the site once and serving the target directory with a local server. The standard ~net/http~ package provides [[https://pkg.go.dev/net/http#FileServer][facilities]] for local file servers:
 
 #+begin_src go
 func Serve(config config.Config) error {
@@ -29,7 +29,7 @@ func Serve(config config.Config) error {
 		return err
 	}
 
-	// serve target with file server
+	// mount the target dir on a local file server
 	fs := http.FileServer(http.Dir(config.TargetDir))
 	http.Handle("/", fs)
 
@@ -38,7 +38,7 @@ func Serve(config config.Config) error {
 }
 #+end_src
 
-This only required a minor changed (which I based on [[https://stackoverflow.com/a/57281956/993769][this]] StackOverflow answer) to allow request urls to omit the ~.html~ suffix so the local server behaved as I expected a production web server would:
+This only required a minor change (based in [[https://stackoverflow.com/a/57281956/993769][this]] StackOverflow answer) to allow omitting the ~.html~ suffix from URLs:
 
 #+begin_src go
 type HTMLFileSystem struct {
@@ -58,7 +58,7 @@ func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
 }
 #+end_src
 
-The ~HTMLFileSystem~ above wraps the standard ~http.Dir~ optionally looking for e.g. ~target/blog/hello.html~ when the URL requests for ~/blog/hello~. The server setup thus changed to:
+The ~HTMLFileSystem~ above wraps the standard ~http.Dir~ to look for a ~.html~ file when the filename requested isn't found so, for instance, ~target/blog/hello.html~ will be served when receiving a request for ~/blog/hello~. The server setup thus changed to:
 
 #+begin_src diff
 -	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
@@ -70,11 +70,9 @@ The ~HTMLFileSystem~ above wraps the standard ~http.Dir~ optionally looking for 
 #+end_src
 
 *** Watching for changes
-The obvious next step was to, instead of building the site once before starting the server, watching the project source directory and trigger new site builds every time a file change was detected.
+As a next step, instead of building the site once before running the server I wanted the command to watch the project source directory and trigger new builds every time a file changed. I found the [[https://github.com/fsnotify/fsnotify][fsnotify]] library for this exact purpose; the fact that both Hugo and gojekyll listed it in their dependencies suggested that it was a reasonable choice for the job.
 
-I found the [[https://github.com/fsnotify/fsnotify][fsnotify]] library for this exact purpose; the fact that both Hugo and gojekyll listed it in their dependencies hinted to me that it was a reasonable choice for job.
-
-Following the [[https://github.com/fsnotify/fsnotify#usage][example]] in the documentation, I created a watcher and a goroutine that reacted with a ~site.Build~ call to every incoming event:
+Following [[https://github.com/fsnotify/fsnotify/blob/c94b93b0602779989a9af8c023505e99055c8fe5/README.md#usage][an example]] from the fsnotify documentation, I created a watcher and a goroutine that triggered a ~site.Build~ call every time a file change event was received:
 
 #+begin_src go
 func runWatcher(config *config.Config) {
@@ -85,8 +83,8 @@ func runWatcher(config *config.Config) {
 		for event := range watcher.Events {
 			fmt.Printf("file %s changed\n", event.Name)
 
-			// new src directories could be triggering this event
-			// so project files need to be re-added every time
+			// src directories could have changed
+			// so project files need to be re-watched every time
 			watchProjectFiles(watcher, config)
 			site.Build(*config)
 		}
@@ -99,7 +97,8 @@ Then made the watcher look at changes in the project ~src~ directory:
 #+begin_src go
 func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) {
 	// fsnotify watches all files within a dir, but non-recursively
-	// this walks through the src dir and adds watches for each found directory
+	// this walks through the source dir
+	// adding watches for each found subdir
 	filepath.WalkDir(config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if entry.IsDir() {
 			watcher.Add(path)
@@ -110,13 +109,13 @@ func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) {
 #+end_src
 
 *** Build optimizations
-At this point the file server was useful, always responding with the most recent version of the site. But the responsiveness of the command was less than ideal: the entire website had to be processed and copied to the target for every file save in the source.
+At this point I had a useful file server, always responding with the most recent version of the site. But the responsiveness of the ~serve~ command was less than ideal: the entire website had to be processed and copied to the target for any small edit I made on a source file.
 
-I wanted to make some performance improvements to this process, but without adding much code complexity: instead of getting into incremental or conditional builds, I wanted to keep building the entire site on very change, only faster.
+I wanted to attempt some performance improvements to the build process, but without introducing much complexity: instead of adding the structure to support incremental or conditional builds, I wanted to try first to keep building the entire site on every change, only faster.
 
 The first cheap optimization was obvious from looking at the command output: most of the work was copying static assets (e.g. images, static CSS files, etc.). So I changed the ~site.Build~ implementation to optionally create links instead of copying files.
 
-The next thing I wanted to try was to process source files work concurrently. The logic of the target building was handled by a method from an internal ~site~ struct:
+The next thing I wanted to try was to process source files work concurrently. The logic for creating target directories and rendering files was handled by an internal method:
 
 #+begin_src go
 func (site *site) build() error {
@@ -139,10 +138,13 @@ func (site *site) build() error {
 }
 #+end_src
 
-The ~build~ method walks the source file tree, recreating directories in the target. For non-directory files, it delegates the actual file processing (rendering templates, converting markdown and org-mode syntax to HTML, "smartifying" quotes, and copying the results to the target files) to another internal method: ~site.buildFile~. I wanted this one to run in a worker pool; I found the facilities I needed in a couple of [[https://gobyexample.com/][Go by Example]] entries:
+This ~site.build~ method walks the source file tree, recreating directories in the target. For non-directory files, it calls another method, ~site.buildFile~, to do the actual processing (rendering templates, converting markdown and org-mode syntax to HTML, "smartifying" quotes, and writing the results to the target files). I wanted the calls to ~site.buildFile~ offloaded to a pool of workers; I found the facilities I needed in a couple of [[https://gobyexample.com/][Go by Example]] entries:
 
 #+begin_src go
-// Create a channel to send paths to build and a worker pool to handle them concurrently
+// Runs a pool of workers to build files. Returns a channel
+// to send the paths of files to be built and a WaitGroup
+// to wait them to finish processing.
+Create a channel to send paths to build and a worker pool to handle them concurrently
 func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
 	var wg sync.WaitGroup
 	files := make(chan string, 20)
@@ -160,9 +162,9 @@ func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
 }
 #+end_src
 
-The function above creates a buffered channel to receive source file paths, and a worker pool of the size of the available CPU cores. Each worker registers itself on a ~WaitGroup~ that can be used by callers to block until all workers finish their work.
+The function above creates a buffered channel to receive source file paths, and a worker pool with the size of the amount of CPU cores. Each worker registers itself on a ~WaitGroup~ that can be used by callers to block until all workers finish their work.
 
-Then, it was just a matter of creating the workers and sending the filepaths through the channel instead of building the files sequentially:
+Then I just needed to adapt the ~build~ function to spawn the workers and send them  file paths through the channel, instead of processing them sequentially:
 
 #+begin_src diff
 func (site *site) build() error {
@@ -193,9 +195,9 @@ func (site *site) build() error {
 }
 #+end_src
 
-The ~defer close(files)~ closes the channel to inform the workers that no more work will be sent, and the ~defer wg.Wait()~ blocks until all finish processing what they read from the channel.
+the ~close(files)~ call informs the workers that no more work will be sent, and ~wg.Wait()~ blocks execution until all pending work is finished.
 
-I loved that I could turn a sequential piece of code into a concurrent one with minimal structural changes, without touching calling sites of the affected function. In other languages, a similar process would have required me to add ~async~ and ~await~ statements to half of the codebase.
+I was very satisfied to see a sequential piece of code turned into a concurrent one with minimal structural changes, without affecting callers of the function I updated. In other languages, a similar process would have required me to add ~async~ and ~await~ statements all over the place.
 
 *** Live reload
 
@@ -230,9 +232,10 @@ func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
 }
 #+end_src
 
-- client boilerplate
+The code above will send an empty event every 5 seconds to clients connected to the ~/_events/~ endpoint. After some trial-and-error, I arrived to the following JavaScript snippet for the client side:
 
-#+begin_src javascript
+#+begin_src html
+<script type="text/javascript">
 var eventSource;
 
 function newSSE() {
@@ -259,13 +262,12 @@ function newSSE() {
 }
 
 newSSE();
+</script>
   #+end_src
 
-- event broker
-  - explain need
-  - is this name right?
-  - show api + link implementation
-    see the full implementation [[https://github.com/facundoolano/jorge/blob/567db560f511b11492b85cf4f72b51599e8e3a3d/commands/serve.go#L175-L238][here]]
+Clients will establish an [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][EventSource]] connection through the ~/_events/~ endpoint, and reload the window whenever a server-sent event arrives. I updated the ~site.buildFile~ logic to inject this script in the header of every HTML file written to the target directory.
+
+So far I had a working events handler and clients connecting to it. I just needed to update the handler to only send events after site rebuilds triggered by the fsnotify watcher. I couldn't just use a channel to connect both components since every rebuild event needed to be broadcast to all connected clients (there could be more than one open tab at any given moment). I introduced an ~EventBroker~ [fn:1]struct for that purpose, with this API (see the full implementation [[https://github.com/facundoolano/jorge/blob/567db560f511b11492b85cf4f72b51599e8e3a3d/commands/serve.go#L175-L238][here]]):
 
 #+begin_src go
 // The event broker mediates between the file watcher
@@ -286,10 +288,10 @@ func (broker *EventBroker) unsubscribe(id uint64)
 
 // Publish an event to all the broker subscribers.
 func (broker *EventBroker) publish(event string)
-
-
 #+end_src
-  - show updated handler
+
+The events handler now needed to create a subscription on every client connection, to forward rebuild events through it:
+
 #+begin_src diff
 -func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
 +func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
@@ -317,7 +319,8 @@ func (broker *EventBroker) publish(event string)
 	}
 }
 #+end_src
-  - show updated watcher
+
+The watcher, in turn, had to publish an event after every rebuild:
 
 #+begin_src diff
 -func runWatcher(config *config.Config) {
@@ -342,7 +345,10 @@ func (broker *EventBroker) publish(event string)
 #+end_src
 
 
-** Preventing bursts
+*** Handling event bursts
+
+The code above worked, but not always. Some times, a file change would trigger a browser refresh to a 404 page, as if the new target file wasn't yet written. This was a consequence of single file changes producing many write events, and <it's mentioned in the fsnotify documentation. The solution (also suggested in the doc [LINK]) is to de-duplicate events by adding a delay between event arrival and response. <time.AfterFunc [LINK] helps here
+
 
 #+begin_src diff
 func runWatcher(config *config.Config) *EventBroker {
@@ -372,3 +378,7 @@ func runWatcher(config *config.Config) *EventBroker {
 	return broker
 }
 #+end_src
+
+** Notes
+
+[fn:1] I'm not sure if "broker" is semantically correct in this context, since there's a single event type and is sent to all subscribers. "Broadcaster" is probably more correct, but sounds worse.
