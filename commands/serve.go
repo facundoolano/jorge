@@ -42,7 +42,7 @@ func (cmd *Serve) Run(ctx *kong.Context) error {
 
 	// serve the target dir with a file server
 	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
-	http.Handle("/", http.StripPrefix("/", fs))
+	http.Handle("/", fs)
 
 	if config.LiveReload {
 		// handle client requests to listen to server-sent events
