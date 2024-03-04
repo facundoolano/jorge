@@ -172,9 +172,9 @@ func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
 	return f, err
 }
 
-// The event broker allows the file watcher to publish site rebuild events
-// and register http clients to listen for them, in order to trigger browser refresh
-// events after the the site has been rebuilt.
+// The event broker mediates between the file watcher
+// that publishes site rebuild events
+// and the clients listening for them to refresh the browser
 type EventBroker struct {
 	inEvents        chan string
 	inSubscriptions chan Subscription

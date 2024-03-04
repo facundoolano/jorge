@@ -130,6 +130,7 @@ func runWatcher(config *config.Config) {
 #+end_src
 
 *** Build optimizations
+- optimization: ln static files
 - optimization: worker pool
 
 #+begin_src go
@@ -202,7 +203,6 @@ func (site *site) build() error {
 #+end_src
 
 - in other languages, a similar change would have required adding async/await statements on half of my codebase.
-- optimization: ln static files
 
 *** Live reload
 
@@ -272,7 +272,58 @@ newSSE();
   - explain need
   - is this name right?
   - show api + link implementation
+    see the full implementation [[https://github.com/facundoolano/jorge/blob/567db560f511b11492b85cf4f72b51599e8e3a3d/commands/serve.go#L175-L238][here]]
+
+#+begin_src go
+// The event broker mediates between the file watcher
+// that publishes site rebuild events
+// and the clients listening for them to refresh the browser
+type EventBroker struct
+
+func newEventBroker() *EventBroker
+
+// Adds a subscription to this broker events
+// returning a subscriber id (useful for unsubscribing)
+// and a channel where events will be delivered.
+func (broker *EventBroker) subscribe() (uint64, <-chan string)
+
+// Remove the subscriber with the given id from the broker,
+// closing its associated channel.
+func (broker *EventBroker) unsubscribe(id uint64)
+
+// Publish an event to all the broker subscribers.
+func (broker *EventBroker) publish(event string)
+
+
+#+end_src
   - show updated handler
+#+begin_src diff
+-func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
++func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
++	return func(res http.ResponseWriter, req *http.Request) {
+		res.Header().Set("Content-Type", "text/event-stream")
+		res.Header().Set("Connection", "keep-alive")
+		res.Header().Set("Cache-Control", "no-cache")
+		res.Header().Set("Access-Control-Allow-Origin", "*")
+
++		id, events := broker.subscribe()
+		for {
+			select {
+-			case <-time.After(5 * time.Second):
++			case <-events:
+				// send an event to the connected client.
+				// data\n\n just means send an empty, unnamed event
+				fmt.Fprint(res, "data\n\n")
+				res.(http.Flusher).Flush()
+			case <-req.Context().Done():
+				// client connection closed
++				broker.unsubscribe(id)
+				return
+			}
+		}
+	}
+}
+#+end_src
   - show updated watcher
 
 #+begin_src diff
