@@ -69,6 +69,38 @@ http.Handle("/", fs)
 *** Watching for changes
 - fsnotify to trigger builds
 
+#+begin_src go
+func runWatcher(config *config.Config) {
+	watcher, _ := fsnotify.NewWatcher()
+	defer watchProjectFiles(watcher, config)
+
+	go func() {
+		for event := range watcher.Events {
+			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+
+			// new src directories could be triggering this event
+			// so project files need to be re-added every time
+			watchProjectFiles(watcher, config)
+
+			site.Build(*config)
+		}
+	}()
+}
+
+// Configure the given watcher to notify for changes
+// in the project source files
+func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) {
+	// fsnotify watches all files within a dir, but non recursively
+	// this walks through the src dir and adds watches for each found directory
+	filepath.WalkDir(SRC_DIR, func(path string, entry fs.DirEntry, err error) error {
+		if entry.IsDir() {
+			watcher.Add(path)
+		}
+		return nil
+	})
+}
+#+end_src
+
 *** Build optimizations
 - optimization: worker pool
 
