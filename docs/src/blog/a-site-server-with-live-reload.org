@@ -81,7 +81,6 @@ func runWatcher(config *config.Config) {
 			// new src directories could be triggering this event
 			// so project files need to be re-added every time
 			watchProjectFiles(watcher, config)
-
 			site.Build(*config)
 		}
 	}()
@@ -98,6 +97,35 @@ func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) {
 		}
 		return nil
 	})
+}
+#+end_src
+
+- delay to prevent bursts
+
+#+begin_src diff
+func runWatcher(config *config.Config) {
+	watcher, _ := fsnotify.NewWatcher()
+-	defer watchProjectFiles(watcher, config)
++
++	rebuildAfter := time.AfterFunc(0, func() {
++		watchProjectFiles(watcher, config)
++		site.Build(*config)
++	})
+
+	go func() {
+		for event := range watcher.Events {
+			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
+
+-			watchProjectFiles(watcher, config)
+-			site.Build(*config)
++			// Schedule a rebuild to trigger after a delay.
++			// If there was another one pending it will be canceled.
++			rebuildAfter.Stop()
++			rebuildAfter.Reset(100 * time.Millisecond)
+
+
+		}
+	}()
 }
 #+end_src
 
@@ -173,6 +201,7 @@ func (site *site) build() error {
 }
 #+end_src
 
+- in other languages, a similar change would have required adding async/await statements on half of my codebase.
 - optimization: ln static files
 
 *** Live reload
@@ -250,23 +279,27 @@ newSSE();
 -func runWatcher(config *config.Config) {
 +func runWatcher(config *config.Config) *EventBroker {
 	watcher, _ := fsnotify.NewWatcher()
-	defer watchProjectFiles(watcher, config)
 +	broker := newEventBroker()
+
+	rebuildAfter := time.AfterFunc(0, func() {
+		watchProjectFiles(watcher, config)
+		site.Build(*config)
++		broker.publish("rebuild")
+	})
+
 
 	go func() {
 		for event := range watcher.Events {
 			fmt.Printf("\nfile %s changed, rebuilding site\n", event.Name)
 
-			// new src directories could be triggering this event
-			// so project files need to be re-added every time
-			watchProjectFiles(watcher, config)
+			// Schedule a rebuild to trigger after a delay.
+			// If there was another one pending it will be canceled.
+			rebuildAfter.Stop()
+			rebuildAfter.Reset(100 * time.Millisecond)
 
-			site.Build(*config)
-+			broker.publish("rebuild")
 		}
 	}()
 
 +	return broker
 }
 #+end_src
-- delay to prevent bursts

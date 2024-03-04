@@ -88,7 +88,6 @@ func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) 
 	if err != nil {
 		return nil, nil, err
 	}
-	defer watchProjectFiles(watcher, config)
 
 	broker := newEventBroker()
 
@@ -119,21 +118,8 @@ func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) 
 	return watcher, broker, err
 }
 
-// Configure the given watcher to notify for changes in the project source files
-func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) error {
-	watcher.Add(config.LayoutsDir)
-	watcher.Add(config.DataDir)
-	watcher.Add(config.IncludesDir)
-	// fsnotify watches all files within a dir, but non recursively
-	// this walks through the src dir and adds watches for each found directory
-	return filepath.WalkDir(config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
-		if entry.IsDir() {
-			watcher.Add(path)
-		}
-		return nil
-	})
-}
-
+// React to source file change events by re-watching the source directories,
+// rebuilding the site and publishing a rebuild event to clients.
 func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *EventBroker) {
 	fmt.Printf("building site\n")
 
@@ -151,6 +137,21 @@ func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *Event
 	broker.publish("rebuild")
 
 	fmt.Println("done\nserving at", config.SiteUrl)
+}
+
+// Configure the given watcher to notify for changes in the project source files
+func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) error {
+	watcher.Add(config.LayoutsDir)
+	watcher.Add(config.DataDir)
+	watcher.Add(config.IncludesDir)
+	// fsnotify watches all files within a dir, but non recursively
+	// this walks through the src dir and adds watches for each found directory
+	return filepath.WalkDir(config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
+		if entry.IsDir() {
+			watcher.Add(path)
+		}
+		return nil
+	})
 }
 
 // Tweaks the http file system to construct a server that hides the .html suffix from requests.
