@@ -123,7 +123,7 @@ img.cover-img {
 .layout-post {
     hyphens: auto;
     text-align: justify;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     line-height: 1.6;
 
     -moz-osx-font-smoothing: grayscale;
@@ -188,7 +188,7 @@ Need to decide between:
 .layout-post pre, .layout-post code {
     border-radius: 6px;
     background-color: whitesmoke!important;
-    font-size: 1rem;
+    font-size: 0.9rem;
     hyphens: none;
     color: black;
 }
@@ -218,7 +218,6 @@ blockquote {
 /* override in mobile devices for more compact text */
 @media screen and (max-width: 768px) {
     .layout-post {
-        font-size: 1rem;
         line-height: 1.2;
         letter-spacing: unset;
         hyphens: none;
@@ -226,12 +225,8 @@ blockquote {
     }
 
     .layout-post p {
-        margin: 0 0 1rem 0;
+        margin: 1rem 0;
         line-height: 1.7;
-    }
-
-    .layout-post pre, .layout-post code {
-        font-size: 0.9rem;
     }
 
     .layout-post p + p {
