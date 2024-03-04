@@ -84,7 +84,6 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 // Sets up a watcher that will publish changes in the site source files
 // to the returned event broker.
 func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
-	// FIXME not closing this?
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, nil, err
