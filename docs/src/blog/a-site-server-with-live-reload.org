@@ -119,7 +119,7 @@ func (site *Site) Build() error {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
-		// render or copy the source file at target
+		// if it's a file render or copy it at the target
 		return site.buildFile(path, targetPath)
 	})
 }
@@ -144,30 +144,31 @@ func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
 }
 #+end_src
 
-#+begin_src go
+#+begin_src diff
 func (site *site) build() error {
 	// clear previous target contents
-	os.RemoveAll(site.config.TargetDir)
+	os.RemoveAll(site.Config.TargetDir)
 
-	wg, files := spawnBuildWorkers(site)
-	defer wg.Wait()
-	defer close(files)
++	wg, files := spawnBuildWorkers(site)
++	defer wg.Wait()
++	defer close(files)
 
 	// walk the source directory, creating directories and files at the target dir
 	return filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		subpath, _ := filepath.Rel(site.config.SrcDir, path)
-		targetPath := filepath.Join(site.config.TargetDir, subpath)
+		subpath, _ := filepath.Rel(site.Config.SrcDir, path)
+		targetPath := filepath.Join(site.Config.TargetDir, subpath)
 
 		// if it's a directory, just create the same at the target
 		if entry.IsDir() {
-			return os.MkdirAll(targetPath, DIR_RWE_MODE)
+			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
-		// if it's a file (either static or template) send the path to a worker to build in target
-		files <- path
-		return nil
+
+-		// if it's a file render or copy it at the target
+-		return site.buildFile(path, targetPath)
++		// if it's a file send the path to a worker
++		// to render or copy it at the target
++		files <- path
++		return nil
 	})
 }
 #+end_src
@@ -180,9 +181,4 @@ func (site *site) build() error {
 - naive implementation
 - event broker
   - is this name right?
-
-*** Refinements
-- don't stop on errors
-- ignore chmod and temp file events
 - delay to prevent bursts
-- make the js
