@@ -172,6 +172,7 @@ Need to decide between:
     padding: .2em .4em;
     background-color: whitesmoke!important;
     color: black;
+    font-size: 1rem;
 }
 
 @media (prefers-color-scheme: dark) {

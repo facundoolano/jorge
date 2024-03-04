@@ -175,7 +175,8 @@ Need to decide between:
 .layout-post :not(pre) > code {
     padding: .2em .4em;
     background-color: whitesmoke!important;
-    color: black
+    color: black;
+    font-size: 1rem;
 }
 
 @media (prefers-color-scheme: dark) {
