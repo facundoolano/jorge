@@ -34,10 +34,11 @@ func (cmd *Serve) Run(ctx *kong.Context) error {
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	broker, err := runWatcher(config)
+	watcher, broker, err := runWatcher(config)
 	if err != nil {
 		return err
 	}
+	defer watcher.Close()
 
 	// serve the target dir with a file server
 	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
@@ -82,10 +83,11 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 
 // Sets up a watcher that will publish changes in the site source files
 // to the returned event broker.
-func runWatcher(config *config.Config) (*EventBroker, error) {
+func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
+	// FIXME not closing this?
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer watchProjectFiles(watcher, config)
 
@@ -115,7 +117,7 @@ func runWatcher(config *config.Config) (*EventBroker, error) {
 		}
 	}()
 
-	return broker, err
+	return watcher, broker, err
 }
 
 // Configure the given watcher to notify for changes in the project source files
