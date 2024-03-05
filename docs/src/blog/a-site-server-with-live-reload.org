@@ -193,10 +193,10 @@ func (site *site) build() error {
 			return os.MkdirAll(targetPath, FILE_RW_MODE)
 		}
 
--		// if it's a file render or copy it at the target
+-		// if it's a file render or copy it to the target
 -		return site.buildFile(path, targetPath)
 +		// if it's a file send the path to a worker
-+		// to render or copy it at the target
++		// to render or copy it to the target
 +		files <- path
 +		return nil
 	})
@@ -249,7 +249,8 @@ var eventSource;
 
 function newSSE() {
   console.log("connecting to server events");
-  eventSource = new EventSource('http://localhost:4001/_events/');
+  const url = location.origin + '/_events/';
+  eventSource = new EventSource(url);
 
   // when the server sends an event, refresh the page
   eventSource.onmessage = function () {

@@ -434,7 +434,7 @@ func (site *site) injectLiveReload(extension string, contentReader io.Reader) (i
 	}
 
 	const JS_SNIPPET = `
-const url = '%s/_events/'
+const url = location.origin + '/_events/'
 var eventSource;
 function newSSE() {
   console.log("connecting to server events");
@@ -452,6 +452,5 @@ function newSSE() {
   };
 }
 newSSE();`
-	script := fmt.Sprintf(JS_SNIPPET, site.config.SiteUrl)
-	return markup.InjectScript(contentReader, script)
+	return markup.InjectScript(contentReader, JS_SNIPPET)
 }
