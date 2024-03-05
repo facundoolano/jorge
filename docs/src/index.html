@@ -2,7 +2,7 @@
 layout: base
 ---
 
-<div class="content">
+<div class="content landing">
 <br/>
 <br/>
 <center>
@@ -27,32 +27,30 @@ $ jorge serve
   <span class="silver">serving at http://localhost:4001</span>
         </pre>
     </code>
-    <p>Inspired by <a href="https://jekyllrb.com/">Jekyll</a>, written in Go, with <a href="https://orgmode.org">org-mode</a> and markdown support.</p>
+    <p>Inspired by <a href="https://jekyllrb.com/">Jekyll</a>, written in Go, with <a href="https://orgmode.org">org-mode</a> and markdown support.
+        <br/>
+        <br/>
+        <a href="https://github.com/facundoolano/jorge/releases/latest">Download</a>
+        -
+        <a href="https://github.com/facundoolano/jorge">Source</a>
+    </p>
 </center>
 <br/>
 
-<br/>
-<nav>
-    <div class="nav-right hidden-mobile">
-        <a href="https://github.com/facundoolano/jorge">github</a>
-        <a href="https://github.com/facundoolano/jorge/releases/latest">download</a>
-    </div>
-</nav>
-
-<h2><a href="/tutorial" class="title" id="tutorial">Tutorial</a></h2>
+<h2 id="tutorial"><a href="/tutorial" class="title">Tutorial</a></h2>
 <ol start='0'>
 {% for page in site.pages|where:"dir", "/tutorial" %}
     <li>
         <a class="title" href="{{ page.url }}">{{ page.title }}{%if page.subtitle%}: {{page.subtitle|downcase}}{%endif%}</a>
     </li>
-{% endfor %}
+    {% endfor %}
 </ol>
-
-<h2><a href="/blog" class="title" id="devlog">Devlog</a></h2>
+<br/>
+<h2 id="devlog"><a class="title" href="/blog">Devlog</a></h2>
 
 {% for post in site.posts | reverse  %}
 {% include post_preview.html %}
 {% endfor %}
 
-<p>See the full <a href="/blog">blog archive</a> or subscribe to the <a href="/feed.xml">feed</a>.</p>
+<p>Or subscribe to the <a href="/feed.xml">feed</a>.</p>
 </div>

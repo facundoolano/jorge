@@ -307,3 +307,10 @@ code.index-sample pre {
     text-align: left;
     padding: 0 0 0 1rem;
 }
+
+.landing h2 {
+    border-bottom: 1px solid lightgray
+}
+.landing h2 a:hover {
+    text-decoration: none;
+}
