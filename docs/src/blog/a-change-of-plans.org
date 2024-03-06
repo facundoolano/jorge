@@ -1,6 +1,6 @@
 ---
 title: A change of plans
-date: 2024-03-02
+date: 2024-03-04
 layout: post
 lang: en
 tags: [project, emacs]
