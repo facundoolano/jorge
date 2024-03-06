@@ -34,7 +34,8 @@ func (cmd *Serve) Run(ctx *kong.Context) error {
 	}
 
 	// watch for changes in src and layouts, and trigger a rebuild
-	watcher, broker, err := runWatcher(config)
+	broker := newEventBroker()
+	watcher, err := runWatcher(config, broker)
 	if err != nil {
 		return err
 	}
@@ -83,13 +84,11 @@ func makeServerEventsHandler(broker *EventBroker) http.HandlerFunc {
 
 // Sets up a watcher that will publish changes in the site source files
 // to the returned event broker.
-func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) {
+func runWatcher(config *config.Config, broker *EventBroker) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-
-	broker := newEventBroker()
 
 	// the rebuild is handled after some delay to prevent bursts of events to trigger repeated rebuilds
 	// which can cause the browser to refresh while another unfinished build is in progress (refreshing to
@@ -115,7 +114,7 @@ func runWatcher(config *config.Config) (*fsnotify.Watcher, *EventBroker, error) 
 		}
 	}()
 
-	return watcher, broker, err
+	return watcher, err
 }
 
 // React to source file change events by re-watching the source directories,
