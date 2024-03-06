@@ -121,6 +121,7 @@ func runWatcher(config *config.Config, broker *EventBroker) (*fsnotify.Watcher, 
 // rebuilding the site and publishing a rebuild event to clients.
 func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *EventBroker) {
 	fmt.Printf("building site\n")
+	start := time.Now()
 
 	// since new nested directories could be triggering this change, and we need to watch those too
 	// and since re-watching files is a noop, I just re-add the entire src everytime there's a change
@@ -135,7 +136,8 @@ func rebuildSite(config *config.Config, watcher *fsnotify.Watcher, broker *Event
 
 	broker.publish("rebuild")
 
-	fmt.Println("done\nserving at", config.SiteUrl)
+	elapsed := time.Since(start)
+	fmt.Printf("done in %.2fs\nserving at %s\n", elapsed.Seconds(), config.SiteUrl)
 }
 
 // Configure the given watcher to notify for changes in the project source files

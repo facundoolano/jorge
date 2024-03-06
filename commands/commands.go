@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/facundoolano/jorge/config"
@@ -20,12 +21,16 @@ type Build struct {
 
 // Read the files in src/ render them and copy the result to target/
 func (cmd *Build) Run(ctx *kong.Context) error {
+	start := time.Now()
+
 	config, err := config.Load(cmd.ProjectDir)
 	if err != nil {
 		return err
 	}
 
-	return site.Build(*config)
+	err = site.Build(*config)
+	fmt.Printf("done in %.2fs\n", time.Since(start).Seconds())
+	return err
 }
 
 // Prompt the user for a string value
