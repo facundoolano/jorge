@@ -10,10 +10,10 @@ tags: [golang, project]
 
 The core of my static site generator is the ~build~ command: take some input files, process them ---render templates, convert other markup formats into HTML, minify--- and output a ready-to-serve website. This is where I started for ~jorge~, not only because it was core functionality but because I needed to see the org-mode output as early as possible, to learn if I could expect this project to ultimately replace my Jekyll setup.
 
-I technically had a static site generator as soon as the ~build~ command was working, but for it to be minimally useful I needed to be able to preview a site while working on it: a ~serve~ command. It could be as simple as running a local file server of the ~build~ target directory, but ideally it would also watch for changes in the source files and live-reload the browser tabs looking at them.
+I technically had a static site generator as soon as the ~build~ command was working, but for it to be minimally useful I needed to be able to preview a site while working on it: a ~serve~ command. It could be as simple as running a local file server of the ~build~ target directory, but ideally, it would also watch for changes in the source files and live-reload the browser tabs looking at them.
 
 I was aiming for more than just the basics here because ~serve~ was the only non-trivial command of this project: the one with the most Go learning potential ---and the most fun. For similar reasons, I wanted to tackle it early on: since it wasn't immediately obvious how I would implement it, it was here where unknown-unknowns and blockers were most likely to come up.
-Once ~build~ and ~serve~ were out of the way, I'd be almost done with the project,  only nice-to-have features and UX improvements remaining.
+Once ~build~ and ~serve~ were out of the way, I'd be almost done with the project, with only nice-to-have features and UX improvements remaining.
 
 The beauty of the ~serve~ command was that I could start with a naive implementation and iterate towards the ideal one, keeping a usable command at every step of the way. Below is a summary of that process.
 
@@ -204,15 +204,15 @@ func (site *site) build() error {
 
 the ~close(files)~ call informs the workers that no more work will be sent, and ~wg.Wait()~ blocks until all of them finish executing.
 
-I was very satisfied to see a sequential piece of code turned into a concurrent one with minimal structural changes, without affecting callers of the function that contained it. In other languages, a similar operation would have required me to add ~async~ and ~await~ statements all over the place[fn:2].
+I was very satisfied to see a sequential piece of code turned into a concurrent one with minimal structural changes, without affecting its outer function callers. In other languages, a similar operation would have required me to add ~async~ and ~await~ statements all over the place[fn:2].
 
-This couple of optimizations resulted in a good enough user experience, so I didn't need to attempt more complex ones.
+These couple of optimizations resulted in a good enough user experience, so I didn't need to attempt more complex ones.
 
 *** Live reload
 
 Without having looked into their code, I presumed that the live-reloading tools I had used in the past (~jekyll serve~, [[https://github.com/shime/livedown/][livedown]]) worked by running WebSocket servers and injecting some JavaScript in the HTML files they served. I wanted to see if I could get away with implementing live reloading for ~jorge serve~ with [[https://en.wikipedia.org/wiki/Server-sent_events][Server-sent events]], a slightly simpler alternative to WebSockets that didn't require a dedicated server.
 
-Some googling [[https://medium.com/@rian.eka.cahya/server-sent-event-sse-with-go-10592d9c2aa1][yielded]] the boilerplate code to send events from my Go http server:
+Some Googling [[https://medium.com/@rian.eka.cahya/server-sent-event-sse-with-go-10592d9c2aa1][yielded]] the boilerplate code to send events from my Go HTTP server:
 
 #+begin_src go
 func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
@@ -242,7 +242,7 @@ func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
 #+end_src
 
 
-In this test setup, clients connected to the ~/_events/~ endpoint would receive a  ~"rebuild"~ message every 5 seconds. After a few attempts to get error-handling right, I arrived to the corresponding JavaScript:
+In this test setup, clients connected to the ~/_events/~ endpoint would receive a  ~"rebuild"~ message every 5 seconds. After a few attempts to get error handling right, I arrived at the corresponding JavaScript:
 
 #+begin_src html
 <script type="text/javascript">
@@ -278,7 +278,7 @@ newSSE();
 
 Clients would establish an [[https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events][EventSource]] connection through the ~/_events/~ endpoint and reload the window whenever a server-sent event arrived. I updated  ~site.buildFile~ to inject this ~script~ tag in the header of every HTML file written to the target directory.
 
-With the code above I had everything in place to send and receive events, and reload the browser accordingly. I just needed to update the http handler to only send those events in response to site rebuilds triggered by source file changes. I couldn't just use a channel to connect the handler with the fsnotify watcher, since there could be multiple clients connected at a time (multiple tabs browsing the site) and each needed to receive the reload event ---a single-channel message would be consumed by a single client. I needed some method to broadcast rebuild events; I introduced an ~EventBroker~[fn:1] struct for this purpose:
+With the code above I had everything in place to send and receive events and reload the browser accordingly. I just needed to update the HTTP handler to only send those events in response to site rebuilds triggered by source file changes. I couldn't just use a channel to connect the handler with the fsnotify watcher, since there could be multiple clients connected at a time (multiple tabs browsing the site), and each needed to receive the reload event ---a single-channel message would be consumed by a single client. I needed some method to broadcast rebuild events; I introduced an ~EventBroker~[fn:1] struct for this purpose:
 
 #+begin_src go
 // The event broker mediates between the file watcher
@@ -303,7 +303,7 @@ func (broker *EventBroker) publish(event string)
 
 See [[https://github.com/facundoolano/jorge/blob/567db560f511b11492b85cf4f72b51599e8e3a3d/commands/serve.go#L175-L238][here]] for the full ~EventBroker~ implementation.
 
-The http handler now needed to subscribe every connected client to the broker:
+The HTTP handler now needed to subscribe every connected client to the broker:
 
 #+begin_src diff
 -func ServerEventsHandler (res http.ResponseWriter, req *http.Request) {
@@ -379,7 +379,7 @@ func Serve(config config.Config) error {
 
 *** Handling event bursts
 
-The code above worked, but not consistently. A file change would occasionally cause a browser-refresh to a 404 page, as if the new version of the file wasn't written to the target directory yet.
+The code above worked, but not consistently. A file change would occasionally cause a browser refresh to a 404 page as if the new version of the file wasn't written to the target directory yet.
 This happened because a single file edit could result in multiple writes, and those in a burst of fsnotify events (as mentioned in the [[https://github.com/fsnotify/fsnotify/blob/v1.7.0/backend_inotify.go#L108-L115][documentation]]). The solution (also suggested by [[https://github.com/fsnotify/fsnotify/blob/c94b93b0602779989a9af8c023505e99055c8fe5/cmd/fsnotify/dedup.go][an example]] in the fsnotify repository) was to de-duplicate events by introducing a delay between event arrival and response. [[https://pkg.go.dev/time#AfterFunc][~time.AfterFunc~]] helped here:
 
 
@@ -419,6 +419,6 @@ That's (approximately) the current implementation of the ~jorge serve~ command, 
 
 ** Notes
 
-[fn:1] I'm not sure if "broker" is a proper name in this context, since there's a single event type and it's sent to all subscribers. "Broadcaster" is probably more accurate, but it also sounds worse.
+[fn:1] I'm not sure if "broker" is a proper name in this context since there's a single event type and it's sent to all subscribers. "Broadcaster" is probably more accurate, but it also sounds worse.
 
 [fn:2] Related discussion: [[https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/][What Color is Your Function?]]
