@@ -4,6 +4,7 @@ date: 2024-03-06
 layout: post
 lang: en
 tags: [golang, project]
+excerpt: The beauty of the jorge serve command was that I could start with a naive implementation and iterate towards the ideal one, keeping it functional at every step of the way. This post summarizes that process.
 ---
 #+OPTIONS: toc:nil num:1
 #+LANGUAGE: en
@@ -15,7 +16,7 @@ I technically had a static site generator as soon as the ~build~ command was wor
 I was aiming for more than just the basics here because ~serve~ was the only non-trivial command of this project: the one with the most Go learning potential ---and the most fun. For similar reasons, I wanted to tackle it early on: since it wasn't immediately obvious how I would implement it, it was here where unknown-unknowns and blockers were most likely to come up.
 Once ~build~ and ~serve~ were out of the way, I'd be almost done with the project, with only nice-to-have features and UX improvements remaining.
 
-The beauty of the ~serve~ command was that I could start with a naive implementation and iterate towards the ideal one, keeping a usable command at every step of the way. Below is a summary of that process.
+The beauty of the ~serve~ command was that I could start with a naive implementation and iterate towards the ideal one, keeping it functional at every step of the way. This post summarizes that process.
 
 *** A basic file server
 
