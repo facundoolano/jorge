@@ -59,6 +59,6 @@ $ rsync -vPrz --delete target/ root@olano.dev:/var/www/jorge
 
 And that's it!
 
-*** Notes
+** Notes
 
 [fn:1] [[https://github.com/facundoolano/jorge/pulls][PRs]] welcome!

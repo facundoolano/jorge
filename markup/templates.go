@@ -150,8 +150,8 @@ func (templ Template) RenderWith(context map[string]interface{}, hlTheme string)
 		doc := org.New().Parse(bytes.NewReader(content), templ.SrcPath)
 		htmlWriter := org.NewHTMLWriter()
 
-		// make * -> h1, ** -> h2, etc
-		htmlWriter.TopLevelHLevel = 1
+		// make * -> h2, ** -> h3, etc
+		htmlWriter.TopLevelHLevel = 2
 		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
 			htmlWriter.HighlightCodeBlock = highlightCodeBlock(hlTheme)
 		}

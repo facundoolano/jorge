@@ -11,10 +11,10 @@ excerpt: I set out to write a little static site generator, but why?
 
 I set out to write a little static site generator, but why?
 
-*** Why this project?
+** Why this project?
 I wanted to learn the Go programming language, and my preferred way to learn a new language is to use it on some open-source project[fn:1].
 
-*** Why Go?
+** Why Go?
 
 In the past I studied new programming languages to "broaden my programming horizons";
 to add better, more sophisticated tools to my toolbox: new paradigms, concurrency models, type systems. Because I never used it in college and never needed it for work, and because it seemed to lack this novelty factor, I never got around to trying Go.
@@ -32,14 +32,14 @@ Go seemed to be an unpretentious, boring language ---and I mean that as [[https:
 
 That's the preconception I had about Go, having read about it but never used it. I wanted to spend some time with it because, if these presumptions turned out to be right, Go could become the obvious default for many of my future projects ---and an accurate boring tech radar.
 
-*** Why a command-line application?
+** Why a command-line application?
 Go is famously good for building server-side software, so that was the first space I turned to when looking for project ideas. I briefly considered following the [[https://pragprog.com/titles/tjgo/distributed-services-with-go/][/Distributed Services with Go/ book]], but I felt that I wouldn't get enthusiastic enough about that project to see it through to completion. More generally, I suspected that any backend-only project would turn into a useless toy I wouldn't care for. I needed something user-facing.
 
 Could I use Go to implement the backend of a web application, instead? That would've made sense, but I was just [[https://olano.dev/2023-12-12-reclaiming-the-web-with-a-personal-reader/][coming out]] of working on a medium-sized web application[fn:2]; I knew too well that much of the effort in such a project would go into the front end, and I needed a break from that.
 
 What else, then? Other than servers, Go is known to be good at command-line applications. I enjoy working on CLIs; they challenge me to design and reason about the user experience without most of the graphical interface struggle. A CLI app sounded promising.
 
-*** Why a static site generator?
+** Why a static site generator?
 
 I read somewhere that a blog is the ideal learning project for software developers: it can get as simple or as complex as you want, it exposes you to the entire web stack, from server setup to UI design, and when it's working you are encouraged to write about something (most likely about setting up a blog).
 

@@ -18,7 +18,7 @@ Once ~build~ and ~serve~ were out of the way, I'd be almost done with the projec
 
 The beauty of the ~serve~ command was that I could start with a naive implementation and iterate towards the ideal one, keeping it functional at every step of the way. This post summarizes that process.
 
-*** A basic file server
+** A basic file server
 
 The simplest ~serve~ implementation consisted of building the site once and serving the target directory locally. The standard ~net/http~ package has a [[https://pkg.go.dev/net/http#FileServer][file server]] for that:
 
@@ -76,7 +76,7 @@ This ~HTMLFileSystem~ wrapped around the standard ~http.Dir~ one I was handing t
 	return http.ListenAndServe(":4001", nil)
 #+end_src
 
-*** Watching for changes
+** Watching for changes
 As a next step, I needed the command to watch the project source directory and trigger new builds whenever a file changed. I found the [[https://github.com/fsnotify/fsnotify][fsnotify]] library for this exact purpose; the fact that both Hugo and gojekyll listed as a dependency suggested that it was a reasonable choice for the job.
 
 Following [[https://github.com/fsnotify/fsnotify/blob/c94b93b0602779989a9af8c023505e99055c8fe5/README.md#usage][an example]] from the fsnotify documentation, I created a watcher and a goroutine that triggered a ~site.Build~ call every time a file-change event was received:
@@ -114,7 +114,7 @@ func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) {
 }
 #+end_src
 
-*** Build optimizations
+** Build optimizations
 At this point I had a useful file server, always responding with the most recent version of the site. But the responsiveness of the ~serve~ command wasn't ideal: it processed the entire website for every small edit I made on a source file. I wanted to attempt some performance improvements here, but without introducing much complexity: rather than supporting incremental or conditional builds ---which would have required tracking state and dependencies between files---, I wanted to keep building the entire site on every change, only faster.
 
 The first cheap optimization was obvious from looking at the command output: most of the work was copying static assets (e.g. images, static CSS files, etc.). So I changed the ~site.Build~ implementation to optionally create links instead of copying the files over to the target.
@@ -209,7 +209,7 @@ I was very satisfied to see a sequential piece of code turned into a concurrent 
 
 These couple of optimizations resulted in a good enough user experience, so I didn't need to attempt more complex ones.
 
-*** Live reload
+** Live reload
 
 Without having looked into their code, I presumed that the live-reloading tools I had used in the past (~jekyll serve~, [[https://github.com/shime/livedown/][livedown]]) worked by running WebSocket servers and injecting some JavaScript in the HTML files they served. I wanted to see if I could get away with implementing live reloading for ~jorge serve~ with [[https://en.wikipedia.org/wiki/Server-sent_events][Server-sent events]], a slightly simpler alternative to WebSockets that didn't require a dedicated server.
 
@@ -378,7 +378,7 @@ func Serve(config config.Config) error {
 }
 #+end_src
 
-*** Handling event bursts
+** Handling event bursts
 
 The code above worked, but not consistently. A file change would occasionally cause a browser refresh to a 404 page as if the new version of the file wasn't written to the target directory yet.
 This happened because a single file edit could result in multiple writes, and those in a burst of fsnotify events (as mentioned in the [[https://github.com/fsnotify/fsnotify/blob/v1.7.0/backend_inotify.go#L108-L115][documentation]]). The solution (also suggested by [[https://github.com/fsnotify/fsnotify/blob/c94b93b0602779989a9af8c023505e99055c8fe5/cmd/fsnotify/dedup.go][an example]] in the fsnotify repository) was to de-duplicate events by introducing a delay between event arrival and response. [[https://pkg.go.dev/time#AfterFunc][~time.AfterFunc~]] helped here:

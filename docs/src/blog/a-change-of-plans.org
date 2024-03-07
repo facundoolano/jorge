@@ -44,6 +44,6 @@ If I succeeded in making a tool that I wanted to use myself, maybe other people 
 
 With this new goal in mind, I jumped into the work.
 
-*** Notes
+** Notes
 
 [fn:1] Namely: I had to define an org-publish project in my configuration to instruct Emacs how to export my org files; since the default org export produces documents of unconventional HTML structure (that, for example, are not properly parsed by browser readers), I had to export org to markdown and let Jekyll convert the markdown to HTML; I had to publish my org files separately for ~jekyll serve~ to pick up the changes; frequent operations like changing post titles and dates, and moving them out of draft required me to update two different filenames.
