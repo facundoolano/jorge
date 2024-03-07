@@ -10,7 +10,7 @@ tags: [golang, emacs]
 
 Dumping some notes I took while I was setting up my environment and reading the bare minimum to get started with Go programming.
 
-** Go setup
+*** Go setup
 - I'm on Mac and I had some older version of Go already installed, so I had to ~brew uninstall go~.
 - Go 1.22 had recently come out, and it wasn't yet available in brew, so I [[https://go.dev/doc/install][downloaded it]] from the Go website.
 - I had to add this to my ~~/.zshrc~ for my shell to pick up the installation ([[https://stackoverflow.com/a/57217841/993769][source]]):
@@ -23,7 +23,7 @@ export PATH=$PATH:$GOROOT/bin
 export PATH=$PATH:$GOPATH/bin
   #+end_src
 
-** Emacs setup
+*** Emacs setup
 In the last couple of years the Emacs LSP integration has got good enough that, other things being equal, I prefer it when I'm setting up a new language since it provides a similar out-of-the-box experience to what I'm used to, without  much extra configuration.
 
 - A quick search for recent Go+Emacs setup suggestions didn't yield a definite choice, but I did see a few people using [[https://github.com/dominikh/go-mode.el][go-mode]] together with LSP, so I went with that.
@@ -50,12 +50,12 @@ The only issues I've found so far:
 - ~lsp-describe-thing-at-point~ does give me function documentation, but only the first sentence, not the entire paragraph. I end up using ~xref-find-definitions~ and read directly from the doc comment in the code.
 - flycheck's ~next-error~ doesn't seem to work consistently in my Go setup as it does in other languages.
 
-** GitHub setup
+*** GitHub setup
 
 - I started with a default GitHub Actions [[https://github.com/facundoolano/jorge/blob/adb17ad9d2cb1e9929e9f9066941ccf3ac13222a/.github/workflows/test.yml][workflow to run unit tests]], which I extended to also run linters.
 - I eventually wrote [[https://github.com/facundoolano/jorge/blob/adb17ad9d2cb1e9929e9f9066941ccf3ac13222a/.github/workflows/release.yml][another workflow]] to draft a release and compile binaries for different platforms when I push a git tag.
 
-** Go documentation
+*** Go documentation
 I had read [[https://www.openmymind.net/The-Little-Go-Book/][/The Little Go Book/]] a few years ago, and while I didn't do anything with what I read there and thus forgot most of it, I did remember that there wasn't anything surprising or complicated enough to require dedicated training before attempting to use the language.
 
 This time I took a look a Go's [[https://go.dev/learn/][learn]] and [[https://go.dev/doc/][docs]] pages, but they didn't point me in a single obvious direction. There was the [[https://go.dev/doc/effective_go][/Effective Go/ book]], which sounded like the kind of resource I tend to favor: text form, not very long, by the language authors. But it started with a note saying it was written in 2009 and hadn't been updated since, which made it unappealing for my short-term goals. I may revisit it eventually, though, since I understand it was the canonical learning resource for many years and a good showcase of Go's idiosyncrasy.

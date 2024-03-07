@@ -8,7 +8,7 @@ tags: [project]
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-* User interface
+** User interface
 When I'm toying with the idea for a new project, I start by picturing what it could look like from the perspective of the users: what the interface will be. For web applications, this means deciding what actions will I make available to them, what menus and buttons, and what information I need to display on a given view. Then I make some sketches to figure out how to fit all that into a web page layout[fn:1]. For command-line applications it gets much easier: I just need to come up with the right list of subcommands, some of the flags, and a couple of usage examples.
 
 As soon as I [[file:why][decided to work on a static site generator]], I narrowed the commands I needed to support down to four: ~init~, ~build~, ~serve~, and ~new~. Below are some transcripts of my notebook, showing how I first imagined these commands would work (at this point I was calling the program ~golb~):
@@ -42,7 +42,7 @@ $ golb new note
 
 The ~new~ command would be a helper to create blog posts with some of the boilerplate (e.g. the front matter) already filled in. I eventually renamed this subcommand to ~post~ and dropped most of its options.
 
-* Project plan
+** Project plan
 Based on that CLI outline, I gave some thought to each of the subcommands and flags I planned to implement, trying to imagine, at a high level, which operations they should consist of, what parts seemed easy or complicated to program, which ones I wasn't yet sure how I could tackle, what work I expected to delegate to third-party libraries, and where I suspected the "unknown-unknowns" of the project could be lurking. This exercise yielded a preliminary list of tasks, that I added to my project board:
 
 #+begin_src
@@ -81,7 +81,7 @@ Some things to note from this list:
 - The order of the tasks was influenced by the user journey I imagined (e.g. first run ~golb init~), but as soon as I started working on the project I realized I should prioritize first the "mission critical" commands (~golb build~), then the most complex to implement (~golb serve~), regardless of the user flow.
 - I captured some "nice to have" tasks that sounded interesting or fun to implement but were not required for the project to make sense or that I didn't know how  feasible they were. One such case was the org-mode support; as I'll explain later, learning that there already was a Go library to parse org-mode syntax would lead me to redefine the goals of the project.
 
-* Some code
+** Some code
 One nice quality of command-line programs is that the user interface tends to easily translate into the top layer of the program, each subcommand offering a good starting point for the coding. Looking at the ~main.go~ file from [[https://github.com/facundoolano/jorge/commit/16cbf1d10ea890df216b74ad9231a1b70ad102c3#diff-2873f79a86c0d8b3335cd7731b0ecf7dd4301eb19a82ef7a1cba7589b5252261][an early commit]] shows much of the initial project plan already stubbed in the code:
 
 #+begin_src go
