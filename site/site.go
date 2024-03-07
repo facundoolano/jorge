@@ -280,7 +280,10 @@ func spawnBuildWorkers(site *site) (*sync.WaitGroup, chan string) {
 		go func(files <-chan string) {
 			defer wg.Done()
 			for path := range files {
-				site.buildFile(path)
+				err := site.buildFile(path)
+				if err != nil {
+					fmt.Printf("error in %s: %s\n", path, err)
+				}
 			}
 		}(files)
 	}
