@@ -1,0 +1,86 @@
+---
+title: Development notes
+date: 2024-03-08
+layout: post
+lang: en
+tags: [project]
+draft: true
+---
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: en
+
+Some miscelaneous notes from the jorge development process.
+
+** Jekyll and Hugo
+
+I'd been blogging with Jekyll for a few years now, first with a beautiful-jekyll [LINKS] fork on GitHub pages, later rewriting my site from scratch and hosting it in a VPS. I was generally satisfied with it; I was only attempting to replace it because a site generator was a [[file:why][good fit]] for my Go learning project. So I decided that for my project I was going to pick the subset of Jekyll functionality <I found most useful> and I would change only the specific things that didn't entirely fit my preferences or my blogging flow.
+
+<Some of the things I decided to change:>
+- Defaulting to serve everything in the root directory of the project. I preferred to use a separate ~src/~ directory instead, which saved me from explicitly excluding files from my git repo in the config.yml or prefixing them with a ~_~. This had the added benefit that the contents of the ~src/~ directory would be a faithful representation of the resulting website structure.
+- Since my posts tend to have unique titles, I would exclude date information from the URLs by default, preferring, for instance, ~/blog/code-is-run-more-than-read~ over ~/2023-11-30-code-is-run-more-than-read/~. In addition to the cleaner URL, this would save me from renaming the file to adjust the date before publication. On a similar note, I would rely on front matter rather than a special directory to flag a post as draft.
+- I would add native org-mode files support (but would keep markdown as well).
+
+Since I was set out to write a static site generator in Go, I had Hugo in my radar as a reference. I haven't used Hugo myself, but from skimming through the documentation I got the sense that it's more complex than Jekyll, certainly more than what I was aiming to build myself. I used it occasionally to a "second opinion" to compare to Jekyll's UX, and as a reference of for Go libraries (CLI, file watching, etc.).
+
+One decision I took early on was to use liquid as a template language (like Jekyll) rather than the Go templates (like Hugo). I did this for two reasons:
+
+- Apart from already being familiar with the liquid syntax, I had a Jekyll site that I wanted to use for testing and ultimately porting to jorge.
+- I got the impression that the Go templates were a tool better suited for Go programmers than for users of programs built with Go. I suspected that going the Go templates route would have required extra work to make them user-friendly.
+
+
+** CLI library
+
+- cli library.
+  - default flags is reasonably useful so I did most of the development with it (I prefer the builtin stuff, and I didn't want to distract myself in picking one and learning its boilerplate syntax)
+  - (my assumption was that all cli libraries are more or less the same)
+  - I did need one because I wanted a reasonable ux in validating expected subcommands and printing usage, version, etc.
+  - I was a bit disappointed when I tried both cobra and cli, since they didn't quite support the cli style I was going for
+    - none of them seemed to easily support required positional arguments
+    - cobra doesnt seem to hande errors from its main run function, so I'd have to change my internal error handling strategy
+    - the default usage text from urfave/cli required a lot of tweaking to make it useful
+  - kong on the other hand seemed a natural transition from the default os.Args approach
+    - defined a succint declarative struct (admittedly with a lot of tag string magic)
+    - handled the required positionals I was going for
+    - removed the if args validation, but the rest of the code remained unchanged
+    - the usage output is more or less what I expected
+
+** Smartypants
+
+- smart quotes
+  - didnt really know about this until I started migrating parts of my own blog.
+  - markdown exporters do this by default (this is how I got it "for free" in my blog)
+  - later I learned there's an option for this in org
+  - original implementations from john gruber (same as original markdown) https://daringfireball.net/projects/smartypants/
+  - jekyll has a dedicated filter for this (and so does its go port), but this wasn't useful to me since I wanted it to apply to html exported from org and markdown
+  - goldmark and blackfriday have it implemented but not go-org [links]
+  - i didn't want to use default markdown support and not org, since it defeated the purpose of making org feasible (and because I wanted smart quotes on my own blogs)
+  - there's a standalone port of blackfriday's code, but it doesn't work well on entire html docs (escaped entities, messed up quotes in eg css linked files)
+  - I needed something html aware, to fix text nodes but not eg code blocks. python port was a reasonable reference
+  - I didn't want to try to implement this myself at a low level, since it was too regexy, too tricky and the kind of thing that has a lot of hard to foresee corner cases (especially if you are not familiar with the original problem)
+  - best compromise I could come up with was to port gojekyll code, which although slow according to the comments, it's simple enough to understand and adapt for me. I took it and inserted it into basic html traversal code to fix text nodes (out of the code, pre, and similar tags)
+
+** CSS and Syntax Highlighting
+
+- ignorant of website design, but not proudly.
+
+- more generally, css is difficult
+  - I thought I could get away with no graphic problems by cli and reusing my website styles
+  - x browser bugs are still very annyoing (reminds me of the old js divergences)
+  - https://stackoverflow.com/a/38347131/993769
+
+- one does not simply enable syntax highlighting
+  - too many combinations (light vs dark mode; inline vs code block; theme vs not theme; org vs md)
+- es medio imposible de resolver satisfactoriamente el problema, o desactivas que respete la preferencia de dark mode o desactivas syntax highlighting para que el bloque respete esa preferencia
+o, lo que hice en este caso, hacer que el sitio respete la preferencia pero los bloques de codigo no y que te queden fijos con un tema light o dark
+- (lo ideal es tener dos css de syntax highlight y elegir uno u otro segun lo que prefiera el browser, pero es complicado de implementar genéricamente para un static site generator sin hardcodear un tema particular)
+- There are several code rendering scenarios that need to be handled reasonably:
+- light vs dark preferred color scheme
+- pre code blocks vs inline code spans
+- language set vs no language set
+- markdown vs org rendering
+
+Need to decide between:
+- fixing the color scheme of the page + using one of chroma's themes
+- supporting both light/dark and disabling syntax highlighting altogether
+- supporting light/dark, picking a theme and patching it to render decently
+  with both preferences (as done below, assuming chroma's github theme)
