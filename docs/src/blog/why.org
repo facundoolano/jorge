@@ -3,7 +3,7 @@ title: Why?
 date: 2024-02-28
 layout: post
 lang: en
-tags: [project, golang]
+tags: [project, golang, thoughts]
 excerpt: I set out to write a little static site generator, but why?
 ---
 #+OPTIONS: toc:nil num:nil
