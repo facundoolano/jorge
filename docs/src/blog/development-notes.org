@@ -30,19 +30,15 @@ One decision I took early on was to use liquid as a template language (like Jeky
 
 ** CLI library
 
-- cli library.
-  - default flags is reasonably useful so I did most of the development with it (I prefer the builtin stuff, and I didn't want to distract myself in picking one and learning its boilerplate syntax)
-  - (my assumption was that all cli libraries are more or less the same)
-  - I did need one because I wanted a reasonable ux in validating expected subcommands and printing usage, version, etc.
-  - I was a bit disappointed when I tried both cobra and cli, since they didn't quite support the cli style I was going for
-    - none of them seemed to easily support required positional arguments
-    - cobra doesnt seem to hande errors from its main run function, so I'd have to change my internal error handling strategy
-    - the default usage text from urfave/cli required a lot of tweaking to make it useful
-  - kong on the other hand seemed a natural transition from the default os.Args approach
-    - defined a succint declarative struct (admittedly with a lot of tag string magic)
-    - handled the required positionals I was going for
-    - removed the if args validation, but the rest of the code remained unchanged
-    - the usage output is more or less what I expected
+The Go standard library has reasonable support for building command-line programs ---not as flexible as Python's [[https://github.com/facundoolano/jorge/blob/HEAD/docs/src/blog/development-notes.org?plain=1#L33][argparse]] but good enough for most purposes. And, in fact, I implemented the entire jorge functionality out of [[https://gobyexample.com/command-line-arguments][basic]] [[https://gobyexample.com/command-line-flags][sample]] [[https://gobyexample.com/command-line-subcommands][programs]] from /Go by Example/. But before releasing the project I wanted to add some standard features like ~version~ and ~help~ flags, usage text and user-friendly errors; things better served by a specialized library.
+
+I assumed, from previous experience in other languages, that all CLI libraries would be more or less equivalent, but the most popular ones for Go
+turned out not to be flexible enough to accommodate the few usage patterns I had already implemented:
+  - [[https://github.com/spf13/cobra][cobra]] commands implement a Run function that [[https://github.com/spf13/cobra/issues/67][doesn't return an error]], which would have required me to change add internal program exits when things other than CLI validations went wrong.
+  - [[https://github.com/urfave/cli][urfave/cli]] produced required a lot of manual tweaking to produce usage text with the UX I was going for.
+  - Both seemed to lack support for required/named positional arguments, so I couldn't express usages like ~jorge init <dir>~ or ~jorge post <title>~.
+
+[[https://github.com/alecthomas/kong][kong]], on the other hand, allowed me to express my CLI very concisely and declaratively, preserving the code structure and UX I already had in place and removing validation logic. Once I translated my code to use kong, further refactor opportunities opened up.
 
 ** Smartypants
 
