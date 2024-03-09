@@ -18,7 +18,7 @@ I'd been blogging with Jekyll for a few years now, first with a beautiful-jekyll
 <Some of the things I decided to change:>
 - Defaulting to serve everything in the root directory of the project. I preferred to use a separate ~src/~ directory instead, which saved me from explicitly excluding files from my git repo in the config.yml or prefixing them with a ~_~. This had the added benefit that the contents of the ~src/~ directory would be a faithful representation of the resulting website structure.
 - Since my posts tend to have unique titles, I would exclude date information from the URLs by default, preferring, for instance, ~/blog/code-is-run-more-than-read~ over ~/2023-11-30-code-is-run-more-than-read/~. In addition to the cleaner URL, this would save me from renaming the file to adjust the date before publication. On a similar note, I would rely on front matter rather than a special directory to flag a post as draft.
-- I would add native org-mode files support (but would keep markdown as well).
+- I would add native org-mode files support (but would keep Markdown as well).
 
 Since I was set out to write a static site generator in Go, I had Hugo in my radar as a reference. I haven't used Hugo myself, but from skimming through the documentation I got the sense that it's more complex than Jekyll, certainly more than what I was aiming to build myself. I used it occasionally to a "second opinion" to compare to Jekyll's UX, and as a reference of for Go libraries (CLI, file watching, etc.).
 
@@ -27,6 +27,7 @@ One decision I took early on was to use liquid as a template language (like Jeky
 - Apart from already being familiar with the liquid syntax, I had a Jekyll site that I wanted to use for testing and ultimately porting to jorge.
 - I got the impression that the Go templates were a tool better suited for Go programmers than for users of programs built with Go. I suspected that going the Go templates route would have required extra work to make them user-friendly.
 
+TODO: mention osteele/liquid and osteele/gojekyll
 
 ** CLI library
 
@@ -42,18 +43,17 @@ turned out not to be flexible enough to accommodate the few usage patterns I had
 
 ** Smartypants
 
-- smart quotes
-  - didnt really know about this until I started migrating parts of my own blog.
-  - markdown exporters do this by default (this is how I got it "for free" in my blog)
-  - later I learned there's an option for this in org
-  - original implementations from john gruber (same as original markdown) https://daringfireball.net/projects/smartypants/
-  - jekyll has a dedicated filter for this (and so does its go port), but this wasn't useful to me since I wanted it to apply to html exported from org and markdown
-  - goldmark and blackfriday have it implemented but not go-org [links]
-  - i didn't want to use default markdown support and not org, since it defeated the purpose of making org feasible (and because I wanted smart quotes on my own blogs)
-  - there's a standalone port of blackfriday's code, but it doesn't work well on entire html docs (escaped entities, messed up quotes in eg css linked files)
-  - I needed something html aware, to fix text nodes but not eg code blocks. python port was a reasonable reference
-  - I didn't want to try to implement this myself at a low level, since it was too regexy, too tricky and the kind of thing that has a lot of hard to foresee corner cases (especially if you are not familiar with the original problem)
-  - best compromise I could come up with was to port gojekyll code, which although slow according to the comments, it's simple enough to understand and adapt for me. I took it and inserted it into basic html traversal code to fix text nodes (out of the code, pre, and similar tags)
+In my previous blogging setup, I wrote my posts in org and exported them to markdown before passing them to Jekyll, since this produced better-formed HTML documents. One of the benefits I got from this process, which I didn't know about until I started comparing the jorge output with my live blog, was
+"smart quote" replacements: my jorge posts would render ~"Joe's Garage"~ where my website showed ~“Joe’s Garage”~. Once I started seeing those smart apostrophes I couldn't /un-see/ them, so I started researching how to have a similar replacement applied to jorge output files.
+
+
+- The technique was [[https://daringfireball.net/projects/smartypants/][originally implemented]] in Perl by John Gruber (also author of [[https://daringfireball.net/projects/markdown/][Markdown]]); there's a very readable [[https://python-markdown.github.io/extensions/smarty/][Python port]], but not a general-purpose one for Golang. The algorithm is tricky and regexy-enough that I wouldn't dare trying to implement it myself, even if I somewhat understood the code.
+- Most Markdown libraries do their own smart quotes replacement, including Golang's [[https://github.com/russross/blackfriday/blob/4ca8c28b21a883c59eb518036a3fe45a3f281463/smartypants.go][blackfriday]] and [[https://github.com/yuin/goldmark/blob/4f3074451eda8b06654d09415768726cf170985c/extension/typographer.go][goldmark]] (the one I was using in jorge). But relying on the Markdown exporter wasn't good enough for me; I wanted it to apply to org-mode sourced files as well, and even to standalone HTML files.
+- I found out that there's an [[https://orgmode.org/manual/Export-Settings.html][org-export option]] for smart quotes, but it [[https://github.com/niklasfasching/go-org/issues/42][wasn't supported]] by go-org.
+- Jekyll has a ~smartify~ filter (also [[https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/smartify.go][available]] in gojekyll), but that required manual application by the user.
+- The internal blackfriday logic was extracted into a [[https://github.com/kr/smartypants/][standalone Go package]], but after trying it I found it didn't work well when applied to the entire HTML document.
+
+None of the options were usable as they were, but I was fixated on having this feature ---I didn't want the porting of my website to jorge feel as a downgrade in any way. What I ended up doing was copying the inner text replacement logic from the gojekyll filter ---since it was the shortest and simplest of the lot, even if potentially slow according to [[https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/smartify.go#L3-L4][its comments]]--- tweaked it and applied it on my own HTML traversal code, making sure it was applied to the entire document except for some specific tags (which I took from the [[https://github.com/leohemsted/smartypants.py/blob/c46d26c559d706b6e0aa423190ab2d6edf1fdfcd/smartypants.py#L157][Python implementation]]): ~pre~, ~code~, ~script~, etc. The resulting code is [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/smartify.go][here]].
 
 ** CSS and Syntax Highlighting
 
