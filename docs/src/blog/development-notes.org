@@ -1,6 +1,6 @@
 ---
 title: Development notes
-date: 2024-03-08
+date: 2024-03-11
 layout: post
 lang: en
 tags: [project]
@@ -44,7 +44,7 @@ turned out not to be flexible enough to accommodate the few usage patterns I had
 ** Smartypants
 
 In my previous blogging setup, I wrote my posts in org and exported them to markdown before passing them to Jekyll, since this produced better-formed HTML documents. One of the benefits I got from this process, which I didn't know about until I started comparing the jorge output with my live blog, was
-"smart quote" replacements: my jorge posts would render ~"Joe's Garage"~ where my website showed ~“Joe’s Garage”~. Once I started seeing those smart apostrophes I couldn't /un-see/ them, so I started researching how to have a similar replacement applied to jorge output files.
+smart quote replacements: my jorge posts would render ~"Joe's Garage"~ where my website showed ~“Joe’s Garage”~. Once I started seeing those smart apostrophes I couldn't /un-see/ them, so I started researching how to have a similar replacement applied to jorge output files.
 
 
 - The technique was [[https://daringfireball.net/projects/smartypants/][originally implemented]] in Perl by John Gruber (also author of [[https://daringfireball.net/projects/markdown/][Markdown]]); there's a very readable [[https://python-markdown.github.io/extensions/smarty/][Python port]], but not a general-purpose one for Golang. The algorithm is tricky and regexy-enough that I wouldn't dare trying to implement it myself, even if I somewhat understood the code.
@@ -57,26 +57,14 @@ None of the options were usable as they were, but I was fixated on having this f
 
 ** CSS and Syntax Highlighting
 
-- ignorant of website design, but not proudly.
+One of [[file:why][the reasons]] why I decided to work on a CLI was that it would save me from building and polishing a graphical user interface. ~jorge init~ would generate a website from scratch, but my plan was to just reuse the styles from my personal website to avoid dealing with page layouts and CSS. That didn't go as planned; as soon as I started making minor changes to the default website, I found myself struggling between CSS syntax, browser quirks and my own limitations.
 
-- more generally, css is difficult
-  - I thought I could get away with no graphic problems by cli and reusing my website styles
-  - x browser bugs are still very annyoing (reminds me of the old js divergences)
-  - https://stackoverflow.com/a/38347131/993769
+I can tell what I like and what I don't; I occasionally have ideas about how I'd like my site to look and I can usually Google my way into making it happen. But I am no designer, I haven't been trained to diagram, reason by principle or think holistically about design as I can with software ---not to mention keeping an eye on accessibility. I may get the site to look as I want but my CSS is brittle, any change may break things that were working before and what looks good in my machine may not in my cellphone or another browser.
 
-- one does not simply enable syntax highlighting
-  - too many combinations (light vs dark mode; inline vs code block; theme vs not theme; org vs md)
-- es medio imposible de resolver satisfactoriamente el problema, o desactivas que respete la preferencia de dark mode o desactivas syntax highlighting para que el bloque respete esa preferencia
-o, lo que hice en este caso, hacer que el sitio respete la preferencia pero los bloques de codigo no y que te queden fijos con un tema light o dark
-- (lo ideal es tener dos css de syntax highlight y elegir uno u otro segun lo que prefiera el browser, pero es complicado de implementar genéricamente para un static site generator sin hardcodear un tema particular)
-- There are several code rendering scenarios that need to be handled reasonably:
-- light vs dark preferred color scheme
-- pre code blocks vs inline code spans
-- language set vs no language set
-- markdown vs org rendering
+HTML and CSS have come a long way in all these years, but every now and then I get war flashbacks from the jQuery days when I see that iOS Firefox shows a complete different thing than Firefox Desktop because it's just Safari under the hood, but then Safari Desktop's responsive mode doesn't necessarily match Safari iOS look either[fn:1].
 
-Need to decide between:
-- fixing the color scheme of the page + using one of chroma's themes
-- supporting both light/dark and disabling syntax highlighting altogether
-- supporting light/dark, picking a theme and patching it to render decently
-  with both preferences (as done below, assuming chroma's github theme)
+One thing that got particularly hairy was trying to honor the browser preference for light/dark mode in the default website (through ~color-scheme~ and ~prefers-color-scheme~ media queries) while doing syntax highlighting of code blocks (with a library that's unaware of color preferences) and without forcing the same theme on all generated sites.
+
+** Notas
+
+[fn:1] [[https://stackoverflow.com/a/22417120/993769][This]] WebKit quirk was particularly annoying.
