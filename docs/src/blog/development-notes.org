@@ -13,23 +13,25 @@ Some miscelaneous notes from the jorge development process.
 
 ** Jekyll and Hugo
 
-I'd been blogging with Jekyll for a few years now, first with a beautiful-jekyll [LINKS] fork on GitHub pages, later rewriting my site from scratch and hosting it in a VPS. I was generally satisfied with it; I was only attempting to replace it because a site generator was a [[file:why][good fit]] for my Go learning project. So I decided that for my project I was going to pick the subset of Jekyll functionality <I found most useful> and I would change only the specific things that didn't entirely fit my preferences or my blogging flow.
+I'd been blogging with Jekyll for a few years; first on GitHub Pages, from a fork of the [[https://github.com/daattali/beautiful-jekyll][beautiful-jekyll]] theme, then with my own design, hosted on a VPS. I was generally satisfied with it; I was only attempting to write my own site generator because it was [[file:why][a good fit]] for a Go learning project. So I decided I was going to use Jekyll as a model, reproducing the subset of the functionality that was most useful to me and only changing what didn't fit my preferences or my blogging workflow:
 
-<Some of the things I decided to change:>
-- Defaulting to serve everything in the root directory of the project. I preferred to use a separate ~src/~ directory instead, which saved me from explicitly excluding files from my git repo in the config.yml or prefixing them with a ~_~. This had the added benefit that the contents of the ~src/~ directory would be a faithful representation of the resulting website structure.
-- Since my posts tend to have unique titles, I would exclude date information from the URLs by default, preferring, for instance, ~/blog/code-is-run-more-than-read~ over ~/2023-11-30-code-is-run-more-than-read/~. In addition to the cleaner URL, this would save me from renaming the file to adjust the date before publication. On a similar note, I would rely on front matter rather than a special directory to flag a post as draft.
+- I would generate sites from a ~src/~ directory instead of the root of the project. This avoided having to exclude files explicitly in the configuration or prefix them with an underscore, and had the added benefit that the contents of the ~src/~ directory would be a faithful representation of the target website structure.
+- I would exclude date information from the URLs by default, preferring, for instance, ~/blog/code-is-run-more-than-read~ over ~/2023-11-30-code-is-run-more-than-read/~. In addition to the cleaner URL, this would save me from renaming the file to adjust the date before publication. I would similarly rely on front matter rather than a special directory to flag a post as draft.
 - I would add native org-mode files support (but would keep Markdown as well).
 
-Since I was set out to write a static site generator in Go, I had Hugo in my radar as a reference. I haven't used Hugo myself, but from skimming through the documentation I got the sense that it's more complex than Jekyll, certainly more than what I was aiming to build myself. I used it occasionally to a "second opinion" to compare to Jekyll's UX, and as a reference of for Go libraries (CLI, file watching, etc.).
+Since I was writing a static site generator in Go, I also had Hugo in my radar as a reference. I hadn't used it before but from skimming through its documentation I got the impression that it was more complex than Jekyll, certainly more than what I was planning to build. I used it occasionally to have a "second opinion" when assessing Jekyll's design decisions, and as a reference when looking for Go libraries to solve particular problems (command-line interface, file-watching, etc.).
 
-One decision I took early on was to use liquid as a template language (like Jekyll) rather than the Go templates (like Hugo). I did this for two reasons:
+** Liquid
 
-- Apart from already being familiar with the liquid syntax, I had a Jekyll site that I wanted to use for testing and ultimately porting to jorge.
-- I got the impression that the Go templates were a tool better suited for Go programmers than for users of programs built with Go. I suspected that going the Go templates route would have required extra work to make them user-friendly.
+One decision I took early on was to use liquid as a template language (like Jekyll) rather than the Go templates (like Hugo). I did this for a few reasons:
 
-TODO: mention osteele/liquid and osteele/gojekyll
+- I was already familiar with the liquid syntax;
+- I had a Jekyll site that I wanted to use for testing and ultimately porting to jorge;
+- I got the impression that the Go templates were a tool better suited for Go programmers than for users of programs built with Go. I suspected that choosing Go templates would have required extra work to make them user-friendly.
 
-** CLI library
+There was a [[https://github.com/osteele/liquid][osteele/liquid]] package that I could use for parsing and rendering the templates, part of a [[https://github.com/osteele/gojekyll/][Go port]] of Jekyll. I later realized that some of the template tags and filters I was using in my own website weren't native liquid but Jekyll extensions; since I didn't want to depend on the entire gojekyll project ---which felt like it would defeat the purpose of building my own site generator---, I [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/filters.go][ported]] and adapted the few I needed.
+
+** CLI
 
 The Go standard library has reasonable support for building command-line programs ---not as flexible as Python's [[https://github.com/facundoolano/jorge/blob/HEAD/docs/src/blog/development-notes.org?plain=1#L33][argparse]] but good enough for most purposes. And, in fact, I implemented the entire jorge functionality out of [[https://gobyexample.com/command-line-arguments][basic]] [[https://gobyexample.com/command-line-flags][sample]] [[https://gobyexample.com/command-line-subcommands][programs]] from /Go by Example/. But before releasing the project I wanted to add some standard features like ~version~ and ~help~ flags, usage text and user-friendly errors; things better served by a specialized library.
 
@@ -55,7 +57,7 @@ smart quote replacements: my jorge posts would render ~"Joe's Garage"~ where my 
 
 None of the options were usable as they were, but I was fixated on having this feature ---I didn't want the porting of my website to jorge feel as a downgrade in any way. What I ended up doing was copying the inner text replacement logic from the gojekyll filter ---since it was the shortest and simplest of the lot, even if potentially slow according to [[https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/smartify.go#L3-L4][its comments]]--- tweaked it and applied it on my own HTML traversal code, making sure it was applied to the entire document except for some specific tags (which I took from the [[https://github.com/leohemsted/smartypants.py/blob/c46d26c559d706b6e0aa423190ab2d6edf1fdfcd/smartypants.py#L157][Python implementation]]): ~pre~, ~code~, ~script~, etc. The resulting code is [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/smartify.go][here]].
 
-** CSS and Syntax Highlighting
+** CSS
 
 One of [[file:why][the reasons]] why I decided to work on a CLI was that it would save me from building and polishing a graphical user interface. ~jorge init~ would generate a website from scratch, but my plan was to just reuse the styles from my personal website to avoid dealing with page layouts and CSS. That didn't go as planned; as soon as I started making minor changes to the default website, I found myself struggling between CSS syntax, browser quirks and my own limitations.
 
