@@ -4,7 +4,6 @@ date: 2024-03-11
 layout: post
 lang: en
 tags: [project]
-draft: true
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
@@ -13,60 +12,62 @@ Some miscelaneous notes from the jorge development process.
 
 ** Jekyll and Hugo
 
-I'd been blogging with Jekyll for a few years; first on GitHub Pages, from a fork of the [[https://github.com/daattali/beautiful-jekyll][beautiful-jekyll]] theme, then with my own design, hosted on a VPS. I was generally satisfied with it; I was only attempting to write my own site generator because it was [[file:why][a good fit]] for a Go learning project. So I decided I was going to use Jekyll as a model, reproducing the subset of the functionality that was most useful to me and only changing what didn't fit my preferences or my blogging workflow:
+I'd been blogging with Jekyll for a few years now; first on GitHub Pages, from a fork of the [[https://github.com/daattali/beautiful-jekyll][beautiful-jekyll]] theme, then with a design I wrote from scratch, on a VPS. It worked well for me; I was only attempting to write my own site generator because it made a good [[file:why][Go learning project]]. So, when working on jorge, I defaulted to whatever Jekyll did except for the few parts that I felt added friction to my blogging workflow:
 
-- I would generate sites from a ~src/~ directory instead of the root of the project. This avoided having to exclude files explicitly in the configuration or prefix them with an underscore, and had the added benefit that the contents of the ~src/~ directory would be a faithful representation of the target website structure.
-- I would exclude date information from the URLs by default, preferring, for instance, ~/blog/code-is-run-more-than-read~ over ~/2023-11-30-code-is-run-more-than-read/~. In addition to the cleaner URL, this would save me from renaming the file to adjust the date before publication. I would similarly rely on front matter rather than a special directory to flag a post as draft.
-- I would add native org-mode files support (but would keep Markdown as well).
+- I would generate sites from a ~src/~ directory instead of the root of the project. This would remove the need to explicitly exclude files in the configuration or by prefixing them with an underscore, with the added benefit that the contents of the ~src/~ directory would better represent the expected website structure.
+- I would exclude the date information from the URLs, preferring, for instance, ~/blog/code-is-run-more-than-read~ over ~/2023-11-30-code-is-run-more-than-read/~[fn:2]. In addition to the cleaner URL, this would save me from renaming the file to adjust the date before publication. I would similarly rely on front matter metadata rather than a dedicated directory to mark a post as a draft.
+- I would support org-mode files in addition to Markdown.
 
-Since I was writing a static site generator in Go, I also had Hugo in my radar as a reference. I hadn't used it before but from skimming through its documentation I got the impression that it was more complex than Jekyll, certainly more than what I was planning to build. I used it occasionally to have a "second opinion" when assessing Jekyll's design decisions, and as a reference when looking for Go libraries to solve particular problems (command-line interface, file-watching, etc.).
+Since I would be writing a static site generator in Go, I also had Hugo in my radar for reference. I hadn't used Hugo but, from skimming through its documentation, I got the impression that it was more complex than Jekyll, certainly more than what I was planning to build. I used it occasionally to have a "second opinion" when considering Jekyll's design decisions, and as a reference when looking for Go libraries to solve particular problems (the command-line interface, file-watching, etc.).
 
 ** Liquid
 
-One decision I took early on was to use liquid as a template language (like Jekyll) rather than the Go templates (like Hugo). I did this for a few reasons:
+One decision I took early on was to use liquid as the template language (as Jekyll does) rather than Go's ~html/template~ package (as Hugo does). I had a few reasons:
 
 - I was already familiar with the liquid syntax;
-- I had a Jekyll site that I wanted to use for testing and ultimately porting to jorge;
-- I got the impression that the Go templates were a tool better suited for Go programmers than for users of programs built with Go. I suspected that choosing Go templates would have required extra work to make them user-friendly.
+- I had a Jekyll site that I wanted to use for testing and ultimately port to jorge;
+- I got the impression that ~html/template~ was better suited for Go programmers than for users of programs built with Go. I suspected that using these templates would have required extra work to make them user-friendly.
 
-There was a [[https://github.com/osteele/liquid][osteele/liquid]] package that I could use for parsing and rendering the templates, part of a [[https://github.com/osteele/gojekyll/][Go port]] of Jekyll. I later realized that some of the template tags and filters I was using in my own website weren't native liquid but Jekyll extensions; since I didn't want to depend on the entire gojekyll project ---which felt like it would defeat the purpose of building my own site generator---, I [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/filters.go][ported]] and adapted the few I needed.
+I could use the [[https://github.com/osteele/liquid][osteele/liquid]] library for parsing and rendering the templates, part of a [[https://github.com/osteele/gojekyll/][Go port]] of Jekyll. I later realized that some of the template tags and filters I was using in my website weren't native liquid but rather Jekyll extensions; since I didn't want to add the entire gojekyll project as a dependency ---which felt like it would defeat the purpose of building a site generator---, I [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/filters.go][ported]] and adapted the few filters I needed.
 
 ** CLI
 
-The Go standard library has reasonable support for building command-line programs ---not as flexible as Python's [[https://github.com/facundoolano/jorge/blob/HEAD/docs/src/blog/development-notes.org?plain=1#L33][argparse]] but good enough for most purposes. And, in fact, I implemented the entire jorge functionality out of [[https://gobyexample.com/command-line-arguments][basic]] [[https://gobyexample.com/command-line-flags][sample]] [[https://gobyexample.com/command-line-subcommands][programs]] from /Go by Example/. But before releasing the project I wanted to add some standard features like ~version~ and ~help~ flags, usage text and user-friendly errors; things better served by a specialized library.
+The Go standard library has reasonable support for building command-line programs ---not as flexible as Python's [[https://github.com/facundoolano/jorge/blob/HEAD/docs/src/blog/development-notes.org?plain=1#L33][argparse]] but good enough for most purposes. In fact, I implemented the entire jorge interface out of the [[https://gobyexample.com/command-line-arguments][basic]] [[https://gobyexample.com/command-line-flags][sample]] [[https://gobyexample.com/command-line-subcommands][programs]] in /Go by Example/. But before releasing the project I wanted to add some standard features like version and help flags, usage documentation and user-friendly errors; things better served by a specialized library.
 
-I assumed, from previous experience in other languages, that all CLI libraries would be more or less equivalent, but the most popular ones for Go
-turned out not to be flexible enough to accommodate the few usage patterns I had already implemented:
-  - [[https://github.com/spf13/cobra][cobra]] commands implement a Run function that [[https://github.com/spf13/cobra/issues/67][doesn't return an error]], which would have required me to change add internal program exits when things other than CLI validations went wrong.
-  - [[https://github.com/urfave/cli][urfave/cli]] produced required a lot of manual tweaking to produce usage text with the UX I was going for.
-  - Both seemed to lack support for required/named positional arguments, so I couldn't express usages like ~jorge init <dir>~ or ~jorge post <title>~.
+I assumed, from previous experience, that all CLI libraries would be more or less equivalent, but the most popular Go ones turned out not to be flexible enough to accommodate usage patterns I had already implemented:
+  - [[https://github.com/spf13/cobra][cobra]] commands relied on a ~Run~ function that [[https://github.com/spf13/cobra/issues/67][didn't return errors]], so using it would have required me to add extra error handling past input argument validations.
+  - [[https://github.com/urfave/cli][urfave/cli]] required much manual tweaking to produce the usage text I wanted for my program.
+  - Both seemed to lack support for required/named positional arguments, so I had to do extra work to express commands like ~jorge init <dir>~ or ~jorge post <title>~.
 
-[[https://github.com/alecthomas/kong][kong]], on the other hand, allowed me to express my CLI very concisely and declaratively, preserving the code structure and UX I already had in place and removing validation logic. Once I translated my code to use kong, further refactor opportunities opened up.
+[[https://github.com/alecthomas/kong][kong]], on the other hand, allowed me to express my CLI very concisely and declaratively, preserving the code structure and user-experience I already had in place, and handling input validations for me. Once I adapted my code to use kong, further refactoring opportunities opened up.
 
 ** Smartypants
 
-In my previous blogging setup, I wrote my posts in org and exported them to markdown before passing them to Jekyll, since this produced better-formed HTML documents. One of the benefits I got from this process, which I didn't know about until I started comparing the jorge output with my live blog, was
-smart quote replacements: my jorge posts would render ~"Joe's Garage"~ where my website showed ~“Joe’s Garage”~. Once I started seeing those smart apostrophes I couldn't /un-see/ them, so I started researching how to have a similar replacement applied to jorge output files.
+In my old blogging workflow, I wrote posts as org-mode files and manually exported them to Markdown before passing them to Jekyll, since this produced better-formed documents than using ~org-html-export~ directly. One benefit I was inadvertently getting from this setup, which I didn't notice until I started comparing the jorge output HTML with my online blog, was
+"smart quote" replacements: my jorge posts would render ~"Joe's Garage"~ where my website showed ~“Joe’s Garage”~. Once I started noticing the difference, I couldn't /un-see/ those dumb apostrophes, so I started researching how to get that feature into jorge.
 
 
-- The technique was [[https://daringfireball.net/projects/smartypants/][originally implemented]] in Perl by John Gruber (also author of [[https://daringfireball.net/projects/markdown/][Markdown]]); there's a very readable [[https://python-markdown.github.io/extensions/smarty/][Python port]], but not a general-purpose one for Golang. The algorithm is tricky and regexy-enough that I wouldn't dare trying to implement it myself, even if I somewhat understood the code.
-- Most Markdown libraries do their own smart quotes replacement, including Golang's [[https://github.com/russross/blackfriday/blob/4ca8c28b21a883c59eb518036a3fe45a3f281463/smartypants.go][blackfriday]] and [[https://github.com/yuin/goldmark/blob/4f3074451eda8b06654d09415768726cf170985c/extension/typographer.go][goldmark]] (the one I was using in jorge). But relying on the Markdown exporter wasn't good enough for me; I wanted it to apply to org-mode sourced files as well, and even to standalone HTML files.
+- The technique was [[https://daringfireball.net/projects/smartypants/][originally implemented]] in Perl by John Gruber (also author of [[https://daringfireball.net/projects/markdown/][Markdown]]). There's a very readable [[https://python-markdown.github.io/extensions/smarty/][Python port]], but not a general-purpose one for Golang. The algorithm is tricky and regex-y enough that I wouldn't dare trying to implement it myself, even if I somewhat understood the code.
+- Most Markdown libraries do their own smart quotes replacement, including Golang's [[https://github.com/russross/blackfriday/blob/4ca8c28b21a883c59eb518036a3fe45a3f281463/smartypants.go][blackfriday]] and [[https://github.com/yuin/goldmark/blob/4f3074451eda8b06654d09415768726cf170985c/extension/typographer.go][goldmark]] (the one I use in jorge). But processing Markdown input wasn't enough; I needed something I could apply to any HTML file, regardless of its source.
 - I found out that there's an [[https://orgmode.org/manual/Export-Settings.html][org-export option]] for smart quotes, but it [[https://github.com/niklasfasching/go-org/issues/42][wasn't supported]] by go-org.
 - Jekyll has a ~smartify~ filter (also [[https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/smartify.go][available]] in gojekyll), but that required manual application by the user.
-- The internal blackfriday logic was extracted into a [[https://github.com/kr/smartypants/][standalone Go package]], but after trying it I found it didn't work well when applied to the entire HTML document.
+- The relevant blackfriday module is also available as a [[https://github.com/kr/smartypants/][standalone package]], but I found that it doesn't work well on HTML documents.
 
-None of the options were usable as they were, but I was fixated on having this feature ---I didn't want the porting of my website to jorge feel as a downgrade in any way. What I ended up doing was copying the inner text replacement logic from the gojekyll filter ---since it was the shortest and simplest of the lot, even if potentially slow according to [[https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/smartify.go#L3-L4][its comments]]--- tweaked it and applied it on my own HTML traversal code, making sure it was applied to the entire document except for some specific tags (which I took from the [[https://github.com/leohemsted/smartypants.py/blob/c46d26c559d706b6e0aa423190ab2d6edf1fdfcd/smartypants.py#L157][Python implementation]]): ~pre~, ~code~, ~script~, etc. The resulting code is [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/smartify.go][here]].
+None of the options was usable as it was, but I was fixated on getting this feature ---I didn't want the jorge port of my website to feel as a downgrade in any way. What I ended up doing was extracting the text-replacement logic from gojekyll's ~smartify~ filter ---since it was the shortest and simplest of the lot, even if [[https://github.com/osteele/gojekyll/blob/f1794a874890bfb601cae767a0cce15d672e9058/filters/smartify.go#L3-L4][potentially slower]]---  and used it in my own HTML traversal code, making sure to skip preformatted tags (~pre~, ~code~, ~script~, etc). The result is [[https://github.com/facundoolano/jorge/blob/7df0be12c8cdc55015c03badca9944829bbf184f/markup/smartify.go][here]].
 
 ** CSS
 
-One of [[file:why][the reasons]] why I decided to work on a CLI was that it would save me from building and polishing a graphical user interface. ~jorge init~ would generate a website from scratch, but my plan was to just reuse the styles from my personal website to avoid dealing with page layouts and CSS. That didn't go as planned; as soon as I started making minor changes to the default website, I found myself struggling between CSS syntax, browser quirks and my own limitations.
+One of [[file:why][the reasons]] why I decided to work on a command-line application was that it wouldn't require building and polishing a graphical user interface. Although ~jorge init~ would generate a default website, CSS included, my plan was to just copy the styles from my personal website. That didn't go as planned, though: as soon as I started making minor tweaks to the page contents, I found myself struggling between CSS syntax nuances, browser quirks and my own limitations.
 
-I can tell what I like and what I don't; I occasionally have ideas about how I'd like my site to look and I can usually Google my way into making it happen. But I am no designer, I haven't been trained to diagram, reason by principle or think holistically about design as I can with software ---not to mention keeping an eye on accessibility. I may get the site to look as I want but my CSS is brittle, any change may break things that were working before and what looks good in my machine may not in my cellphone or another browser.
+I can tell what I like from  what I don't, aesthetically speaking; I occasionally get ideas to improve the look of my website, and I can Google my way into making them happen. But I am no designer; I don't have the training reason from first principles and think holistically about design as I can with program code ---not to mention getting accessibility requirements right. I may get a site to look as I want but the CSS turns out to be brittle; any change may break things that were previously working and what looks good in my machine may not in my cellphone or in a different browser.
 
-HTML and CSS have come a long way in all these years, but every now and then I get war flashbacks from the jQuery days when I see that iOS Firefox shows a complete different thing than Firefox Desktop because it's just Safari under the hood, but then Safari Desktop's responsive mode doesn't necessarily match Safari iOS look either[fn:1].
+HTML and CSS have come a long way since the jQuery days, but I get war flashbacks whenever I see that iOS Firefox displays a completely different thing from Firefox Desktop because it's just Safari under the hood, and then Safari Desktop's responsive mode doesn't match iOS Safari either[fn:1].
 
-One thing that got particularly hairy was trying to honor the browser preference for light/dark mode in the default website (through ~color-scheme~ and ~prefers-color-scheme~ media queries) while doing syntax highlighting of code blocks (with a library that's unaware of color preferences) and without forcing the same theme on all generated sites.
+One thing that got particularly hairy was trying to honor the browser preferences for light/dark mode (through ~color-scheme~ and ~prefers-color-scheme~ media queries) while doing syntax highlighting of code blocks (with a library that's unaware of color preferences) and without forcing the same theme on all generated sites.
 
 ** Notas
 
 [fn:1] [[https://stackoverflow.com/a/22417120/993769][This]] WebKit quirk was particularly annoying.
+
+[fn:2] I know you can get the same behavior in Jekyll by changing the configuration.
+As with other options, I wanted jorge configuration to meet my preferences by default.
