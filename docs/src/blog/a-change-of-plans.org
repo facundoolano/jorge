@@ -3,7 +3,7 @@ title: A change of plans
 date: 2024-03-04
 layout: post
 lang: en
-tags: [project, emacs]
+tags: [project, emacs, thoughts]
 excerpt: The project concept, as I originally planned it, had a few problems, but they went away when I found out I could parse org-mode files in Go.
 ---
 #+OPTIONS: toc:nil num:nil
