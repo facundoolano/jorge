@@ -31,7 +31,7 @@ body {
 
 @media screen and (max-width: 480px) {
     .hidden-mobile {
-        display: none
+        display: none!important;
     }
 }
 
