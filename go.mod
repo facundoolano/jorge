@@ -12,8 +12,8 @@ require (
 	github.com/tdewolff/minify/v2 v2.20.16
 	github.com/yuin/goldmark v1.7.0
 	github.com/yuin/goldmark-highlighting/v2 v2.0.0-20230729083705-37449abec8cc
-	golang.org/x/net v0.14.0
-	golang.org/x/text v0.12.0
+	golang.org/x/net v0.17.0
+	golang.org/x/text v0.13.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
@@ -24,3 +24,5 @@ require (
 	golang.org/x/sys v0.16.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace github.com/niklasfasching/go-org => github.com/facundoolano/go-org v0.0.0-20240313182338-3f3817ebe25d
