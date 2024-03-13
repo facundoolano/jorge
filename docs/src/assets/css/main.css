@@ -265,12 +265,13 @@ hr.footnotes-separatator {
 
 /* makes footnote number and text display in the same line  */
 .footnote-definition {
-    display: block;
+    display: flex;
     vertical-align: top;
     margin-bottom: .4rem;
 }
 .footnote-body, .footnote-body p {
     display: inline;
+    margin-left: 0.25rem;
 }
 
 /* These control the expand/collapse behavior of the tags page */
