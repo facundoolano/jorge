@@ -4,6 +4,7 @@ date: 2024-03-14
 layout: post
 lang: en
 tags: [thoughts]
+excerpt: During work on jorge, for the first time, I felt tempted to delegate some tasks to an AI.
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
