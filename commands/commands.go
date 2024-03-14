@@ -17,6 +17,7 @@ const DIR_RWE_MODE = 0777
 
 type Build struct {
 	ProjectDir string `arg:"" name:"path" optional:"" default:"." help:"Path to the website project to build."`
+	NoMinify   bool   `help:"Disable file minifying."`
 }
 
 // Read the files in src/ render them and copy the result to target/
@@ -27,6 +28,7 @@ func (cmd *Build) Run(ctx *kong.Context) error {
 	if err != nil {
 		return err
 	}
+	config.Minify = !cmd.NoMinify
 
 	err = site.Build(*config)
 	fmt.Printf("done in %.2fs\n", time.Since(start).Seconds())

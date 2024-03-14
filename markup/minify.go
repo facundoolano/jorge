@@ -26,7 +26,6 @@ func LoadMinifier() Minifier {
 	return Minifier{minifier}
 }
 
-// if enabled by config, minify web files
 func (m *Minifier) Minify(extension string, contentReader io.Reader) io.Reader {
 
 	if !slices.Contains(SUPPORTED_MINIFIERS, extension) {
