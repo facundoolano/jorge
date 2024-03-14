@@ -1,6 +1,6 @@
 ---
 title: On AI assistance
-date: 2024-03-15
+date: 2024-03-14
 layout: post
 lang: en
 tags: [thoughts]
@@ -14,12 +14,12 @@ I'm a programmer but I'm no tech enthusiast; I don't think that innovation turne
 As with any tech fad, AI is being applied carelessly, as if it carried no cost, as if a product got better by just featuring it. But more than that, what bothers me is that behind AI promises of boosted productivity I see an agenda for cheap intellectual labor, one that implies both limiting human intervention in the creative process and lowering the bar of what consumers are willing to accept ---passing the Turing test by making people dumber.
 
 -----
-So I wasn't looking to involve AI in my work. I'd tried ChatGPT last year and had been both surprised by how well it interpreted my prompts ---be them coding tasks, information research or text compositions--- and underwhelmed by the answers it gave me. Arguably prompt interpreting is the harder part, and it's just a matter of time for the results to improve. I haven't really tried other tools or models, but I imagine some are already better than ChatGPT.
+So I wasn't looking to involve AI in my work. I'd tried ChatGPT last year and had been both surprised by how well it interpreted my prompts ---be they coding tasks, information research, or text compositions--- and underwhelmed by the answers it gave me. Arguably prompt interpreting is the harder part, and it's just a matter of time for the results to improve. I haven't really tried other tools or models, but I imagine some are already better than ChatGPT.
 
-During work on jorge, for the first time I felt tempted to delegate some tasks to an AI.
-Things that felt like boilerplate or required subtle knowledge of tools that I don't use frequently[fn:1]. Regular expressions, crontab schedules, nginx rules, GitHub Actions workflows, Makefile targets, sed and awk incantations, CSS tricks. Things that, in the past, I would try to figure out by googling and mechanical trial-and-error, with minimum intellectual commitment. AI sounded like it could help there, in part because web search and browsing has been getting worse, requiring more hops to get from question to answer, and in part because ---I assumed--- a machine should do better than me at quickly scanning information and deriving answers from it, for questions that perhaps hadn't been asked before in the same exact terms. That was my assumption, anyway; half of the time, running these tasks by ChatGPT, even at their limited scope, resulted in garbage.
+During work on jorge, for the first time, I felt tempted to delegate some tasks to an AI.
+Things that felt like boilerplate or required subtle knowledge of tools that I don't use frequently[fn:1]. Regular expressions, crontab schedules, nginx rules, GitHub Actions workflows, Makefile targets, sed and awk incantations, CSS tricks. Things that, in the past, I would try to figure out by googling and mechanical trial-and-error, with minimum intellectual commitment. AI sounded like it could help there, in part because web search and browsing have been getting worse, requiring more hops to get from question to answer, and in part because ---I assumed--- a machine should do better than me at quickly scanning information and deriving answers from it, for questions that perhaps hadn't been asked before in the same exact terms. That was my assumption, anyway; half of the time, running these tasks by ChatGPT, even at their limited scope, resulted in garbage.
 
-Maybe other tools do better. Or maybe not yet but some will, eventually. The point is that I identified a problem space where I'm willing to give AI coding assistance a try. I don't want magic code complete or help factoring or reading code; I don't need an AI to do my job. I just want an Emacs buffer with a conversational prompt. Something that hopefully reduces the need to leave the editor and jump to the browser, much like I already have facilities for trying code in a shell, fetching documentation or looking up word definitions and synonyms. Now to check some models and Emacs packages, see if any of them give more than they take.
+Maybe other tools do better. Or maybe not yet but some will, eventually. The point is that I identified a problem space where I'm willing to give AI coding assistance a try. I don't want magic code complete or help factoring or reading code; I don't need an AI to do my job. I just want an Emacs buffer with a conversational prompt. Something that hopefully reduces the need to leave the editor and jump to the browser, much like I already have facilities for trying code in a shell, fetching documentation, or looking up word definitions and synonyms. Now to check some models and Emacs packages, see if any of them give more than they take.
 
 -----
 On a more philosophical note, I wonder what it would be like learning to program today, with these tools available from the beginning.
@@ -30,7 +30,7 @@ I wonder how much of the learning process depends on facing and overcoming the l
 
 Is this any different from using calculators to do the math? Or GPS for finding directions? Was that progress? Is this?
 
-I bet coders from previous generations looked down on coders from mine, because we grew up in the comfort of the garbage collector and never had to write a line of assembly. Were they right? Is AI assistance the same?
+I bet coders from previous generations looked down on coders from mine because we grew up in the comfort of the garbage collector, never having to write a line of assembly. Were they right? Is AI assistance the same?
 
 Is this just business as usual, the latest entry of artisans replaced by factory workers replaced by machines?
 
