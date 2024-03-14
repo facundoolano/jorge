@@ -9,28 +9,28 @@ tags: [thoughts]
 #+LANGUAGE: en
 
 
-I'm a programmer but I'm no tech enthusiast. I'm skeptical of over-hyped technology; I reject the idea that any innovation turned into consumer need is necessarily a form of progress. So I've been rather hostile to the recent wave of Artificial Intelligence. I'm not against AI as a tool: it's just a tool. It can be a beautiful construction, it can be useful to solve real problems. But it can also break things that aren't broken and serve as an excuse to make things worse.
+I'm a programmer but I'm no tech enthusiast; I don't think that innovation turned into consumer need is necessarily a form of progress. And I'm suspicious of over-hyped technology. So I've been rather hostile to the recent wave of Artificial Intelligence. I'm not against AI as a tool: it's just a tool. It can be a beautiful construction, it can be useful to solve real problems. But it can also break things that aren't broken and serve as an excuse to make things worse.
 
-As with any tech fad, AI is being applied carelessly, as if it had no cost, as if a product got better by just featuring this particular technology. But more than that, what bothers me is that behind the promises of boosted productivity I sense an agenda for cheap intellectual labor, to be realized by limiting human intervention in the creative process and lowering the bar of what consumers are willing to accept ---passing the Turing test by making people dumber.
-
------
-So I wasn't very enthusiastic about involving AI in my work. I'd tried ChatGPT last year and was both surprised by how well it interpreted my prompts ---be them coding tasks, information research or text compositions--- and underwhelmed by the answers it gave me. Arguably prompt interpreting is the harder part, and it's just a matter of time for the results to improve. I haven't really tried other tools or models, but I imagine some are already better than ChatGPT.
-
-But during work on jorge, for the first time I felt tempted to delegate certain tasks to LLMs. Things that felt like boilerplate or required subtle knowledge of some tool that I'm not proficient with[fn:1]. Things like regular expressions, crontab schedules, nginx rules, GitHub Actions workflows, Makefile targets, sed and awk incantations, CSS tricks. Problems that, in the past, I would Google my way out from, by mechanical trial-and-error and with minimum intellectual commitment. AI sounded like it could help there in part because Google search (and the web in general) is getting worse every year, requiring more hops to get from question to answer, and in part because I presumed a machine should be better than me at quickly scanning information and deriving answers from them, for questions that perhaps haven't been asked before in the same exact terms. That was my assumption, anyway; half of the time, running these tasks by ChatGPT, even with their reduced scopes, resulted in garbage.
-
-I identified a problem space where I want to try coding assistance from an AI.
-I don't want magic code complete or help factoring or reading code; I don't need an AI to do my job. I just need an Emacs buffer with a conversational AI. Something that reduces the need to leave my editor and jump to the browser, much like I already have facilities for running a Python shell, fetching documentation or looking up word definitions and synonyms. So I just need to look at some language models and Emacs packages, see if any is good enough for that.[fn:3]
+As with any tech fad, AI is being applied carelessly, as if it carried no cost, as if a product got better by just featuring it. But more than that, what bothers me is that behind AI promises of boosted productivity I see an agenda for cheap intellectual labor, one that implies both limiting human intervention in the creative process and lowering the bar of what consumers are willing to accept ---passing the Turing test by making people dumber.
 
 -----
-On a more philosophical note, I wonder what it would be like learning to program today, with these tools available from the start.
+So I wasn't looking to involve AI in my work. I'd tried ChatGPT last year and had been both surprised by how well it interpreted my prompts ---be them coding tasks, information research or text compositions--- and underwhelmed by the answers it gave me. Arguably prompt interpreting is the harder part, and it's just a matter of time for the results to improve. I haven't really tried other tools or models, but I imagine some are already better than ChatGPT.
 
-How hard would it be to prevent the "explain me this" from turning into "write this for me" and then "do the thinking for me"?
+During work on jorge, for the first time I felt tempted to delegate some tasks to an AI.
+Things that felt like boilerplate or required subtle knowledge of tools that I don't use frequently[fn:1]. Regular expressions, crontab schedules, nginx rules, GitHub Actions workflows, Makefile targets, sed and awk incantations, CSS tricks. Things that, in the past, I would try to figure out by googling and mechanical trial-and-error, with minimum intellectual commitment. AI sounded like it could help there, in part because web search and browsing has been getting worse, requiring more hops to get from question to answer, and in part because ---I assumed--- a machine should do better than me at quickly scanning information and deriving answers from it, for questions that perhaps hadn't been asked before in the same exact terms. That was my assumption, anyway; half of the time, running these tasks by ChatGPT, even at their limited scope, resulted in garbage.
+
+Maybe other tools do better. Or maybe not yet but some will, eventually. The point is that I identified a problem space where I'm willing to give AI coding assistance a try. I don't want magic code complete or help factoring or reading code; I don't need an AI to do my job. I just want an Emacs buffer with a conversational prompt. Something that hopefully reduces the need to leave the editor and jump to the browser, much like I already have facilities for trying code in a shell, fetching documentation or looking up word definitions and synonyms. Now to check some models and Emacs packages, see if any of them give more than they take.
+
+-----
+On a more philosophical note, I wonder what it would be like learning to program today, with these tools available from the beginning.
+
+How hard would it be to prevent the "explain me this" from turning into "solve this for me" and then to "do all the thinking"?
 
 I wonder how much of the learning process depends on facing and overcoming the little details that AI abstracts away.
 
 Is this any different from using calculators to do the math? Or GPS for finding directions? Was that progress? Is this?
 
-I bet people from previous generations looked down on people from mine because we grew up with the comfort of the garbage collector and never had to write a line of assembly. Were they right? Is AI assistance the same?
+I bet coders from previous generations looked down on coders from mine, because we grew up in the comfort of the garbage collector and never had to write a line of assembly. Were they right? Is AI assistance the same?
 
 Is this just business as usual, the latest entry of artisans replaced by factory workers replaced by machines?
 
@@ -40,6 +40,4 @@ Will we, by relying on AI assistance, stop producing the kind of collective know
 
 [fn:2] Alright, maybe I'm a bit proud of my ignorance of regular expressions.
 
-[fn:1] I'm not proud of my ignorance of these tools[fn:2], but it wouldn't be cost effective to try to master each of them. I did spend time studying some of them, but I forgot the details anyway because I don't use them frequently enough.
-
-[fn:3]
+[fn:1] I'm not proud of my ignorance of these tools[fn:2], but it wouldn't be cost-effective to try to master all of them. Even for the ones I spent time studying, I eventually forgot the details because I don't use them frequently enough.
