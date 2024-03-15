@@ -51,20 +51,21 @@ func Load(rootDir string) (*Config, error) {
 	// TODO allow to disable minify
 
 	config := &Config{
-		RootDir:        rootDir,
-		SrcDir:         filepath.Join(rootDir, "src"),
-		TargetDir:      filepath.Join(rootDir, "target"),
-		LayoutsDir:     filepath.Join(rootDir, "layouts"),
-		IncludesDir:    filepath.Join(rootDir, "includes"),
-		DataDir:        filepath.Join(rootDir, "data"),
-		PostFormat:     "blog/:title.org",
-		Lang:           "en",
-		HighlightTheme: "github",
-		Minify:         true,
-		LiveReload:     false,
-		LinkStatic:     false,
-		IncludeDrafts:  false,
-		pageDefaults:   map[string]interface{}{},
+		RootDir:          rootDir,
+		SrcDir:           filepath.Join(rootDir, "src"),
+		TargetDir:        filepath.Join(rootDir, "target"),
+		LayoutsDir:       filepath.Join(rootDir, "layouts"),
+		IncludesDir:      filepath.Join(rootDir, "includes"),
+		DataDir:          filepath.Join(rootDir, "data"),
+		PostFormat:       "blog/:title.org",
+		Lang:             "en",
+		HighlightTheme:   "github",
+		Minify:           true,
+		MinifyExclusions: make([]string, 0),
+		LiveReload:       false,
+		LinkStatic:       false,
+		IncludeDrafts:    false,
+		pageDefaults:     map[string]interface{}{},
 	}
 
 	// load overrides from config.yml
