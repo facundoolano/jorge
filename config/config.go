@@ -84,18 +84,21 @@ func Load(rootDir string) (*Config, error) {
 	}
 
 	// set user-provided overrides of declared config keys
-	// TODO less copypasty way of declaring config overrides
+	// FIXME less copypasty way of declaring config overrides
 	if url, found := config.overrides["url"]; found {
 		config.SiteUrl = url.(string)
 	}
 	if format, found := config.overrides["post_format"]; found {
 		config.PostFormat = format.(string)
 	}
-	if format, found := config.overrides["lang"]; found {
-		config.Lang = format.(string)
+	if lang, found := config.overrides["lang"]; found {
+		config.Lang = lang.(string)
 	}
-	if format, found := config.overrides["highlight_theme"]; found {
-		config.HighlightTheme = format.(string)
+	if theme, found := config.overrides["highlight_theme"]; found {
+		config.HighlightTheme = theme.(string)
+	}
+	if exclusions, found := config.overrides["minify_exclusions"]; found {
+		config.MinifyExclusions = exclusions.([]string)
 	}
 
 	return config, nil
