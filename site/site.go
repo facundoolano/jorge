@@ -72,7 +72,7 @@ func load(config config.Config) (*site, error) {
 		return nil, err
 	}
 
-	site.minifier = markup.LoadMinifier()
+	site.minifier = markup.LoadMinifier(config.MinifyExclusions)
 
 	return &site, nil
 }
@@ -323,7 +323,7 @@ func (site *site) buildFile(path string) error {
 			return err
 		}
 
-		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.TargetExt()
+		targetPath = strings.TrimSuffix(subpath, filepath.Ext(targetPath)) + templ.TargetExt()
 		contentReader = bytes.NewReader(content)
 	}
 
@@ -338,7 +338,7 @@ func (site *site) buildFile(path string) error {
 		return err
 	}
 	if site.config.Minify {
-		contentReader = site.minifier.Minify(targetExt, contentReader)
+		contentReader = site.minifier.Minify(targetPath, contentReader)
 	}
 
 	// write the file contents over to target

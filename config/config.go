@@ -31,10 +31,11 @@ type Config struct {
 	Lang           string
 	HighlightTheme string
 
-	Minify        bool
-	LiveReload    bool
-	LinkStatic    bool
-	IncludeDrafts bool
+	Minify           bool
+	MinifyExclusions []string
+	LiveReload       bool
+	LinkStatic       bool
+	IncludeDrafts    bool
 
 	ServerHost string
 	ServerPort int

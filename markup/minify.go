@@ -2,6 +2,7 @@ package markup
 
 import (
 	"io"
+	"path/filepath"
 	"slices"
 
 	"github.com/tdewolff/minify/v2"
@@ -14,20 +15,28 @@ import (
 var SUPPORTED_MINIFIERS = []string{".css", ".html", ".js", ".xml"}
 
 type Minifier struct {
-	minifier *minify.M
+	minifier   *minify.M
+	exclusions []string
 }
 
-func LoadMinifier() Minifier {
+func LoadMinifier(exclusions []string) Minifier {
 	minifier := minify.New()
 	minifier.AddFunc(".css", css.Minify)
 	minifier.AddFunc(".html", html.Minify)
 	minifier.AddFunc(".js", js.Minify)
 	minifier.AddFunc(".xml", xml.Minify)
-	return Minifier{minifier}
+	return Minifier{minifier, exclusions}
 }
 
-func (m *Minifier) Minify(extension string, contentReader io.Reader) io.Reader {
+func (m *Minifier) Minify(path string, contentReader io.Reader) io.Reader {
 
+	for _, exclusion := range m.exclusions {
+		if match, _ := filepath.Match(exclusion, path); match {
+			return contentReader
+		}
+	}
+
+	extension := filepath.Ext(path)
 	if !slices.Contains(SUPPORTED_MINIFIERS, extension) {
 		return contentReader
 	}
