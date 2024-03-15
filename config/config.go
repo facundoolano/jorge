@@ -99,7 +99,9 @@ func Load(rootDir string) (*Config, error) {
 		config.HighlightTheme = theme.(string)
 	}
 	if exclusions, found := config.overrides["minify_exclusions"]; found {
-		config.MinifyExclusions = exclusions.([]string)
+		for _, exclusion := range exclusions.([]interface{}) {
+			config.MinifyExclusions = append(config.MinifyExclusions, exclusion.(string))
+		}
 	}
 
 	return config, nil
