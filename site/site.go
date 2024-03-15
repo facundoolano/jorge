@@ -323,7 +323,7 @@ func (site *site) buildFile(path string) error {
 			return err
 		}
 
-		targetPath = strings.TrimSuffix(subpath, filepath.Ext(targetPath)) + templ.TargetExt()
+		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.TargetExt()
 		contentReader = bytes.NewReader(content)
 	}
 
@@ -338,7 +338,7 @@ func (site *site) buildFile(path string) error {
 		return err
 	}
 	if site.config.Minify {
-		contentReader = site.minifier.Minify(targetPath, contentReader)
+		contentReader = site.minifier.Minify(subpath, contentReader)
 	}
 
 	// write the file contents over to target

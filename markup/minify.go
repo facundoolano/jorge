@@ -31,7 +31,7 @@ func LoadMinifier(exclusions []string) Minifier {
 func (m *Minifier) Minify(path string, contentReader io.Reader) io.Reader {
 
 	for _, exclusion := range m.exclusions {
-		if match, _ := filepath.Match(exclusion, path); match {
+		if matched, _ := filepath.Match(exclusion, path); matched {
 			return contentReader
 		}
 	}
