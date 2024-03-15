@@ -256,6 +256,10 @@ func (site *site) build() error {
 		if err != nil {
 			return err
 		}
+		if strings.HasPrefix(filepath.Base(path), ".") {
+			// skip dot files and directories
+			return nil
+		}
 		subpath, _ := filepath.Rel(site.config.SrcDir, path)
 		targetPath := filepath.Join(site.config.TargetDir, subpath)
 
