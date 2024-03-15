@@ -72,7 +72,7 @@ func load(config config.Config) (*site, error) {
 		return nil, err
 	}
 
-	site.minifier = markup.LoadMinifier()
+	site.minifier = markup.LoadMinifier(config.MinifyExclusions)
 
 	return &site, nil
 }
@@ -256,6 +256,10 @@ func (site *site) build() error {
 		if err != nil {
 			return err
 		}
+		if strings.HasPrefix(filepath.Base(path), ".") {
+			// skip dot files and directories
+			return nil
+		}
 		subpath, _ := filepath.Rel(site.config.SrcDir, path)
 		targetPath := filepath.Join(site.config.TargetDir, subpath)
 
@@ -338,7 +342,7 @@ func (site *site) buildFile(path string) error {
 		return err
 	}
 	if site.config.Minify {
-		contentReader = site.minifier.Minify(targetExt, contentReader)
+		contentReader = site.minifier.Minify(subpath, contentReader)
 	}
 
 	// write the file contents over to target
