@@ -53,6 +53,13 @@ func loadJekyllFilters(e *liquid.Engine, siteUrl string, includesDir string) {
 	})
 
 	e.RegisterFilter("absolute_url", func(path string) (string, error) {
+		parsed, err := url.Parse(path)
+		if err != nil {
+			return "", err
+		}
+		if parsed.IsAbs() {
+			return path, nil
+		}
 		return url.JoinPath(siteUrl, path)
 	})
 
