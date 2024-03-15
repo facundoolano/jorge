@@ -50,7 +50,7 @@
             {{ content }}
         </div>
         <p class="center-block footer">
-            {% if page.date %}<span class="date">{{ page.date | date: "%d/%m/%Y" }}</span>
+            {% if page.date %}<span class="date">{{ page.date | date: "%Y-%m-%d" }}</span>
             <span class="tags">
                 {% for tag in page.tags %}
                 <a href="/blog/tags#{{tag}}">#{{tag}}</a>
