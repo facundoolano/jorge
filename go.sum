@@ -16,8 +16,8 @@ github.com/dlclark/regexp2 v1.7.0 h1:7lJfhqlPssTb1WQx4yvTHN0uElPEv52sbaECrAQxjAo
 github.com/dlclark/regexp2 v1.7.0/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
 github.com/elliotchance/orderedmap/v2 v2.2.0 h1:7/2iwO98kYT4XkOjA9mBEIwvi4KpGB4cyHeOFOnj4Vk=
 github.com/elliotchance/orderedmap/v2 v2.2.0/go.mod h1:85lZyVbpGaGvHvnKa7Qhx7zncAdBIBq6u56Hb1PRU5Q=
-github.com/facundoolano/go-org v0.0.0-20240313182338-3f3817ebe25d h1:3kvUdOzNcduVrViXmGe4oyEOjeanQ4+jzIhCyZpBbYM=
-github.com/facundoolano/go-org v0.0.0-20240313182338-3f3817ebe25d/go.mod h1:BfT9c2NpODuGdRhJHvzLCcBeWemRHqvq9Va+QBIn0Ns=
+github.com/facundoolano/go-org v0.0.0-20240319174809-36455ab9a08c h1:BkBEAEE5PvUsInCl4T7MtZ61RM342SA2/+tIm4nfAp8=
+github.com/facundoolano/go-org v0.0.0-20240319174809-36455ab9a08c/go.mod h1:pRN3IImUsv0wDNvU0ihvHlJ3qrEJ8U3bpPVxA3SoL6s=
 github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUqJM=
