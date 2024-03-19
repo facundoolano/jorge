@@ -1,10 +1,9 @@
 ---
 title: From Jekyll to jorge
-date: 2024-03-20 11:33:47
+date: 2024-03-20
 layout: post
 lang: en
 tags: [project]
-draft: true
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
