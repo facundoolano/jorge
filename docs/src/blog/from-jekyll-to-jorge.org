@@ -4,6 +4,7 @@ date: 2024-03-20
 layout: post
 lang: en
 tags: [project]
+excerpt: "As of a couple of weeks ago, olano.dev, previously a Jekyll website, is generated with jorge. This post documents the migration process."
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
