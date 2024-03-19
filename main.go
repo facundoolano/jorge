@@ -18,7 +18,7 @@ func main() {
 		&cli,
 		kong.UsageOnError(),
 		kong.HelpOptions{FlagsLast: true},
-		kong.Vars{"version": "jorge v0.6.1"},
+		kong.Vars{"version": "jorge v0.6.2"},
 	)
 	err := ctx.Run()
 	ctx.FatalIfErrorf(err)
