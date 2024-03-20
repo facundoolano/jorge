@@ -55,6 +55,10 @@ li {
     line-height: 1.6;
 }
 
+.layout-post li p {
+    margin: 0 0 0.5rem 0;
+}
+
 li:not(:last-child) {
     padding-bottom: .75rem;
 }
