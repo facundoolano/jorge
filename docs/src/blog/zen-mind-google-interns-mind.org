@@ -10,7 +10,7 @@ draft: true
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-jorge started as a Go learning project, so I'll wrap up this development blog with my thoughts of the language. I emphasize that these are first impressions more than truths or strong opinions, based in my experience of using it for about a month on small solo project. I had [[file:why][high expectations]] going in, and for the most part they were either confirmed or at least not disproven.
+jorge started as a Go learning project, so I'll wrap up this development blog with my thoughts of the language. I emphasize that these are first impressions more than truths or strong opinions, based in my experience of using it for about a month on small solo project. I had [[file:why][high expectations]] going in, and for the most part they were either confirmed or at least not disproven[fn:6].
 
 *** Modules
 I [[file:getting-started-with-go-and-emacs][started my tour]] by reading the tutorials in Go's website. Those showed how to write a [[https://go.dev/doc/tutorial/getting-started.html][Hello World program]], how to develop [[https://go.dev/doc/tutorial/create-module.html][an application and a library]] it depends on in parallel, and how to work on [[https://go.dev/doc/tutorial/workspaces][multi-module workspaces]]. In hindsight, that wasn't the most efficient way to get started, since those tutorials pulled me in the direction of writing multiple modules at a time, whereas I planned to work on a single binary project. The impression I got from them was that, perhaps for historical reasons, module management in Go is nuanced, at least compared with other languages I'm familiar with.
@@ -80,7 +80,7 @@ I have used a fair bit of Rust before, so I was already bought into the idea of 
 
 There's another related blog post, which I found more thought-provoking: [[https://medium.com/@shazow/code-boilerplate-is-it-always-bad-934827efcfc7][Code boilerplate: Is it always bad?]]
   - suggests that maybe it's ok to have boilerplate, that the boilerplate highlights the substance of the operation in question
-  - <for the sake of taking things as they are given and keeping a beginner's mind (see below) I'm willing to ignore my previous beliefs and accept that this error-checking discipline buys a stability that outweighs its readability cost
+  - <for the sake of taking things as they are given and keeping a beginner's mind (see below) I'm willing to ignore my previous beliefs and accept that this error-checking discipline buys a reliability that outweighs its readability cost
 
 https://go.dev/blog/errors-are-values
 https://medium.com/@shazow/code-boilerplate-is-it-always-bad-934827efcfc7
@@ -88,15 +88,27 @@ https://medium.com/@shazow/code-boilerplate-is-it-always-bad-934827efcfc7
 TODO read https://jesseduffield.com/Questionable-Questionmarks/
 
 *** Expressiveness
-following up on the last remark: that the expressiveness of python maybe pulls you in the direction of putting the code as an end in itself, at its worst making you take choices that sacrifice its stability to keep it pretty.
+
+Expressiveness is a vaguely-defined and highly subjective quality for a programming language[fn:5]. I think about it as the distance the language puts between the abstract idea of the implementation a task (in pseudocode, perhaps) and its realization in working code. And I don't just mean distance in terms of lines of code ---how verbose the language is--- but the cognitive effort it takes to get there ---how much the language helps, how much it gets in the way.
+
+<following up on the last remark: that the expressiveness of python maybe pulls you in the direction of putting the code as an end in itself, at its worst making you take choices that sacrifice reliability to keep it pretty.
 
 
 *** Dependencies
 *** Mindset
 
+<I mentioned at the beginning of this devlog that my decisions to try Go was part of a journey of opting of choosing simple ---even boring--- tools to solve software problems.
+
+Some of Go's design decision come across as arbitrary.
+
+At best, pragmatic; at worst, inconsistent. At best, beginner-friendly; at worst, patronizing. At best, informed by real-world applications; at worst, tailor-made for Google's needs.
+
+- The good: it's useful and reliable for the real-world applications. The bad: it can feel inconsistent, making it hard to derive intuitions or inform application design from first principles.
+- The good: like Erlang, it's an engineering language, informed more by industry than academy. The bad: it can feel tailor-made to serve Google needs and even the preferences of its designers.
+- The good: it's a beginner-friendly language. The bad: it can feel patronizing, as if it was designed for people not as smart as its authors [link PG].
+
+
 ** expressiveness
-- this is a 100% subjective quality. like easiness and unlike simplicity as per Rich Hickey descriptions
-- when I talk about the expressiveness of a language I mean the distance it puts between a high level pseudocode of a task and the actual code that realizes it. (both in the diff between the pseudocode and the code, and the effort it takes to arrive there). ---how much it gets in the way.
   - in python it tends to be very short distance. So I would say that Python is very expressive.
   - Rust tends to be in the opposite end, in my experience. The code may be succint in the end, but I frequently had to struggle to get to it, even for mundane tasks like iterating and transforming data structures.
   - I would say that Go is somewhere in the middle. it's usually lot more code than python but not hard to get there, never getting stuck in simple stuff
@@ -104,7 +116,6 @@ following up on the last remark: that the expressiveness of python maybe pulls y
 
 - the file open routine above may again be a good example.
   - mental model: cp f1 f2
-
   - https://stackoverflow.com/questions/2032149/optional-parameters-in-go
   https://groups.google.com/g/golang-nuts/c/-5MCaivW0qQ
   - i kind of miss default arguments (not to mention pythons great kwargs args)
@@ -112,7 +123,11 @@ following up on the last remark: that the expressiveness of python maybe pulls y
     - contributes to the idea of googles style guidelines and do as told dont ask why
     - simplicity over expressiveness
 
-** dependencies
+- too much expressiveness can make you arrogant (?) enamored of your elegant terse code or your pristine type families or your <> class hierarchies
+
+** dependencies (maybe part of the above?)
+
+- it's hard to build an intuition around what should be a built-in function, what a struct method, what a standard library function, what you should write yourself or delegate to a third party library.
 
 - batteries included but dumb data structures
   - things that should be methods are builtins or std package functions
@@ -125,34 +140,25 @@ following up on the last remark: that the expressiveness of python maybe pulls y
   - but I think it's just ridiculous that you don't even have an assert function in the stdlib
   - that, pairde with everything returning err would mean that mos tests would be 70% boilerplate
   - I saw a suggestion to code your own assert helpers, but seriously, that's hard to understand.
+  - patronizing no asserts in faq
 
 ** philosophy / mindset
 
 I went in expecting to find a boring language, in the good sense of the word [LINK].
 this was true to the extent that go is an unpretentious language, it was designed to intentionally avoid unnecessary sophistication, it tries to be simpler<loose features> than the alternative of the time (c++, java)/
 but it's not boring in the sense of always doing what you expect: it's not without its quirks and rough edges. It's simpler than Java and C++, yes, but I'm not sure it's necessarily a simple language [fn again, rich hickey]
+- as the 100 go mistakes book puts it, it's easy to learn but hard to master https://100go.co/chapter-1/
 
-<At its worst,> some of its design choices can feel arbitrary.
+- so you are forced to enter it with a humbling zen-like beginner's
+  - zen mind: google intern's mind
+    https://en.wikipedia.org/wiki/Shoshin
 
-- some design decisions come across as arbitrary
-  - seen a couple of "because the powers that be decided this at google / because google's C++ style guide demanded this"
-  - "experience has shown that this is better" -> "experience /at google/ has shown that this is better /for google/" -> google style guide said so -> google says so.
-  - reminded me a bit of PGs take on java, that the designers were designing for programmers dumber than them (example generics)
-  - the counter argument to this is: I like a language that designed upfront to be "beginner friendly" as opposed to one that cops out about rough edges saying that this lanaguage is "for pros" (clj, cpp)
-  - so you are forced to enter it with a humbling zen-like beginner's
-    - zen mind: google intern's mind
-
-  - I get the vibe that the narrative assume someone just starting willing to accept this is how it is, don't ask
 - since I'm learning this language out of humility, trying to accomplish things without sophistication, I try to accept things as they come without fighting them or trying to ask much why.
+  - but I didn't imagine how that attitude would be helpful, even necessary, beyond the language choice.
 
-- the fmt tool works as a good metaphor of the entire design, I suppose.
+- the fmt tool works as a good metaphor of the language design mindset.
   - yes, perhaps someone could make a strong case why spaces are marginally better than tabs, but even if tabs are the wrong choice, the benefits of removing the question altogether far outweight that marginal loss.
-  (that is, a language that makes as many decisions as possible for you will end up making you more productive even if those decisions are not the optimal for everyone)
-  (go is not a language for power users. in this sense it stands in the extreme opposite to clojure that I've seen defined by some of its owners as a language for pros)
-  (go is a beginner friendly language (which is absolutely a win in my books))
-[a better version fo this last thoughts is in the notebook]
-
-- engineering/industry informed language, in that regard it feels similar to erlang, and its a good thing
+(that is, a language that makes as many decisions as possible for you will end up making you more productive even if those decisions are not the optimal for everyone)
 
 ** Notes
 [fn:2] Go does indulge in syntax special cases for the sake of convenience or to work around language limitations. There are special rules to [[https://go.dev/doc/effective_go#redeclaration][redeclarate]] error return values, for instance. And I suppose the ~defer~ construct was introduced  specifically to keep resource management sane in the context of early error returns.
@@ -162,3 +168,7 @@ but it's not boring in the sense of always doing what you expect: it's not witho
 [fn:3] I'm not saying that Go should have union types or that it needs fixing, for that matter. Just that, despite its good intentions, I don't buy that errors as return values, without additional language support, are a strength of the language.
 
 [fn:4] In Python, for instance, I need to write ~import feedi.parsers.rss as rss~ to get a similar effect. And since it's not the default, external code was not necessarily written with this usage pattern in mind.
+
+[fn:5] Following Rich Hickey's distinction between simple and easy, expressiveness is more like the latter, not something you would justify technical decisions with.
+
+[fn:6] TODO already talked about easy to learn and powerful concurrency
