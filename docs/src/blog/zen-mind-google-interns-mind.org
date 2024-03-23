@@ -13,6 +13,14 @@ draft: true
 jorge started as a Go learning project, so I'll wrap up this development blog with my thoughts of the language. I emphasize that these are first impressions more than truths or strong opinions, based in my experience of using it for about a month on small solo project. I had [[file:why][high expectations]] going in, and for the most part they were either confirmed or at least not disproven.
 
 *** Modules
+I [[file:getting-started-with-go-and-emacs][started my tour]] by reading the tutorials in Go's website. Those showed how to write a [[https://go.dev/doc/tutorial/getting-started.html][Hello World program]], how to develop [[https://go.dev/doc/tutorial/create-module.html][an application and a library]] it depends on in parallel, and how to work on [[https://go.dev/doc/tutorial/workspaces][multi-module workspaces]]. In hindsight, that wasn't the most efficient way to get started, since those tutorials pulled me in the direction of writing multiple modules at a time, whereas I planned to work on a single binary project. The impression I got from them was that, perhaps for historical reasons, module management in Go is nuanced, at least compared with other languages I'm familiar with.
+
+The first thing I had to adjust to was that a /module/ is more or less what I would call a /project/ in other languages. And what I would call a module elsewhere ---a namespace typically contained in a single file--- didn't have an exact equivalent: in Go each package is a collection of source files that share the same namespace.
+
+One thing that Go nails just right in this department, probably better than every other language I used, is forcing imported identifiers to be qualified by its package name. This is supported in other languages but not mandatory, or default, or even convenient[fn:4]. Qualified imports make code much more readable because you can always tell where identifiers come from, how much you depend on an external module, etc. And it lets you remove redundancy from names, so you can mix ~io.Reader~ with ~bufio.Reader~ and ~strings.Reader~, instead of ~bufio.BufferReader~ and ~strings.StringReader~.
+
+For similar reasons, I found it inconvenient that files within a package share a namespace, since it makes it less obvious where local identifiers are defined, when a namespace gets too large, etc. At first, the hygiene I carried from other languages made me want to write single-file packages, which introduced a lot of redundancies, etc. ~site/site.go~, ~config/config.go~, ~templates/templates.go~, etc.
+
 *** Errors
 I couldn't write a post like this one without commenting on Go's controversial error handling.
 As a recap, errors are values in Go and, instead raising exceptions, functions have extra return values to signal error conditions. Whereas in Python one would do:
@@ -48,7 +56,7 @@ func copyFile(source string, target string) error {
 	}
 	defer srcFile.Close()
 
-	targetFile, _ := os.Create(target)
+	targetFile, err := os.Create(target)
 	if err != nil {
 		return err
 	}
@@ -65,12 +73,12 @@ func copyFile(source string, target string) error {
 
 The code doesn't make any decision about error-handling, just return them, and yet more than half is error-handling boilerplate. The equivalent python (ignoring the existence of ~shutil.copy~ that removes the need for this function), would get the same behavior without any error handling, or with single ~try/except~ clause if I wanted to do it explicitly.
 
-I have used a fair bit of Rust before, so I was already bought into the idea of treating errors as values and always having to handle them explicitly. I agree that it forces you to give some thought at failure scenarios instead of just thinking in the happy path. The problem with Go is that it's lacking some syntax support for the error checking idioms, particularly that of just bubbling up the error[fn:2]. In the example above, Rusts question mark operator would remove all the boilerplate while still being explicit about what's done about errors. It's not about typing less: the proliferation of ~if err != nil~ checks in Go hurts readability. When reading the code, sometimes it /is/ convenient to focus on the happy path to absorb what's going on.
+I have used a fair bit of Rust before, so I was already bought into the idea of treating errors as values and always having to handle them explicitly. I agree that it forces you to give some thought at failure scenarios instead of just thinking in the happy path. The problem with Go is that it's lacking some syntax support for the error checking idioms, particularly that of just bubbling up the error[fn:2]. In the example above, Rust's question mark operator would remove all the boilerplate while still being explicit about error handling[fn:3]. It's not about typing less: the proliferation of ~if err != nil~ checks in Go hurts readability. When reading the code, sometimes it /is/ convenient to focus on the happy path to absorb what's going on.
 
-- blog post from rob pike
-  - I disagree, most of the time you can't get creative as he suggests. what's more you shuoldn't need to be creative for something as mundane as error handling. what's (even) more: when you get creative you typically do it, as in his example, by going back to making error checks optional, as was the case in python
+- <Rob pike addresses this topic in article in the language website
+  - basically says that if you are doing ~err != nil~ over and over, you probably aren't trying hard enough. Then demonstrates some creative ways to reduce error-handling boilerplate. Leaving aside the fact that the code structure doesn't always leave room for getting creative, I think something as mundane as error handling shouldn't require you to. What's more, that creativeness can result in going back to non obvious error handling, as is the case with the the ~bufio.Scanner~ example mentioned in the article.
 
-- there's another blog post on this matter, which I found more interesting
+There's another related blog post, which I found more thought-provoking: [[https://medium.com/@shazow/code-boilerplate-is-it-always-bad-934827efcfc7][Code boilerplate: Is it always bad?]]
   - suggests that maybe it's ok to have boilerplate, that the boilerplate highlights the substance of the operation in question
   - <for the sake of taking things as they are given and keeping a beginner's mind (see below) I'm willing to ignore my previous beliefs and accept that this error-checking discipline buys a stability that outweighs its readability cost
 
@@ -86,34 +94,11 @@ following up on the last remark: that the expressiveness of python maybe pulls y
 *** Dependencies
 *** Mindset
 
-* Old notes
-
-** modules / project layout
-(leftover from getting started post)
-- project structure seems unintuive
-  - module, package, workspaces
-  - at least based on the tutorials and googling, it's hard to make straightforward mapping to the notions I came from expect from other languages (roughly: project, package, module/file)
-  - https://go.dev/doc/modules/managing-source
-  - https://go.dev/doc/modules/layout
-
-- modules are weird
-  - different from other languages
-  - module is actually kind of a project
-  - files within a package share the namespace, kind of useless. makes me want to have a single file per package which then makes the file structure kind of redundant commands/command.go
-  - the tutorial was throwing me off in this regard as well
-  - havent even looked at gopath thingie
-  - nor workspaces
-  - one thing I do like a lot is that it forces you to qualify identifiers of imported stuff
-
-https://groups.google.com/g/golang-nuts/c/tveOKkxNN1w
-https://utcc.utoronto.ca/~cks/space/blog/programming/GoInstallLimitation
-https://www.jvt.me/posts/2023/09/20/go-mod-fork-gotcha/
-
 ** expressiveness
 - this is a 100% subjective quality. like easiness and unlike simplicity as per Rich Hickey descriptions
 - when I talk about the expressiveness of a language I mean the distance it puts between a high level pseudocode of a task and the actual code that realizes it. (both in the diff between the pseudocode and the code, and the effort it takes to arrive there). ---how much it gets in the way.
   - in python it tends to be very short distance. So I would say that Python is very expressive.
-  - Rust tends to be in the opposite end, in my experience. The code may be succint in the end, but I frequently had to struggle to get to it, even for mundante tasks like iterating and transforming data structures.
+  - Rust tends to be in the opposite end, in my experience. The code may be succint in the end, but I frequently had to struggle to get to it, even for mundane tasks like iterating and transforming data structures.
   - I would say that Go is somewhere in the middle. it's usually lot more code than python but not hard to get there, never getting stuck in simple stuff
   - I should note that a lot of expressiveness is not necessarily a good thing: case in point the error handling discussion above (it may be better not to focus only in the happy path)
 
@@ -170,6 +155,10 @@ but it's not boring in the sense of always doing what you expect: it's not witho
 - engineering/industry informed language, in that regard it feels similar to erlang, and its a good thing
 
 ** Notes
-[fn:2] And this is in a language that indulges in breaking syntax consistence fore the sake of convenience or to work around other language limitations, the "comma ok" idiom being an example.
+[fn:2] Go does indulge in syntax special cases for the sake of convenience or to work around language limitations. There are special rules to [[https://go.dev/doc/effective_go#redeclaration][redeclarate]] error return values, for instance. And I suppose the ~defer~ construct was introduced  specifically to keep resource management sane in the context of early error returns.
 
 [fn:1] One funny aspect of Python's take on errors is that it seems to work against its own philosophy: "explicit is better than implicit" and (to a lesser degree, since runtime crashes aren't precisely quiet) "errors should never pass silently".
+
+[fn:3] I'm not saying that Go should have union types or that it needs fixing, for that matter. Just that, despite its good intentions, I don't buy that errors as return values, without additional language support, are a strength of the language.
+
+[fn:4] In Python, for instance, I need to write ~import feedi.parsers.rss as rss~ to get a similar effect. And since it's not the default, external code was not necessarily written with this usage pattern in mind.
