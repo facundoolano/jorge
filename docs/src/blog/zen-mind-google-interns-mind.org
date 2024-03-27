@@ -90,28 +90,42 @@ Expressiveness is a vaguely-defined and highly subjective quality for a programm
   - Rust tends to be in the opposite end. The code (subsets of it) may be succint/high-level in the end, but I frequently had to struggle to get to it, even for mundane tasks like iterating and transforming data structures.
   - I would say that Go is somewhere in the middle. it's usually lot more code than python but not hard to get there, never getting stuck in simple stuff
 
-- go somewhere in the middle
+<go design philosophy is to err on the side of versimplifying
+<bold (at the time) decision of excluding inherintance,
+<too much expressiveness can make you arrogant (?) enamored of your elegant terse code or your pristine type families or your <> class hierarchies
+<at worst removing choice from the developer when there's room for misuse, like a style guide baked directly into the language
+<example: argument defaults and function overloading
+<example: asserts
+
 
 *** Dependencies
-<beyond syntax, expressiveness is affected by the language built-in functions and data structures and its standard libraries.
+another aspect that affects expressiveness is how much you can expect to get done with the builtin and standard functions and data structures that the language provides ---as opposed to having to write them yourself or using external libraries.
 
-- TODO consider using rust + python copy file functions as example, and remove remarks above
-    - mental model: cp f1 f2
+I found Go to be uneven in this regard.
 
-- In Go it's hard to build an intuition around what should be a built-in function, what a struct method, what a standard library function, what you should write yourself or delegate to a third party library.
+I got the perception that there's a stronger <push> in Go's ecosystem to avoid external dependencies when possible.
+  - either because batteries included or just writing it yourself
+  - i like this convention, makes things more maintainable
+
+todo https://research.swtch.com/deps
 
 - batteries included but dumb data structures
-  - things that should be methods are builtins or std package functions
-  - apparently common to resort to write common operations. maybe even more so in the past, judging by SO answers
-  - I like the implications in terms of reduced dependencies
-  - also like the API stability
 
-- an example is with testing helpers
-  - i like that the idiomatic thing is not to abuse dependencies and figure stuff out with stdlib
-  - but I think it's just ridiculous that you don't even have an assert function in the stdlib
-  - that, paired with everything returning err would mean that mos tests would be 70% boilerplate
-  - I saw a suggestion to code your own assert helpers, but seriously, that's hard to understand.
-  - patronizing no asserts in faq
+<In Go it's hard to build an intuition around what should be a built-in function, what a struct method, what a standard library function, what you should write yourself or delegate to a third party library.
+
+- TODO consider using rust + python copy file functions as example, and remove remarks above
+  - mental model: cp f1 f2
+
+- things that should be methods are builtins or std package functions
+- apparently common to resort to write common operations. maybe even more so in the past, judging by SO answers
+- I like the implications in terms of reduced dependencies
+- also like the API stability
+
+- an example is with testing helpers,
+  - no assert for similar reasons as why no default arguments
+  - result by default is boilerplaty unreadable tests
+  - or writing your own assert function over an over: TODO code
+  - I find it hard to understand why such a function shouldn't be available in the standard testing package.
 
 *** Mindset
 
@@ -138,19 +152,29 @@ At best, pragmatic; at worst, inconsistent. At best, beginner-friendly; at worst
   - yes, perhaps someone could make a strong case why spaces are marginally better than tabs, but even if tabs are the wrong choice, the benefits of removing the question altogether far outweight that marginal loss.
 (that is, a language that makes as many decisions as possible for you will end up making you more productive even if those decisions are not the optimal for everyone)
 
+go killer feature may be that they made a few bold design decisions and stuck with them
+
 ** old notes
 *** expressiveness
 
   - https://stackoverflow.com/questions/2032149/optional-parameters-in-go
   https://groups.google.com/g/golang-nuts/c/-5MCaivW0qQ
-  - i kind of miss default arguments (not to mention pythons great kwargs args)
     - instance of "we get to do magic stuff in the language but don't allow to do the same for language users"
     - simplicity over expressiveness
 
-- too much expressiveness can make you arrogant (?) enamored of your elegant terse code or your pristine type families or your <> class hierarchies
+      https://go.dev/talks/2012/splash.article
+      default arguments
+
+#+begin_quote
+One feature missing from Go is that it does not support default function arguments. This was a deliberate simplification. Experience tells us that defaulted arguments make it too easy to patch over API design flaws by adding more arguments, resulting in too many arguments with interactions that are difficult to disentangle or even understand. The lack of default arguments requires more functions or methods to be defined, as one function cannot hold the entire interface, but that leads to a clearer API that is easier to understand. Those functions all need separate names, too, which makes it clear which combinations exist, as well as encouraging more thought about naming, a critical aspect of clarity and readability.
+#+end_quote
+
+#+begin_quote
+Method dispatch is simplified if it doesn't need to do type matching as well. Experience with other languages told us that having a variety of methods with the same name but different signatures was occasionally useful but that it could also be confusing and fragile in practice. Matching only by name and requiring consistency in the types was a major simplifying decision in Go's type system.
+#+end_quote
 
 ** Notes
-[fn:2] One obvious one is the "comma ok" idiom to check if a map contains an element. More closely related to the errors as return values idiom, there are special syntax rules to [[https://go.dev/doc/effective_go#redeclaration][redeclarate]] return values, and I presume the ~defer~ construct was introduced specifically to keep resource management sane in the context of frequent early returns.
+[fn:2] One obvious one is the "comma ok" idiom to check if a map contains an element. More closely related to error handling, there are special syntax rules to [[https://go.dev/doc/effective_go#redeclaration][redeclarate]] return values, and I presume the ~defer~ construct was introduced specifically to keep resource management sane in the context of frequent early returns.
 
 [fn:1] One funny aspect of Python's take on errors is that it seems to work against its own philosophy: "explicit is better than implicit" and (to a lesser degree, since runtime crashes aren't precisely quiet) "errors should never pass silently".
 
