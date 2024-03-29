@@ -14,7 +14,7 @@ import (
 	"github.com/alecthomas/chroma/v2/lexers"
 	"github.com/alecthomas/chroma/v2/styles"
 
-	"github.com/facundoolano/go-org/org"
+	"github.com/niklasfasching/go-org/org"
 	"github.com/osteele/liquid"
 	"github.com/yuin/goldmark"
 	gm_highlight "github.com/yuin/goldmark-highlighting/v2"
