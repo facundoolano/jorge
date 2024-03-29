@@ -10,16 +10,17 @@ draft: true
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-jorge started as a Go learning project so writing down my thoughts of the language seemed like a good way to wrap up this development blog. These are first impressions more than truths or strong opinions, based in my experience of using it for about a month on a small solo project. I had [[file:why][high expectations]] going in, and for the most part they were either confirmed or at least not disproven[fn:6].
+jorge started as a Go learning project so writing down my thoughts of the language seemed like a good way to wrap this devlog up.
+
+I emphasize that these are first impressions more than truths or strong opinions, based in my experience of using it for about a month on a small solo project; I had [[file:why][high expectations]] going in, and for the most part they were either confirmed or at least not disproven[fn:6].
 
 *** Modules
-I [[file:getting-started-with-go-and-emacs][started my tour]] by reading the first few tutorials in Go's website. Those showed me how to write a [[https://go.dev/doc/tutorial/getting-started.html][Hello World program]], how to develop [[https://go.dev/doc/tutorial/create-module.html][an application and a library]] in tandem, and how to work on [[https://go.dev/doc/tutorial/workspaces][multi-module workspaces]]. In hindsight, that wasn't the most efficient way to get started, since those tutorials pulled me in the direction of writing multiple modules at a time whereas I planned to work on a single binary project. The impression I got from those tutorials was that, perhaps for historical reasons, module management in Go is nuanced, at least when compared with other languages I'm familiar with.
+# TODO consider removing list of tutorials and put a single general link
+I [[file:getting-started-with-go-and-emacs][started my tour]] by reading the first few tutorials in Go's website. Those showed me how to write a [[https://go.dev/doc/tutorial/getting-started.html][Hello World program]], how to develop [[https://go.dev/doc/tutorial/create-module.html][an application and a library]] in tandem, and how to work on [[https://go.dev/doc/tutorial/workspaces][multi-module workspaces]]. In hindsight, that wasn't the most efficient way to get started, since <those tutorials> pulled me in the direction of writing multiple modules at a time whereas I planned to work on a single binary project. The impression I got from <those tutorials> was that, perhaps for historical reasons, module management in Go is nuanced, at least when compared with other languages I'm familiar with.
 
-The first thing I had to adjust to was that, in Go, a /module/ is more or less what I would call a /project/ in other languages. And what I would call a module elsewhere ---a namespace, typically contained in a single file--- didn't have an exact equivalent: in Go each package is a collection of source files that share a namespace.
+The first thing I had to adjust to was that, in Go, a /module/ is more or less what I would call a /project/ in other languages. And what I would call a module elsewhere ---a namespace, typically contained in a single file--- didn't have an exact equivalent: each Go package is a collection of source files sharing a namespace.
 
-One thing that Go nails just right in this department, probably better than every other language I used, is forcing imported identifiers to be qualified by its package name. Qualified imports make code much more readable because you can always tell where identifiers come from, how much you depend on an external module, etc. And it lets you remove redundancy from names, so you can mix ~io.Reader~ with ~bufio.Reader~ and ~strings.Reader~, instead of ~bufio.BufferReader~ and ~strings.StringReader~. This is supported in other languages but not mandatory, or default, or even convenient[fn:4].
-
-For the same reasons that I liked qualified imports, I found it inconvenient that files within a package share a namespace, since it makes it less obvious where local identifiers are defined, when a namespace gets too large, etc. At first, the inertia I carried from other languages made me want to write single-file packages ---~site/site.go~, ~config/config.go~, ~templates/templates.go~, etc.--- which felt redundant.
+One thing that Go nails down just right in this department, probably better than every other language I used, is forcing imported identifiers to be qualified by its package name. Qualified imports make code much more readable because you can always tell where identifiers come from, how much you depend on an external module, etc. And it lets you remove redundancy from names, so you can mix ~io.Reader~ with ~bufio.Reader~ and ~strings.Reader~, instead of ~bufio.BufferReader~ and ~strings.StringReader~. This is supported in other languages but not mandatory, or default, or even convenient[fn:4]. For similar reasons, I found it inconvenient that files within a package share a namespace, since it makes it less obvious where local identifiers are defined, when a namespace gets too large, etc. At first, the inertia I carried from other languages made me want to write single-file packages ---~site/site.go~, ~config/config.go~, ~templates/templates.go~, etc.--- which felt off.
 
 *** Errors
 I obviously have things to say about Go's controversial error handling.
@@ -32,7 +33,7 @@ except OSError as err:
     print("something went wrong", err)
 #+end_src
 
-In Go its:
+In Go it's:
 
 #+begin_src go
 file, err := os.Open(path)
@@ -66,11 +67,11 @@ func copyFile(source string, target string) error {
 }
 #+end_src
 
-The code above doesn't want to do anything special with errors, just return them, and yet, more than half of the lines are for error handling. The equivalent Python function (even if we ignore the existence of [[https://docs.python.org/3/library/shutil.html#shutil.copy][~shutil.copy~]] that would make this one unnecessary) would get the same behavior without any error handling or, if I wanted to be explicit about it, with a single ~try/except~ clause.
+The code above doesn't want to do anything special with errors, just return them, and yet, more than half of the lines are for error handling. The equivalent Python function would get the same behavior without any error handling or, if I wanted to be explicit about it, with a single ~try/except~ clause.
 
 I think the rationale around languages with unchecked exceptions like Python is: 95% of the times you don't want to do local error manipulation, you just want to bubble errors up and handle them generically at a higher level. So they make that the default[fn:1]. Go's rationale would be: if programmers are not forced to handle errors explicitly, they will focus only in the happy path; 95% of the times they won't think hard enough about error conditions or won't handle errors all, at producing brittle software.
 
-I think both views have their merit, and there's a trade-off to be made. I had used Rust for some time before Go, so errors as values weren't new to me; I was already sold on the idea of having handle them explicitly: I agree that it forces you to reason about at failure scenarios instead of just focusing on the happy path. But Rust provides short-hands for explicitly bubbling up errors, or wrapping them in other errors, or turning them into run-time crashes. In the file copy example above, Rust's question mark operator would remove all the boilerplate while still being explicit about error handling[fn:3].
+I think both views have their merit, and there's a trade-off to be made. I had used Rust for some time before Go, so errors as values weren't new to me; I was already sold on the idea of having handle them explicitly: I agree that it forces you to reason about at failure scenarios instead of just focusing on the happy path. But Rust provides short-hands for explicitly bubbling up errors, or wrapping them in other errors, or turning them into run-time crashes. In the file copy example above, Rust's question mark operator would remove all the boilerplate while still being explicit about error handling.
 
 What's unconvincing about Go is that it doesn't provide much syntax support to deal with those errors returns; you are almost always forced to do the check nil and return dance ---and this is in a language that does indulge in "special-case" syntax for convenience or to work around limitations[fn:2]. It's not about typing less: the proliferation of ~if err != nil~ checks in Go hurts readability; when reading the code, sometimes /it is/ convenient to focus on the happy path to better grasp what the code is doing[fn:7].
 
@@ -90,47 +91,69 @@ Expressiveness is a vaguely-defined and highly subjective quality for a programm
   - Rust tends to be in the opposite end. The code (subsets of it) may be succint/high-level in the end, but I frequently had to struggle to get to it, even for mundane tasks like iterating and transforming data structures.
   - I would say that Go is somewhere in the middle. it's usually lot more code than python but not hard to get there, never getting stuck in simple stuff
 
-<go design philosophy is to err on the side of versimplifying
-<bold (at the time) decision of excluding inherintance,
+# TODO consider moving some of this to the mindset section, but keep the default arguments
+<go design philosophy is to err on the side of over simplifying
+<bold (at the time) decision of excluding inheritance,
 <too much expressiveness can make you arrogant (?) enamored of your elegant terse code or your pristine type families or your <> class hierarchies
 <at worst removing choice from the developer when there's room for misuse, like a style guide baked directly into the language
 <example: argument defaults and function overloading
-<example: asserts
 
-
+# TODO consider removing header
 *** Dependencies
-another aspect that affects expressiveness is how much you can expect to get done with the builtin and standard functions and data structures that the language provides ---as opposed to having to write them yourself or using external libraries.
+another aspect that affects expressiveness is how much you can expect to get done with the builtin and standard functions and data structures that the language provides ---as opposed to having to write them yourself or using external libraries---, and how intuitive they are. I found Go to be uneven in this regard. On one hand, the standard library has several batteries-included kind of modules (http servers, templates, embedded files); on the other, many basic functions appear to be missing[fn:3].
 
-I found Go to be uneven in this regard.
+<Going back to the copy file example, expressiveness it's not only reduced by the fact that Go's implementation requires more error handling boilerplate; it's that the standard library doesn't provide a file copying function [TODO link]. My mental model when I need to write code that copies a file is that of the Unix command ~cp src dest~. That translates directly to Python's [[https://docs.python.org/3/library/shutil.html#shutil.copy][~shutil.copy~]] and to Rust's [[https://doc.rust-lang.org/std/fs/fn.copy.html][~std::fs::copy~]]. Since Go doesn't provide such a function, you need to unfold it into a lower-level set of operations:
+    #+begin_src
+open src file (handle error)
+create target file (handle error)
+read source into target (handle error)
+flush target (handle error)
+close source
+close target
+    #+end_src
+
+(Or more likely copy it from a previous project, or from StackOverflow or ChatGPT).
 
 I got the perception that there's a stronger <push> in Go's ecosystem to avoid external dependencies when possible.
-  - either because batteries included or just writing it yourself
-  - i like this convention, makes things more maintainable
+  - you should try to do as much as possible with stdlib or write yourself
+  - i like this inclination, makes things more stable, easy to maintain and avoids a lot of problems,
+  - sets go apart from most other modern languages.
+[link] https://research.swtch.com/deps
 
-todo https://research.swtch.com/deps
-
-- batteries included but dumb data structures
-
-<In Go it's hard to build an intuition around what should be a built-in function, what a struct method, what a standard library function, what you should write yourself or delegate to a third party library.
-
-- TODO consider using rust + python copy file functions as example, and remove remarks above
-  - mental model: cp f1 f2
-
-- things that should be methods are builtins or std package functions
-- apparently common to resort to write common operations. maybe even more so in the past, judging by SO answers
-- I like the implications in terms of reduced dependencies
-- also like the API stability
+but this philosophy, combined with an uneven standard library, means a lot of writing or copy pasting basic functions.
 
 - an example is with testing helpers,
-  - no assert for similar reasons as why no default arguments
-  - result by default is boilerplaty unreadable tests
-  - or writing your own assert function over an over: TODO code
-  - I find it hard to understand why such a function shouldn't be available in the standard testing package.
+  - global asserts are frowned upon, with similar reasons as default arguments
+  - this explains why they would opt to not implement a builtin assert statement, not why there couldn't be assertion helpers in the unit tests.
+  - (they say regular checking code is ok, but that's certainly not the case, it makes unit tests full of unreadable boilerplate, plagued with those lovely if err != nil checks
+  - the result is that people either install an external library or, most likely, just writing their own assert functions in every project. These are mine:
+
+#+begin_src go
+func assert(t *testing.T, cond bool) {
+	t.Helper()
+	if !cond {
+		t.Fatalf("%v is false", cond)
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	t.Helper()
+	if a != b {
+		t.Fatalf("%v != %v", a, b)
+	}
+}
+#+end_src
+
 
 *** Mindset
 
-<I mentioned at the beginning of this devlog that my decisions to try Go was part of a journey of opting of choosing simple ---even boring--- tools to solve software problems.
+# TODO: consider connecting with the pattern of oversimplifying and removing choice
+# the content here depends partially in what has already been introduced in the expressiveness section
 
+<Some of Go's design decision come across as arbitrary.
+At best, pragmatic; at worst, inconsistent. At best, beginner-friendly; at worst, patronizing. At best, informed by real-world applications; at worst, tailor-made for Google's needs.
+
+<I mentioned at the beginning of this devlog that my decisions to try Go was part of a journey of opting of choosing simple ---even boring--- tools to solve software problems.
 I went in expecting to find a boring language, in the good sense of the word [LINK].
 this was true to the extent that go is an unpretentious language, it was designed to intentionally avoid unnecessary sophistication, it tries to be simpler<loose features> than the alternative of the time (c++, java)/
 it's designers made an intentional effort to leave sophistication out, and its maintainers have resisted the temptation to add it afterwards
@@ -138,9 +161,6 @@ it's designers made an intentional effort to leave sophistication out, and its m
 but it's not boring in the sense of always doing what you expect: it's not without its quirks and rough edges. It's simpler than Java and C++, yes,
 but I'm not sure I'd call it a simple language [fn again, rich hickey]
   - as the 100 go mistakes book puts it, it's easy to learn but hard to master https://100go.co/chapter-1/
-
-<Some of Go's design decision come across as arbitrary.
-At best, pragmatic; at worst, inconsistent. At best, beginner-friendly; at worst, patronizing. At best, informed by real-world applications; at worst, tailor-made for Google's needs.
 
 <what I didn't imagine is to what degree this mindset was necessary beyond choosing the language and into "accepting its mysteries"
 <seems to be a languange intended for people not as smart as its designers
@@ -184,6 +204,6 @@ Method dispatch is simplified if it doesn't need to do type matching as well. Ex
 
 [fn:6] In previous posts, I already mentioned that it felt [[file:getting-started-with-go-and-emacs][easy to learn]] and that I was positively impressed by its [[file:a-site-server-with-live-reload][concurrency facilities]].
 
-[fn:3] Again, ignoring that Rust has [[https://doc.rust-lang.org/std/fs/fn.copy.html][~std::fs::copy~]] for that purpose.
-
 [fn:7] [[https://jesseduffield.com/Gos-Shortcomings-1/][This post]] goes into more details about the day-to-day annoyances of Go's approach to errors. And the [[https://jesseduffield.com/Questionable-Questionmarks/][follow-up]] explores the idea of extending it with Rust's question mark operator.
+
+[fn:3] I also found it counter-intuitive that built-in types are operated on with a mix of built-in and standard module functions, instead of methods.
