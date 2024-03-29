@@ -101,18 +101,14 @@ Experience with other languages told us that having a variety of methods with th
 #+end_quote
 
 *** Dependencies
-Expressiveness is also affected by how much you can get done with the builtin and standard functions and data structures ---as opposed to having to write them yourself or use external libraries. I found Go to be uneven in this regard. On one hand, the standard library has several batteries-included kind of modules (http servers, templates, embedded files); on the other, many common operations on data structures and files are missing[fn:3].
+Expressiveness is also affected by how much you can get done with the built-ins and the standard library ---as opposed to writing utilities by yourself or relying on external dependencies. I found Go to be uneven in this front: on one hand, the standard library has several powerful of modules (http servers, templates, embedded files) that can get you a long way; on the other, many common data structure operations and utilities are missing so you have to write them yourself[fn:3].
 
-I got the impression that there's an inclination in Go's community to avoid external dependencies when possible. I think this a good convention that makes software more reliable and maintainable, and that sets Go apart from the rest of the modern programming language[fn:10]. But paired with its small standard library,
-it means more custom code for basic operations.
+There seems to be an inclination in Go's community to avoid external dependencies when possible. I think this a good convention, making software more reliable and maintainable, and it sets Go apart from the rest of the modern programming language[fn:10]. But paired with a non-comprehensive standard library,
+it means more custom code for basic tasks.
 
-Going back to the file copy example, my mental model for the operation was the shell command ~cp src dest~. That would translate directly into Python's [[https://docs.python.org/3/library/shutil.html#shutil.copy][~shutil.copy~]] and to Rust's [[https://doc.rust-lang.org/std/fs/fn.copy.html][~std::fs::copy~]]. Since Go [[https://github.com/golang/go/issues/8868][doesn't provide]] such a function, you need to unfold it into a lower-level set of operations and write the code yourself (or, more likely, copy it from a previous project or from StackOverflow, or ask ChatGPT).
+Going back to the file copy example, my mental model for the operation was the shell command ~cp src dest~, which translates directly to Python's [[https://docs.python.org/3/library/shutil.html#shutil.copy][~shutil.copy~]] and to Rust's [[https://doc.rust-lang.org/std/fs/fn.copy.html][~std::fs::copy~]]. Since Go [[https://github.com/golang/go/issues/8868][doesn't provide]] such a function, you need to unfold that mental model into its lower-level operations and write the code to perform them yourself (or, more likely, copy it from a previous project or from StackOverflow, or ask ChatGPT).
 
-I encountered a similar situation with unit testing helpers.
-  - global asserts are frowned upon, with similar reasons as default arguments
-  - this explains why they would opt to not implement a builtin assert statement, not why there couldn't be assertion helpers in the unit tests.
-  - (they say regular checking code is ok, but that's certainly not the case, it makes unit tests full of unreadable boilerplate, plagued with those lovely if err != nil checks
-  - the result is that people either install an external library or, most likely, just writing their own assert functions in every project. These are mine:
+I encountered a similar situation with unit testing helpers. Go has no built-in assertions for the [[https://go.dev/doc/faq#assertions][same reasons]] it doesn't have default arguments: they can be misused. There are no assertions in the testing utilities, either, because [[https://go.dev/doc/faq#testing_framework][allegedly]] plain Go should be enough. Unsurprisingly, I found that plain Go unit tests are plagued by unreadable error checking boilerplate. I saw people would either use a testing library or write their own assertion functions over and over. The latter seemed more in line with the no-dependencies convention so, after some trial and error, I ended with these helpers:
 
 #+begin_src go
 func assert(t *testing.T, cond bool) {
@@ -152,8 +148,6 @@ I do believe in the creative power of restrictions, in doing more with less, in 
 [fn:6] In previous posts, I already mentioned that it felt [[file:getting-started-with-go-and-emacs][easy to learn]] and that I was positively impressed by its [[file:a-site-server-with-live-reload][concurrency facilities]].
 
 [fn:7] See [[https://jesseduffield.com/Gos-Shortcomings-1/][this post]] for a detailed discussion of the day-to-day annoyances of Go's approach to errors, from the perspective of the developer writing the code. The [[https://jesseduffield.com/Questionable-Questionmarks/][follow-up post]] explores the idea of extending Go with Rust's question mark operator.
-
-[fn:3] I also found it counter-intuitive that built-in types are operated on with a mix of built-in and standard module functions, instead of methods.
 
 [fn:8] [[https://go.dev/talks/2012/splash.article#TOC_10.][Go at Google: Language Design in the Service of Software Engineering]].
 
