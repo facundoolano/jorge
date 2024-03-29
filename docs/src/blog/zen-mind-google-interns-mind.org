@@ -78,29 +78,31 @@ What's unconvincing about Go is that it doesn't provide much syntax support to d
 There's an [[https://go.dev/blog/errors-are-values][official article]] by Rob Pike that discusses this issue, saying that if  you find yourself typing ~err != nil~ over and over, you probably aren't trying hard enough. Then demonstrates some creative ways to reduce error-handling boilerplate.
 In my very short experience, I've found that the code structure doesn't always leave room such creative refactors; that aside, I think something as mundane as error handling shouldn't need you to get creative at all. What's more, custom error checking code and clever APIs like the ~bufio.Scanner~ one mentioned in the article can too hurt readability or, worse, defeat the original purpose of forcing all errors to be checked explicitly.
 
-[[https://medium.com/@shazow/code-boilerplate-is-it-always-bad-934827efcfc7][Another post]] argues that perhaps code boilerplate isn't that bad; that we can think of it as representing the "substance" of each operation. What I found thought-provoking of this argument was the idea that the terseness of Python code ---the /beautiful is better than ugly/ mantra--- could make us inclined to avoid introducing necessary boilerplate, for example error-handling boilerplate. That beautiful code can inadvertently become an end in itself. This left me thinking: what if the error-checking discipline buys a reliability that outweighs its readability cost? Who could tell which of the two has a bigger impact in software maintainability? How much of our discipline is founded on gut feeling?
+[[https://medium.com/@shazow/code-boilerplate-is-it-always-bad-934827efcfc7][Another post]] argues that perhaps code boilerplate isn't that bad; that we can think of it as representing the "substance" of each operation. What I found thought-provoking of this argument was the idea that the terseness of Python code ---the /beautiful is better than ugly/ mantra--- could make us inclined to avoid introducing necessary boilerplate, for example error-handling boilerplate. That beautiful code can inadvertently become an end in itself. This left me thinking: what if the error-checking discipline buys a reliability that outweighs its readability cost? Who could tell which of the two has a bigger impact in software maintainability? How much of our strongest convictions are founded on gut feeling?
 
 *** Expressiveness
 The error handling discussion can be thought of a particular case of a broader one, that of language expressiveness. Expressiveness is a vaguely-defined and highly subjective quality[fn:5] but one that can be used to compare programming languages. I think about expressiveness as the distance the language puts between the abstract idea of a task ---in pseudocode, perhaps--- and its working implementation. I don't just mean distance in terms of lines of code ---how verbose the language is--- but the cognitive effort it takes to get there ---how much the language helps, how much it gets in the way.
 
-I find Python to be a highly expressive language. Perhaps because it's close to pseudocode, perhaps because I used it long enough that my mental pseudocode is close to Python. As seen in the error handling discussions, more expressive isn't necessarily better.
+- I find Python to be a highly expressive language. Perhaps because it's close to pseudocode, perhaps because I used it long enough that my mental pseudocode is close to Python. As seen in the error handling discussions, more expressive isn't necessarily better.
+- Rust tends to be in the opposite end. Working code (or subsets of it) may be elegant and succinct, but arriving to it can be a struggle, even for mundane tasks like iterating and transforming data structures.
+- I would say that Go is somewhere in between. It's verbose, sometimes even bureaucratic, and, while at the feature level it's a simple language, it's full of little syntax and design quirks. But unlike Rust, I rarely found myself baffled, stuck at making a piece of code compile or struggling to make a structure or a design fit its programming model.
 
-Rust tends to be in the opposite end. Working code (or subsets of it) may be elegant and succinct, but arriving to it can be a struggle, even for mundane tasks like iterating and transforming data structures.
+Go was designed to err on the side simplicity, in some cases removing choice from the programmer to prevent misuse, like a style guide baked directly into the language. It leaves no room for enamoring yourself with an elegant piece of code, a pristine type family, or an overarching class hierarchy. One easy example of how this philosophy affects the language expressiveness, is the lack of function argument defaults[fn:8]:
 
-I would say that Go is somewhere in between. It's verbose, sometimes even bureaucratic, and, while at the feature level it's a simple language, it's full of little syntax and design quirks. But unlike Rust, I rarely found myself baffled, stuck at making a piece of code compile or struggling to make a structure or a design fit its programming model.
+#+begin_quote
+Experience tells us that defaulted arguments make it too easy to patch over API design flaws by adding more arguments, resulting in too many arguments with interactions that are difficult to disentangle or even understand.
+#+end_quote
 
-# TODO consider moving some of this to the mindset section, but keep the default arguments
-<go design philosophy is to err on the side of over simplifying
-<bold (at the time) decision of excluding inheritance,
-<too much expressiveness can make you arrogant (?) enamored of your elegant terse code or your pristine type families or your <> class hierarchies
-<at worst removing choice from the developer when there's room for misuse, like a style guide baked directly into the language
-<example: argument defaults and function overloading
+And method overloading[fn:9]:
 
-# TODO consider removing header
+#+begin_quote
+Experience with other languages told us that having a variety of methods with the same name but different signatures was occasionally useful but that it could also be confusing and fragile in practice.
+#+end_quote
+
 *** Dependencies
-another aspect that affects expressiveness is how much you can expect to get done with the builtin and standard functions and data structures that the language provides ---as opposed to having to write them yourself or using external libraries---, and how intuitive they are. I found Go to be uneven in this regard. On one hand, the standard library has several batteries-included kind of modules (http servers, templates, embedded files); on the other, many basic functions appear to be missing[fn:3].
+Expressiveness is also affected by how much you can get done with the builtin and standard functions and data structures ---as opposed to having to write them yourself or use external libraries. I found Go to be uneven in this regard. On one hand, the standard library has several batteries-included kind of modules (http servers, templates, embedded files); on the other, many common operations on data structures and files are missing[fn:3].
 
-<Going back to the copy file example, expressiveness it's not only reduced by the fact that Go's implementation requires more error handling boilerplate; it's that the standard library doesn't provide a file copying function [TODO link]. My mental model when I need to write code that copies a file is that of the Unix command ~cp src dest~. That translates directly to Python's [[https://docs.python.org/3/library/shutil.html#shutil.copy][~shutil.copy~]] and to Rust's [[https://doc.rust-lang.org/std/fs/fn.copy.html][~std::fs::copy~]]. Since Go doesn't provide such a function, you need to unfold it into a lower-level set of operations:
+<Going back to the copy file example, expressiveness it's not only reduced by the fact that Go's implementation requires more error handling boilerplate; it's that the standard library doesn't provide a file copying function [TODO link]. My mental model when I need to write code that copies a file is that of the shell command ~cp src dest~. That translates directly to Python's [[https://docs.python.org/3/library/shutil.html#shutil.copy][~shutil.copy~]] and to Rust's [[https://doc.rust-lang.org/std/fs/fn.copy.html][~std::fs::copy~]]. Since Go doesn't provide such a function, you need to unfold it into a lower-level set of operations:
     #+begin_src
 open src file (handle error)
 create target file (handle error)
@@ -181,14 +183,6 @@ go killer feature may be that they made a few bold design decisions and stuck wi
       https://go.dev/talks/2012/splash.article
       default arguments
 
-#+begin_quote
-One feature missing from Go is that it does not support default function arguments. This was a deliberate simplification. Experience tells us that defaulted arguments make it too easy to patch over API design flaws by adding more arguments, resulting in too many arguments with interactions that are difficult to disentangle or even understand. The lack of default arguments requires more functions or methods to be defined, as one function cannot hold the entire interface, but that leads to a clearer API that is easier to understand. Those functions all need separate names, too, which makes it clear which combinations exist, as well as encouraging more thought about naming, a critical aspect of clarity and readability.
-#+end_quote
-
-#+begin_quote
-Method dispatch is simplified if it doesn't need to do type matching as well. Experience with other languages told us that having a variety of methods with the same name but different signatures was occasionally useful but that it could also be confusing and fragile in practice. Matching only by name and requiring consistency in the types was a major simplifying decision in Go's type system.
-#+end_quote
-
 ** Notes
 [fn:2] One obvious one is the "comma ok" idiom to check if a map contains an element. More closely related to error handling, there are special syntax rules to [[https://go.dev/doc/effective_go#redeclaration][redeclarate]] return values, and I presume the ~defer~ construct was introduced specifically to keep resource management sane in the context of frequent early returns.
 
@@ -203,3 +197,7 @@ Method dispatch is simplified if it doesn't need to do type matching as well. Ex
 [fn:7] See [[https://jesseduffield.com/Gos-Shortcomings-1/][this post]] for a detailed discussion of the day-to-day annoyances of Go's approach to errors, from the perspective of the developer writing the code. The [[https://jesseduffield.com/Questionable-Questionmarks/][follow-up post]] explores the idea of extending Go with Rust's question mark operator.
 
 [fn:3] I also found it counter-intuitive that built-in types are operated on with a mix of built-in and standard module functions, instead of methods.
+
+[fn:8] [[https://go.dev/talks/2012/splash.article#TOC_10.][Go at Google: Language Design in the Service of Software Engineering]].
+
+[fn:9] [[https://go.dev/doc/faq#overloading][Why does Go not support overloading of methods and operators?]]
