@@ -6,8 +6,8 @@ require (
 	github.com/alecthomas/chroma/v2 v2.5.0
 	github.com/alecthomas/kong v0.8.1
 	github.com/elliotchance/orderedmap/v2 v2.2.0
-	github.com/facundoolano/go-org v0.0.0-20240319174809-36455ab9a08c
 	github.com/fsnotify/fsnotify v1.7.0
+	github.com/niklasfasching/go-org v1.7.1-0.20240323173655-fc916744d4ce
 	github.com/osteele/liquid v1.3.2
 	github.com/tdewolff/minify/v2 v2.20.16
 	github.com/yuin/goldmark v1.7.0
