@@ -1,11 +1,10 @@
 ---
 title: Zen Mind, Google Intern's Mind
 subtitle: Notes about Go
-date: 2024-04-02
+date: 2024-04-01
 layout: post
 lang: en
 tags: [golang, thoughts]
-draft: true
 excerpt: jorge started as a Go learning project, so writing down my thoughts on the language seemed like a good way to wrap up this devlog.
 ---
 #+OPTIONS: toc:nil num:nil
