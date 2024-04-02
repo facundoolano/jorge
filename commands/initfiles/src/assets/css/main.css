@@ -64,8 +64,19 @@ li:not(:last-child) {
 }
 
 a, a:visited {
-    color: LinkText;
     text-decoration: none;
+}
+/*
+Set visited links to the same color as regular ones.
+Hardcoding Firefox colors since I couldn't find a portable way of reusing the browser defaults.
+*/
+a:visited {
+    color:rgb(0, 0, 238);
+}
+@media (prefers-color-scheme: dark) {
+    a:visited {
+        color:rgb(140, 140, 255);
+    }
 }
 a:hover {
     text-decoration: underline
