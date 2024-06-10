@@ -99,10 +99,11 @@ func runWatcher(config *config.Config, broker *EventBroker) (*fsnotify.Watcher, 
 
 	go func() {
 		for event := range watcher.Events {
-			// chmod events are noisy, ignore them.
+			// chmod events are noisy, ignore them. But not if they are also a write event.
+			isChmod := event.Has(fsnotify.Chmod) && !event.Has(fsnotify.Write)
 			// Also ignore dot file events, which are usually spurious (e.g .DS_Store, emacs temp files)
 			isDotFile := strings.HasPrefix(filepath.Base(event.Name), ".")
-			if event.Has(fsnotify.Chmod) || isDotFile {
+			if isChmod || isDotFile {
 				continue
 			}
 
