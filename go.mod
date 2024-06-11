@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/chroma/v2 v2.5.0
 	github.com/alecthomas/kong v0.8.1
 	github.com/elliotchance/orderedmap/v2 v2.2.0
-	github.com/facundoolano/go-org v0.0.0-20240611144737-3ce894e24f84
+	github.com/facundoolano/go-org v0.0.0-20240611152452-f50bf800e0ef
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/osteele/liquid v1.3.2
 	github.com/tdewolff/minify/v2 v2.20.16

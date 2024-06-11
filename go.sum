@@ -18,6 +18,8 @@ github.com/elliotchance/orderedmap/v2 v2.2.0 h1:7/2iwO98kYT4XkOjA9mBEIwvi4KpGB4c
 github.com/elliotchance/orderedmap/v2 v2.2.0/go.mod h1:85lZyVbpGaGvHvnKa7Qhx7zncAdBIBq6u56Hb1PRU5Q=
 github.com/facundoolano/go-org v0.0.0-20240611144737-3ce894e24f84 h1:j0NIBYy6IyRmZ0be+5bc5Y782H/FCSieDpncaE1Cta0=
 github.com/facundoolano/go-org v0.0.0-20240611144737-3ce894e24f84/go.mod h1:a/m9I6domFxcZAxqDOOE5W/YzbANRLP7hlHn4/771nU=
+github.com/facundoolano/go-org v0.0.0-20240611152452-f50bf800e0ef h1:p/A+psLOLHo85cNGgcrNYvH3Tic40e7qiHgiqQxO824=
+github.com/facundoolano/go-org v0.0.0-20240611152452-f50bf800e0ef/go.mod h1:a/m9I6domFxcZAxqDOOE5W/YzbANRLP7hlHn4/771nU=
 github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nosvA=
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/hexops/gotextdiff v1.0.3 h1:gitA9+qJrrTCsiCl7+kh75nPqQt1cx4ZkudSTLoUqJM=
