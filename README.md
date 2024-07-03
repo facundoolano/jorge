@@ -107,6 +107,12 @@ And that's about it. For more details see the:
   - [Tutorial](https://jorge.olano.dev#tutorial)
   - [Development blog](https://jorge.olano.dev#devlog)
 
+## Built with jorge
+
+* [jorge docs](https://jorge.olano.dev/)
+* [olano.dev](https://olano.dev/)
+
+
 ## Acknowledgements
 
 jorge started as a Go learning project and was largely inspired by [Jekyll](https://jekyllrb.com/). Most of the heavy lifting is done by external libraries:
