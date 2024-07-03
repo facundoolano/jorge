@@ -43,12 +43,12 @@ To preview your site locally, use `jorge serve`:
 $ cd myblog
 $ jorge serve
 wrote target/feed.xml
-wrote target/blog/goodbye-markdown.html
-wrote target/blog/my-first-post.html
-wrote target/blog/hello-org.html
+wrote target/blog/goodbye-markdown/index.html
+wrote target/blog/my-first-post/index.html
+wrote target/blog/hello-org/index.html
 wrote target/blog/index.html
 wrote target/index.html
-wrote target/blog/tags.html
+wrote target/blog/tags/index.html
 serving at http://localhost:4001
 ```
 
@@ -96,10 +96,10 @@ Finally, you can render a minified version of your site with `jorge build`:
 $ jorge build
   wrote target/index.html
   wrote target/assets/css/main.css
-  wrote target/blog/hello.html
-  wrote target/blog/my-first-post.html
+  wrote target/blog/hello/index.html
+  wrote target/blog/my-first-post/index.html
   wrote target/feed.xml
-  wrote target/tags.html
+  wrote target/tags/index.html
 ```
 
 And that's about it. For more details see the:
