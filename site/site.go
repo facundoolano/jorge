@@ -164,10 +164,7 @@ func (site *site) loadTemplates() error {
 				// the rest are pages.
 				if templ.IsPost() {
 
-					// NOTE: getting the excerpt if not set at the front matter requires rendering the template
-					// which could be too onerous for this stage. Consider postponing setting this and/or caching the
-					// template render result
-					templ.Metadata["excerpt"] = getExcerpt(templ)
+					templ.Metadata["content"], templ.Metadata["excerpt"] = getPreviewContent(templ)
 					site.posts = append(site.posts, templ.Metadata)
 
 					// also add to tags index
@@ -414,24 +411,26 @@ func writeToFile(targetPath string, source io.Reader) error {
 	return targetFile.Sync()
 }
 
-// Assuming the given template is a post, try to generating an excerpt of it.
-// If it contains an `excerpt` key in its metadata use that, otherwise try
-// to render it as HTML and extract the text of its first <p>
-func getExcerpt(templ *markup.Template) string {
-	if excerpt, ok := templ.Metadata["excerpt"]; ok {
-		return excerpt.(string)
-	}
-
+// Assuming the given template is a post, try to generating a preview version of its context
+// and an excerpt of it. If the metadata contains an `excerpt` key use that, use the first <p>
+// from the context preview.
+func getPreviewContent(templ *markup.Template) (string, string) {
 	// if we don't expect this to render to html don't bother parsing it
 	if templ.TargetExt() != ".html" {
-		return ""
+		return "", ""
 	}
 
 	content, err := templ.Render()
 	if err != nil {
-		return ""
+		return "", ""
 	}
-	return markup.ExtractFirstParagraph(bytes.NewReader(content))
+
+	if excerpt, ok := templ.Metadata["excerpt"]; ok {
+		return string(content), excerpt.(string)
+	}
+
+	excerpt := markup.ExtractFirstParagraph(bytes.NewReader(content))
+	return string(content), excerpt
 }
 
 // if live reload is enabled, inject the reload snippet to html files
