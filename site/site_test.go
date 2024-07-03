@@ -385,7 +385,7 @@ date: 2024-01-01
 tags: [web, software]
 ---
 <p>the intro paragraph</p>
-<p> and another paragraph>`
+<p> and another paragraph</p>`
 	file := newFile(config.SrcDir, "hello.html", content)
 	defer os.Remove(file.Name())
 
@@ -428,6 +428,55 @@ tags: [software]
 hello world! - the intro paragraph
 
 an oldie! -`)
+}
+
+func TestRenderPreviewContent(t *testing.T) {
+	config := newProject()
+	defer os.RemoveAll(config.RootDir)
+
+	content := `---
+title: hello world!
+date: 2024-01-01
+tags: [web, software]
+---
+<p>the intro paragraph</p>
+<p> and another paragraph</p>`
+	file := newFile(config.SrcDir, "hello.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: goodbye!
+date: 2024-02-01
+tags: [web]
+excerpt: an overridden excerpt
+---
+<p>goodbye world!</p>
+<p> and another paragraph</p>`
+	file = newFile(config.SrcDir, "goodbye.html", content)
+	defer os.Remove(file.Name())
+
+	// add a page (no date)
+	content = `---
+---
+{% for post in site.posts %}
+<h1>{{post.title}}</h1>
+{{post.content}}
+{% endfor %}
+`
+
+	file = newFile(config.SrcDir, "about.html", content)
+	defer os.Remove(file.Name())
+
+	site, _ := load(*config)
+	output, err := site.render(site.templates[file.Name()])
+	assertEqual(t, err, nil)
+	assertEqual(t, strings.TrimSpace(string(output)), `<h1>goodbye!</h1>
+<p>goodbye world!</p>
+<p> and another paragraph</p>
+
+<h1>hello world!</h1>
+<p>the intro paragraph</p>
+<p> and another paragraph</p>`)
 }
 
 func TestRenderDataFile(t *testing.T) {
