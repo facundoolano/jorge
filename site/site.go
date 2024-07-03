@@ -330,9 +330,19 @@ func (site *site) buildFile(path string) error {
 		targetPath = strings.TrimSuffix(targetPath, filepath.Ext(targetPath)) + templ.TargetExt()
 		contentReader = bytes.NewReader(content)
 	}
+	targetExt := filepath.Ext(targetPath)
+
+	// arrange paths to ensure pretty uris, eg move blog/tags.html to blog/tags/index.html
+	if targetExt == ".html" && filepath.Base(targetPath) != "index.html" {
+		targetDir := strings.TrimSuffix(targetPath, ".html")
+		targetPath = filepath.Join(targetDir, "index.html")
+		err = os.MkdirAll(targetDir, DIR_RWE_MODE)
+		if err != nil {
+			return err
+		}
+	}
 
 	// post process file acording to extension and config
-	targetExt := filepath.Ext(targetPath)
 	contentReader, err = markup.Smartify(targetExt, contentReader)
 	if err != nil {
 		return err
