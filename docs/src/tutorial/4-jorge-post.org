@@ -61,7 +61,7 @@ Let's look at what the command did for us:
 | ~#+OPTIONS: toc:nil num:nil~, ~#+LANGUAGE: en~ | Some default org mode options, to skip the table of contents and define the post language.                                     |
 {% endraw %}
 
-With ~jorge serve~ running, you can start filling in some content on this new post and see it show up in the browser at http://localhost:4001/blog/my-own-blog-post.
+With ~jorge serve~ running, you can start filling in some content on this new post and see it show up in the browser at [[http://localhost:4001/blog/my-own-blog-post]].
 
 ** Customizing the post format
 As you may have noticed, the ~jorge post~ command makes a lot of assumptions about the post: where to put it, how to name it, and what format to use. You can control some of these decisions by redefining the ~post_format~ configuration key. The default is:

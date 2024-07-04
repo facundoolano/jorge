@@ -8,7 +8,7 @@ tags: [tutorial]
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-So far you've seen how to [[file:jorge-init][start a project]], [[file:jorge-serve][serve it locally]] and [[file:jorge-post][add some content]] to it. The last step is to prepare your site for the public, and ~jorge build~ will help you with that:
+So far you've seen how to [[file:2-jorge-init][start a project]], [[file:3-jorge-serve][serve it locally]] and [[file:4-jorge-post][add some content]] to it. The last step is to prepare your site for the public, and ~jorge build~ will help you with that:
 
 #+begin_src console
 $ jorge build

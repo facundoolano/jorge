@@ -8,7 +8,7 @@ tags: [tutorial]
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-Now that you have some [[file:jorge-init][default files]] in place, let's see how the website looks. Run ~jorge serve~ on the project directory:
+Now that you have some [[2-jorge-init][default files]] in place, let's see how the website looks. Run ~jorge serve~ on the project directory:
 
 #+begin_src console
 $ cd myblog

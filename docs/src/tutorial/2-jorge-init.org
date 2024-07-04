@@ -8,7 +8,7 @@ tags: [tutorial]
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
 
-Once jorge is [[file:installation][installed]], you can start a new site with the ~init~ command, specifying a project directory (~myblog~ in the example):
+Once jorge is [[file:1-installation][installed]], you can start a new site with the ~init~ command, specifying a project directory (~myblog~ in the example):
 
 #+begin_src console
 $ jorge init myblog
