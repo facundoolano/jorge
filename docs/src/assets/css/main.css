@@ -4,12 +4,12 @@ html {
 }
 
 body {
-    max-width: 45em;
+    max-width: 38em;
     margin: 0 auto;
     padding: 0 1rem;
     width: auto;
     font-family: Tahoma, Verdana, Arial, sans-serif;
-    line-height: 1.5;
+    line-height: 1.6;
 
     height: 100vh;
     display: flex;
@@ -49,10 +49,6 @@ nav a:not(:last-child) {
 }
 nav a:hover {
     text-decoration: none;
-}
-
-li {
-    line-height: 1.6;
 }
 
 .layout-post li p {
@@ -134,8 +130,6 @@ img.cover-img {
 .layout-post {
     hyphens: auto;
     text-align: justify;
-    font-size: 1.1rem;
-    line-height: 1.6;
 
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased !important;
@@ -158,9 +152,7 @@ img.cover-img {
 }
 
 pre {
-    font-size: 1rem;
     overflow-x: auto;
-    line-height: 1.5;
     padding: 1rem;
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
@@ -187,7 +179,6 @@ Need to decide between:
     padding: .2em .4em;
     background-color: whitesmoke!important;
     color: black;
-    font-size: 1rem;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -208,6 +199,15 @@ Need to decide between:
 blockquote {
     border-left: 2px solid whitesmoke;
     padding-left: 1rem;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+}
+
+@media screen and (max-width: 480px) {
+    blockquote {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
 }
 
 .layout-post p.verse {
@@ -215,7 +215,6 @@ blockquote {
 }
 
 .layout-post p {
-    line-height: 1.8;
     margin-bottom: 1.5rem;
 }
 
@@ -230,7 +229,6 @@ blockquote {
 /* override in mobile devices for more compact text */
 @media screen and (max-width: 768px) {
     .layout-post {
-        line-height: 1.2;
         letter-spacing: unset;
         hyphens: none;
         text-align: left;
@@ -238,7 +236,6 @@ blockquote {
 
     .layout-post p {
         margin: 1rem 0;
-        line-height: 1.7;
     }
 
     .layout-post p + p {
@@ -253,7 +250,6 @@ blockquote {
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 1.05rem;
 }
 
 table tr {
@@ -312,6 +308,8 @@ details > summary::-webkit-details-marker {
 }
 
 code.index-sample {
+    line-height: 1.5;
+    font-size: 1rem;
     display: inline-block;
 }
 
