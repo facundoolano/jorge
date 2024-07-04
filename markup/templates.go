@@ -152,6 +152,8 @@ func (templ Template) RenderWith(context map[string]interface{}, hlTheme string)
 
 		// make * -> h1, ** -> h2, etc
 		htmlWriter.TopLevelHLevel = 1
+		// handle relative paths in links
+		htmlWriter.PrettyRelativeLinks = true
 		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
 			htmlWriter.HighlightCodeBlock = highlightCodeBlock(hlTheme)
 		}
