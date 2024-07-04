@@ -13,12 +13,11 @@ So far you've seen how to [[file:jorge-init][start a project]], [[file:jorge-ser
 #+begin_src console
 $ jorge build
 skipping draft target/blog/my-own-blog-post.org
-wrote target/2024-02-23-another-kind-of-post.html
-wrote target/blog/my-own-blog-post.html
-wrote target/blog/goodbye-markdown.html
+wrote target/2024-02-23-another-kind-of-post/index.html
+wrote target/blog/goodbye-markdown/index.html
 wrote target/assets/css/main.css
-wrote target/blog/hello-org.html
-wrote target/blog/tags.html
+wrote target/blog/hello-org/index.html
+wrote target/blog/tags/index.html
 wrote target/index.html
 wrote target/feed.xml
 wrote target/blog/index.html
@@ -44,7 +43,7 @@ But for the sake of completeness, this is how this site is deployed: I have a VP
           location / {
               # First attempt to serve request as file,
               # then as directory. Otherwise respond 404.
-              try_files $uri $uri.html $uri/ =404;
+              try_files $uri $uri/ =404;
           }
   }
 

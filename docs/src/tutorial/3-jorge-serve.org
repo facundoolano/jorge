@@ -15,11 +15,11 @@ $ cd myblog
 $ jorge serve
 building site
 wrote target/feed.xml
-wrote target/blog/goodbye-markdown.html
-wrote target/blog/hello-org.html
+wrote target/blog/goodbye-markdown/index.html
+wrote target/blog/hello-org/index/.html
 wrote target/index.html
 wrote target/blog/index.html
-wrote target/blog/tags.html
+wrote target/blog/tags/index.html
 done
 serving at http://localhost:4001
 #+end_src

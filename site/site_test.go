@@ -560,9 +560,9 @@ layout: base
 	assertEqual(t, err, nil)
 
 	// test target files generated
-	_, err = os.Stat(filepath.Join(config.TargetDir, "p1.html"))
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p1", "index.html"))
 	assertEqual(t, err, nil)
-	_, err = os.Stat(filepath.Join(config.TargetDir, "p2.html"))
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p2", "index.html"))
 	assertEqual(t, err, nil)
 
 	// test index includes p1 and p2
@@ -629,9 +629,9 @@ layout: base
 	assertEqual(t, err, nil)
 
 	// test target files generated
-	_, err = os.Stat(filepath.Join(config.TargetDir, "p1.html"))
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p1", "index.html"))
 	assertEqual(t, err, nil)
-	_, err = os.Stat(filepath.Join(config.TargetDir, "p2.html"))
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p2", "index.html"))
 	assertEqual(t, err, nil)
 
 	// test index includes p1 and p2
@@ -654,9 +654,9 @@ layout: base
 	assertEqual(t, err, nil)
 
 	// test only non drafts generated
-	_, err = os.Stat(filepath.Join(config.TargetDir, "p1.html"))
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p1", "index.html"))
 	assertEqual(t, err, nil)
-	_, err = os.Stat(filepath.Join(config.TargetDir, "p2.html"))
+	_, err = os.Stat(filepath.Join(config.TargetDir, "p2", "index.html"))
 	assert(t, os.IsNotExist(err))
 
 	// test index includes p1 but  NOT p2

@@ -42,7 +42,7 @@ func (cmd *Serve) Run(ctx *kong.Context) error {
 	defer watcher.Close()
 
 	// serve the target dir with a file server
-	fs := http.FileServer(HTMLFileSystem{http.Dir(config.TargetDir)})
+	fs := http.FileServer(http.Dir(config.TargetDir))
 	http.Handle("/", fs)
 
 	if config.LiveReload {
@@ -154,24 +154,6 @@ func watchProjectFiles(watcher *fsnotify.Watcher, config *config.Config) error {
 		}
 		return nil
 	})
-}
-
-// Tweaks the http file system to construct a server that hides the .html suffix from requests.
-// Based on https://stackoverflow.com/a/57281956/993769
-type HTMLFileSystem struct {
-	dirFS http.Dir
-}
-
-func (htmlFS HTMLFileSystem) Open(name string) (http.File, error) {
-	// Try name as supplied
-	f, err := htmlFS.dirFS.Open(name)
-	if os.IsNotExist(err) {
-		// Not found, try with .html
-		if f, err := htmlFS.dirFS.Open(name + ".html"); err == nil {
-			return f, nil
-		}
-	}
-	return f, err
 }
 
 // The event broker mediates between the file watcher
