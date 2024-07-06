@@ -55,6 +55,8 @@ var smartifyTransforms = []struct {
 	{regexp.MustCompile(`'`), "’"},
 	{regexp.MustCompile(`(^|[^[:alnum:]])"`), "$1“"},
 	{regexp.MustCompile(`"($|[^[:alnum:]])`), "”$1"},
+	{regexp.MustCompile(`\\[‘’]`), "'"}, // undo backslashed replacements
+	{regexp.MustCompile(`\\[“”]`), `"`}, // undo backslashed replacements
 }
 
 var smartifyReplacer *strings.Replacer
