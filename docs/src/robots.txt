@@ -1,0 +1,119 @@
+# block ai bots
+# https://raw.githubusercontent.com/ai-robots-txt/ai.robots.txt/main/robots.txt
+User-agent: AI2Bot
+User-agent: Ai2Bot-Dolma
+User-agent: Amazonbot
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: CCBot
+User-agent: ChatGPT-User
+User-agent: Claude-Web
+User-agent: ClaudeBot
+User-agent: Diffbot
+User-agent: FacebookBot
+User-agent: FriendlyCrawler
+User-agent: GPTBot
+User-agent: Google-Extended
+User-agent: GoogleOther
+User-agent: GoogleOther-Image
+User-agent: GoogleOther-Video
+User-agent: ICC-Crawler
+User-agent: ImagesiftBot
+User-agent: Meta-ExternalAgent
+User-agent: Meta-ExternalFetcher
+User-agent: OAI-SearchBot
+User-agent: PerplexityBot
+User-agent: PetalBot
+User-agent: Scrapy
+User-agent: Timpibot
+User-agent: VelenPublicWebCrawler
+User-agent: Webzio-Extended
+User-agent: YouBot
+User-agent: anthropic-ai
+User-agent: cohere-ai
+User-agent: facebookexternalhit
+User-agent: img2dataset
+User-agent: omgili
+User-agent: omgilibot
+Disallow: /
+
+# https://git.sr.ht/robots.txt
+
+# It doesn't make sense to index these and/or it's expensive:
+User-agent: *
+Disallow: /*?*
+Disallow: /*.tar.gz$
+Disallow: /metrics
+Disallow: /*/*/blame/*
+Disallow: /*/*/log/*
+Disallow: /*/*/tree/*
+Disallow: /*/*/item/*
+Disallow: /*/*/mbox
+Disallow: /*/*/*/raw
+
+# Too aggressive, marketing/SEO
+User-agent: SemrushBot
+Disallow: /
+
+# Too aggressive, marketing/SEO
+User-agent: SemrushBot-SA
+Disallow: /
+
+# Marketing/SEO
+User-agent: AhrefsBot
+Disallow: /
+
+# Marketing/SEO
+User-agent: dotbot
+Disallow: /
+
+# Marketing/SEO
+User-agent: rogerbot
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# Huwei something or another, badly behaved
+User-agent: AspiegelBot
+Disallow: /
+
+# Marketing/SEO
+User-agent: ZoominfoBot
+Disallow: /
+
+# YandexBot is a dickhead, too aggressive
+User-agent: Yandex
+Disallow: /
+
+# Marketing/SEO
+User-agent: MJ12bot
+Disallow: /
+
+# Marketing/SEO
+User-agent: DataForSeoBot
+Disallow: /
+
+# Used for Alexa, I guess, who cares
+User-agent: Amazonbot
+Disallow: /
+
+# No
+User-agent: turnitinbot
+Disallow: /
+
+User-agent: Turnitin
+Disallow: /
+
+# Does not respect * directives
+User-agent: Seekport Crawler
+Disallow: /
+
+# Marketing
+User-agent: serpstatbot
+Disallow: /
+
+# Marketing/SEO
+User-agent: barkrowler
+Disallow: /
