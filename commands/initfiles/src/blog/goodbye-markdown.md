@@ -10,6 +10,8 @@ layout: post
 For the record, even though it has *org* in the name, jorge can also render markdown,
 thanks to [goldmark](https://github.com/yuin/goldmark/).
 
+Would it support footnotes[^1]?
+
 Let's look at some code:
 
 ``` python
@@ -23,3 +25,5 @@ hello()
 ```
 
 [Next time](./hello-org), I'll talk about org-mode posts.
+
+[^1]: apparently it would?
