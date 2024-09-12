@@ -18,6 +18,7 @@ import (
 	"github.com/osteele/liquid"
 	"github.com/yuin/goldmark"
 	gm_highlight "github.com/yuin/goldmark-highlighting/v2"
+	"github.com/yuin/goldmark/extension"
 	"gopkg.in/yaml.v3"
 )
 
@@ -169,10 +170,13 @@ func (templ Template) RenderWith(context map[string]interface{}, hlTheme string)
 
 		options := make([]goldmark.Option, 0)
 		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
-			options = append(options, goldmark.WithExtensions(gm_highlight.NewHighlighting(
-				gm_highlight.WithStyle(hlTheme),
-				gm_highlight.WithFormatOptions(html.TabWidth(CODE_TABWIDTH)),
-			)))
+
+			options = append(options, goldmark.WithExtensions(
+				extension.Footnote,
+				gm_highlight.NewHighlighting(
+					gm_highlight.WithStyle(hlTheme),
+					gm_highlight.WithFormatOptions(html.TabWidth(CODE_TABWIDTH)),
+				)))
 		}
 		md := goldmark.New(options...)
 		if err := md.Convert(content, &buf); err != nil {
