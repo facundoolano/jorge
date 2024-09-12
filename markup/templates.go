@@ -172,6 +172,7 @@ func (templ Template) RenderWith(context map[string]interface{}, hlTheme string)
 		if hlTheme != NO_SYNTAX_HIGHLIGHTING {
 
 			options = append(options, goldmark.WithExtensions(
+				extension.GFM,
 				extension.Footnote,
 				gm_highlight.NewHighlighting(
 					gm_highlight.WithStyle(hlTheme),
