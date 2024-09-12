@@ -22,4 +22,14 @@ def hello():
 hello()
 ```
 
+Let's try some gfm extensions. This is ~~strikethrough~~.
+
+| foo | bar |
+| --- | --- |
+| baz | bim |
+
+Would it support footnotes[^1]?
+
 [Next time](./hello-org), I'll talk about org-mode posts.
+
+[^1]: apparently it would?
