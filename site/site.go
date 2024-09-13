@@ -23,12 +23,13 @@ const FILE_RW_MODE = 0666
 const DIR_RWE_MODE = 0777
 
 type site struct {
-	config  config.Config
-	layouts map[string]markup.Template
-	posts   []map[string]interface{}
-	pages   []map[string]interface{}
-	tags    map[string][]map[string]interface{}
-	data    map[string]interface{}
+	config       config.Config
+	layouts      map[string]markup.Template
+	posts        []map[string]interface{}
+	pages        []map[string]interface{}
+	static_files []map[string]interface{}
+	tags         map[string][]map[string]interface{}
+	data         map[string]interface{}
 
 	templateEngine *markup.Engine
 	templates      map[string]*markup.Template
@@ -143,13 +144,26 @@ func (site *site) loadTemplates() error {
 	err := filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := markup.Parse(site.templateEngine, path)
-			// if something fails or this is not a template, skip
-			if err != nil || templ == nil {
+			// if something fails skip
+			if err != nil {
 				return checkFileError(err)
 			}
 
-			// set site related (?) metadata. Not sure if this should go elsewhere
 			relPath, _ := filepath.Rel(site.config.SrcDir, path)
+
+			// if it's a static file, treat separately
+			if templ == nil {
+				// using the same variable names as jekyll
+				metadata := map[string]interface{}{
+					"path":     relPath,
+					"name":     filepath.Base(relPath),
+					"basename": strings.TrimSuffix(filepath.Base(relPath), filepath.Ext(relPath)),
+					"extname":  filepath.Ext(relPath),
+				}
+				site.static_files = append(site.static_files, metadata)
+				return nil
+			}
+
 			srcPath, _ := filepath.Rel(site.config.RootDir, path)
 			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
 			templ.Metadata["src_path"] = srcPath
@@ -204,6 +218,7 @@ func (site *site) loadTemplates() error {
 		}
 		return strings.Compare(a["path"].(string), b["path"].(string))
 	}
+	slices.SortFunc(site.static_files, CompareTemplates)
 	slices.SortFunc(site.posts, CompareTemplates)
 	slices.SortFunc(site.pages, CompareTemplates)
 	for _, posts := range site.tags {
@@ -360,11 +375,12 @@ func (site *site) buildFile(path string) error {
 func (site *site) render(templ *markup.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
-			"config": site.config.AsContext(),
-			"posts":  site.posts,
-			"tags":   site.tags,
-			"pages":  site.pages,
-			"data":   site.data,
+			"config":       site.config.AsContext(),
+			"posts":        site.posts,
+			"tags":         site.tags,
+			"pages":        site.pages,
+			"static_files": site.static_files,
+			"data":         site.data,
 		},
 	}
 
