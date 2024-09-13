@@ -150,6 +150,7 @@ func (site *site) loadTemplates() error {
 			}
 
 			relPath, _ := filepath.Rel(site.config.SrcDir, path)
+			baseName := strings.TrimSuffix(filepath.Base(relPath), filepath.Ext(relPath))
 
 			// if it's a static file, treat separately
 			if templ == nil {
@@ -157,7 +158,7 @@ func (site *site) loadTemplates() error {
 				metadata := map[string]interface{}{
 					"path":     relPath,
 					"name":     filepath.Base(relPath),
-					"basename": strings.TrimSuffix(filepath.Base(relPath), filepath.Ext(relPath)),
+					"basename": baseName,
 					"extname":  filepath.Ext(relPath),
 				}
 				site.static_files = append(site.static_files, metadata)
@@ -165,10 +166,13 @@ func (site *site) loadTemplates() error {
 			}
 
 			srcPath, _ := filepath.Rel(site.config.RootDir, path)
-			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
+			targetPath := strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
+			if templ.TargetExt() == ".html" && baseName != "index" {
+				targetPath = filepath.Join(strings.TrimSuffix(relPath, filepath.Ext(relPath)), "index.html")
+			}
 			templ.Metadata["src_path"] = srcPath
-			templ.Metadata["path"] = relPath
-			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
+			templ.Metadata["path"] = targetPath
+			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(targetPath, "index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
 			templ.Metadata["slug"] = filepath.Base(templ.Metadata["url"].(string))
 
@@ -190,12 +194,9 @@ func (site *site) loadTemplates() error {
 						}
 					}
 
-				} else {
+				} else if baseName != "index" {
 					// the index pages should be skipped from the page directory
-					filename := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
-					if filename != "index" {
-						site.pages = append(site.pages, templ.Metadata)
-					}
+					site.pages = append(site.pages, templ.Metadata)
 				}
 			}
 
