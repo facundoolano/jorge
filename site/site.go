@@ -156,6 +156,7 @@ func (site *site) loadTemplates() error {
 			templ.Metadata["path"] = relPath
 			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
+			templ.Metadata["slug"] = filepath.Base(templ.Metadata["url"].(string))
 
 			// if drafts are disabled, exclude from posts, page and tags indexes, but not from site.templates
 			// we want to explicitly exclude the template from the target, rather than treating it as a non template file
