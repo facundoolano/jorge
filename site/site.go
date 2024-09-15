@@ -23,12 +23,13 @@ const FILE_RW_MODE = 0666
 const DIR_RWE_MODE = 0777
 
 type site struct {
-	config  config.Config
-	layouts map[string]markup.Template
-	posts   []map[string]interface{}
-	pages   []map[string]interface{}
-	tags    map[string][]map[string]interface{}
-	data    map[string]interface{}
+	config       config.Config
+	layouts      map[string]markup.Template
+	posts        []map[string]interface{}
+	pages        []map[string]interface{}
+	static_files []map[string]interface{}
+	tags         map[string][]map[string]interface{}
+	data         map[string]interface{}
 
 	templateEngine *markup.Engine
 	templates      map[string]*markup.Template
@@ -143,19 +144,37 @@ func (site *site) loadTemplates() error {
 	err := filepath.WalkDir(site.config.SrcDir, func(path string, entry fs.DirEntry, err error) error {
 		if !entry.IsDir() {
 			templ, err := markup.Parse(site.templateEngine, path)
-			// if something fails or this is not a template, skip
-			if err != nil || templ == nil {
+			// if something fails skip
+			if err != nil {
 				return checkFileError(err)
 			}
 
-			// set site related (?) metadata. Not sure if this should go elsewhere
 			relPath, _ := filepath.Rel(site.config.SrcDir, path)
+			baseName := strings.TrimSuffix(filepath.Base(relPath), filepath.Ext(relPath))
+
+			// if it's a static file, treat separately
+			if templ == nil {
+				// using the same variable names as jekyll
+				metadata := map[string]interface{}{
+					"path":     relPath,
+					"name":     filepath.Base(relPath),
+					"basename": baseName,
+					"extname":  filepath.Ext(relPath),
+				}
+				site.static_files = append(site.static_files, metadata)
+				return nil
+			}
+
 			srcPath, _ := filepath.Rel(site.config.RootDir, path)
-			relPath = strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
+			targetPath := strings.TrimSuffix(relPath, filepath.Ext(relPath)) + templ.TargetExt()
+			if templ.TargetExt() == ".html" && baseName != "index" {
+				targetPath = filepath.Join(strings.TrimSuffix(relPath, filepath.Ext(relPath)), "index.html")
+			}
 			templ.Metadata["src_path"] = srcPath
-			templ.Metadata["path"] = relPath
-			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(relPath, "index.html"), ".html")
+			templ.Metadata["path"] = targetPath
+			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(targetPath, "/index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
+			templ.Metadata["slug"] = filepath.Base(templ.Metadata["url"].(string))
 
 			// if drafts are disabled, exclude from posts, page and tags indexes, but not from site.templates
 			// we want to explicitly exclude the template from the target, rather than treating it as a non template file
@@ -175,12 +194,9 @@ func (site *site) loadTemplates() error {
 						}
 					}
 
-				} else {
+				} else if baseName != "index" {
 					// the index pages should be skipped from the page directory
-					filename := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
-					if filename != "index" {
-						site.pages = append(site.pages, templ.Metadata)
-					}
+					site.pages = append(site.pages, templ.Metadata)
 				}
 			}
 
@@ -203,6 +219,7 @@ func (site *site) loadTemplates() error {
 		}
 		return strings.Compare(a["path"].(string), b["path"].(string))
 	}
+	slices.SortFunc(site.static_files, CompareTemplates)
 	slices.SortFunc(site.posts, CompareTemplates)
 	slices.SortFunc(site.pages, CompareTemplates)
 	for _, posts := range site.tags {
@@ -359,11 +376,12 @@ func (site *site) buildFile(path string) error {
 func (site *site) render(templ *markup.Template) ([]byte, error) {
 	ctx := map[string]interface{}{
 		"site": map[string]interface{}{
-			"config": site.config.AsContext(),
-			"posts":  site.posts,
-			"tags":   site.tags,
-			"pages":  site.pages,
-			"data":   site.data,
+			"config":       site.config.AsContext(),
+			"posts":        site.posts,
+			"tags":         site.tags,
+			"pages":        site.pages,
+			"static_files": site.static_files,
+			"data":         site.data,
 		},
 	}
 
