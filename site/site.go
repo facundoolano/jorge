@@ -172,7 +172,7 @@ func (site *site) loadTemplates() error {
 			}
 			templ.Metadata["src_path"] = srcPath
 			templ.Metadata["path"] = targetPath
-			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(targetPath, "index.html"), ".html")
+			templ.Metadata["url"] = "/" + strings.TrimSuffix(strings.TrimSuffix(targetPath, "/index.html"), ".html")
 			templ.Metadata["dir"] = "/" + filepath.Dir(relPath)
 			templ.Metadata["slug"] = filepath.Base(templ.Metadata["url"].(string))
 
