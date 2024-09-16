@@ -10,6 +10,7 @@ var cli struct {
 	Build   commands.Build   `cmd:"" help:"Build a website project." aliases:"b"`
 	Post    commands.Post    `cmd:"" help:"Initialize a new post template file." aliases:"p"`
 	Serve   commands.Serve   `cmd:"" help:"Run a local server for the website." aliases:"s"`
+	Meta    commands.Meta    `cmd:"" help:"Get the JSON results from evaluating a liquid template expression within the site context." aliases:"m"`
 	Version kong.VersionFlag `short:"v"`
 }
 

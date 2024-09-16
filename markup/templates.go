@@ -42,6 +42,11 @@ func NewEngine(siteUrl string, includesDir string) *Engine {
 	return e
 }
 
+func EvalExpression(engine *Engine, expression string, context map[string]interface{}) (string, error) {
+	template := fmt.Sprintf("{{ %s | json }}", expression)
+	return engine.ParseAndRenderString(template, context)
+}
+
 // Try to parse a liquid template at the given location.
 // Files starting with front matter (--- sorrrounded yaml)
 // are considered templates. If the given file is not headed by front matter
