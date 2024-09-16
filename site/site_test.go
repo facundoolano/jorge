@@ -271,6 +271,42 @@ date: 2023-01-01
 </ul>`)
 }
 
+func TestEvalMetadata(t *testing.T) {
+	config := newProject()
+	defer os.RemoveAll(config.RootDir)
+
+	content := `---
+title: hello world!
+date: 2024-01-01
+---
+<p>Hello world!</p>`
+	file := newFile(config.SrcDir, "hello.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: goodbye!
+date: 2024-02-01
+---
+<p>goodbye world!</p>`
+	file = newFile(config.SrcDir, "goodbye.html", content)
+	defer os.Remove(file.Name())
+
+	content = `---
+title: an oldie!
+date: 2023-01-01
+---
+<p>oldie</p>`
+	file = newFile(config.SrcDir, "an-oldie.html", content)
+	defer os.Remove(file.Name())
+
+	output, err := EvalMetadata(*config, "site.posts | map:'title'")
+	assertEqual(t, err, nil)
+	assertEqual(t, output, `["goodbye!","hello world!","an oldie!"]`)
+
+	_, err = EvalMetadata(*config, "site.posts | map:'title")
+	assert(t, strings.Contains(err.Error(), "Liquid error"))
+}
+
 func TestRenderTags(t *testing.T) {
 	config := newProject()
 	defer os.RemoveAll(config.RootDir)

@@ -49,6 +49,16 @@ func Build(config config.Config) error {
 	return site.build()
 }
 
+// Parse and render the given liquid expression, eg. " site.posts | map:title "
+// and return the results as a json string.
+func EvalMetadata(config config.Config, expression string) (string, error) {
+	site, err := load(config)
+	if err != nil {
+		return "", err
+	}
+	return markup.EvalExpression(site.templateEngine, expression, site.AsContext())
+}
+
 // Create a new site instance by scanning the project directories
 // pointed by `config`, loading layouts, templates and data files.
 func load(config config.Config) (*site, error) {
@@ -374,16 +384,7 @@ func (site *site) buildFile(path string) error {
 }
 
 func (site *site) render(templ *markup.Template) ([]byte, error) {
-	ctx := map[string]interface{}{
-		"site": map[string]interface{}{
-			"config":       site.config.AsContext(),
-			"posts":        site.posts,
-			"tags":         site.tags,
-			"pages":        site.pages,
-			"static_files": site.static_files,
-			"data":         site.data,
-		},
-	}
+	ctx := site.AsContext()
 
 	ctx["page"] = templ.Metadata
 	content, err := templ.RenderWith(ctx, site.config.HighlightTheme)
@@ -408,6 +409,19 @@ func (site *site) render(templ *markup.Template) ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+func (site *site) AsContext() map[string]interface{} {
+	return map[string]interface{}{
+		"site": map[string]interface{}{
+			"config":       site.config.AsContext(),
+			"posts":        site.posts,
+			"tags":         site.tags,
+			"pages":        site.pages,
+			"static_files": site.static_files,
+			"data":         site.data,
+		},
+	}
 }
 
 func checkFileError(err error) error {

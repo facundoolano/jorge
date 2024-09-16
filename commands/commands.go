@@ -49,3 +49,25 @@ func Prompt(label string) string {
 	}
 	return strings.TrimSpace(s)
 }
+
+type Meta struct {
+	Expression string `arg:"" name:"expression" default:"site" help:"liquid expression to be evaluated (what goes inside of {{ ... }} in templates)"`
+}
+
+// Load the site metadata and use it as context to evaluate a liquid expression
+func (cmd *Meta) Run(ctx *kong.Context) error {
+
+	config, err := config.Load(".")
+	if err != nil {
+		return err
+	}
+
+	// remove optional {{}} wrapper
+	expression := strings.Trim(cmd.Expression, " {}")
+
+	result, err := site.EvalMetadata(*config, expression)
+	if err == nil {
+		fmt.Println(result)
+	}
+	return err
+}
