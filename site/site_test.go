@@ -303,7 +303,7 @@ date: 2023-01-01
 	assertEqual(t, err, nil)
 	assertEqual(t, output, `["goodbye!","hello world!","an oldie!"]`)
 
-	output, err = EvalMetadata(*config, "site.posts | map:'title")
+	_, err = EvalMetadata(*config, "site.posts | map:'title")
 	assert(t, strings.Contains(err.Error(), "Liquid error"))
 }
 
