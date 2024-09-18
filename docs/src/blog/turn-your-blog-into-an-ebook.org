@@ -103,4 +103,4 @@ $(PDF_FILENAME): $(EPUB_FILENAME)
 (The first file in the zip is the uncompressed mimetype).
 
 ------
-You can see the resulting [[https://olano.dev/book.epub][epub]] and [[https://olano.dev/book.pdf][pdf]] files, although I should note the content is in Spanish.
+You can see the resulting [[https://olano.dev/book.epub][epub]] and [[https://olano.dev/book.pdf][pdf]] files, although I should note that the content is in Spanish.
