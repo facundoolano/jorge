@@ -16,15 +16,15 @@ Since then I've been trying to figure out what ebook generation in [[https://jor
 1. Adding epub knowledge felt like it would double the scope and turn jorge into a mostly ebook-related project, which wasn't in my plans.
 2. I'd have to choose between a very opinionated and simplistic API or one flexible enough to accommodate different use cases, neither of which felt satisfactory.
 
-On a similar note, I didn't want to extend my site generator with hooks or a plugin system to enable loosely coupled ebook commands, nor did I want to create a standalone program for that purpose.
+I similarly didn't want to extend my site generator with hooks or a plugin system, nor did I want to create a separate project for this specific task.
 
 ------
 
-After [[https://olano.dev/blog/from-rss-to-my-kindle/][working on Kindle support]] for my feed reader and learning that epub files are mostly zipped HTML files, it became apparent that the basic site generation tools I already had should be enough to do the job.
+After [[https://olano.dev/blog/from-rss-to-my-kindle/][working on Kindle support]] for my feed reader and learning that epub files are mostly zipped HTML files, it became apparent that the basic site generation tools I already had could be enough to do the job.
 
 The key reason this feature seemed approachable at all was that my blog post files are site-agnostic. The base website structure is defined by a layout template, and the blog posts only provide the content. I could reuse them without changes by just switching to a new layout template adapted to the epub format.
 
-The necessary work can then be outlined as follows:
+The required work can then be outlined as follows:
   1. Create a [[https://github.com/facundoolano/olano.dev/tree/main/book][new jorge project]] for the book.
   2. Turn the epub boilerplate files into jorge templates, filling the [[https://github.com/facundoolano/olano.dev/blob/main/book/src/OEBPS/content.opf][manifest]] and [[https://github.com/facundoolano/olano.dev/blob/main/book/src/OEBPS/toc.ncx][table of contents]] with posts and static files listed in the jorge template variables. I used [[https://github.com/javierarce/epub-boilerplate/][this]] epub boilerplate project as a starting point.
   3. Define an epub-friendly chapter [[https://github.com/facundoolano/olano.dev/blob/main/book/layouts/post.html][layout template]] to replace the base post layout.
@@ -36,7 +36,7 @@ The necessary work can then be outlined as follows:
   9. [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/Makefile#L17-L18][Copy the resulting files]] into the parent src/ directory to serve them on the website.
 
 ------
-Once I had a working version of the book generation Makefile, I realized that I could simplify the process by making some site metadata available to scripts---the lists of posts and tags and site configuration already exposed to templates. So I added a new command for that purpose.
+Once I had a basic version of the book generation Makefile, I realized that I could simplify the process by making some site metadata available to scripts---the list of posts and tags and site configuration already exposed to templates. So I added a new command for that purpose.
 
 By default, [[https://github.com/facundoolano/jorge/pull/49][~jorge meta~]] dumps the entire site metadata as a JSON to stdout, but I made it also accept [[https://shopify.github.io/liquid/][liquid]] filter expressions, by hooking it to the template rendering [[https://github.com/osteele/liquid/][library]]:
 
@@ -62,7 +62,7 @@ src/blog/a-computing-magazine-anthology.org
 #+end_src
 
 
-With the meta subcommand, the jorge plugin system is just bash.
+With this meta command, the jorge plugin system is just bash.
 
 ------
 Let's look at some code snippets to illustrate the implementation of the outline above. The epub manifest in the ~OEBPS/content.opf~ file lists each post as a chapter and each image as a media item:
