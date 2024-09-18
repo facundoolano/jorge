@@ -101,3 +101,6 @@ $(PDF_FILENAME): $(EPUB_FILENAME)
 #+end_src
 
 (The first file in the zip is the uncompressed mimetype).
+
+------
+You can see the resulting [[https://olano.dev/book.epub][epub]] and [[https://olano.dev/book.pdf][pdf]] files, although I should note the content is in Spanish.
