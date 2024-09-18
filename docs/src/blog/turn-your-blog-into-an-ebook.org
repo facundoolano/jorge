@@ -1,0 +1,102 @@
+---
+title: Turn your blog into a book
+date: 2024-09-18 12:06:09
+layout: post
+lang: en
+tags: []
+draft: true
+excerpt: using the jorge static site generator to pack a blog anthology into an epub file.
+---
+#+OPTIONS: toc:nil num:nil
+#+LANGUAGE: en
+
+Earlier this year, I [[https://olano.dev/blog/web-anthologists/][wrote]] about how blogs can be enriched by offering alternatives to the reverse-chronological order---reading paths beyond update subscriptions and a blog archive. The two particular options I had in mind were "favorite" or "suggested reads" categories, and ebook anthologies.
+
+Ever since I wrapped the work on [[https://jorge.olano.dev/][jorge]], I've been trying to figure out what an ebook feature for my static static site generator would look like. I considered adding a ~jorge book~ command to produce an epub file, but I saw a few problems with that:
+
+1. Adding epub knowledge felt like it would double the project scope and turn it into a mostly-ebook related project, with wasn't in my plans.
+2. I'd have to choose between a very opinionated and simplistic API or one flexible enough to accommodate different ebook use cases, neither of which felt satisfactory.
+
+After [[https://olano.dev/blog/from-rss-to-my-kindle/][adding kindle support]] to my feed reader and learning that epub files are mostly zipped HTML files, it became apparent that the basic site generation features I already had in place should be able to do most of the job.
+
+Below are some implementation notes derived from composing an ebook from a selection of my posts, using a secondary jorge project. This code could eventually be extracted to a boilerplate repository or even turned into a built-in jorge theme.
+
+------
+
+The key reason why this project seemed approachable is that my blog post files are site-agnostic. The base website structure is defined by a layout template, and the blog posts only provide its content. So I could reuse without changes by just switching the layout template definition to an epub-friendly one.
+
+The work can then be outlined as:
+  1. Create a [[https://github.com/facundoolano/olano.dev/tree/main/book][new jorge project]] for the book.
+  2. Turn the epub boilerplate files into jorge templates, filling the [[https://github.com/facundoolano/olano.dev/blob/main/book/src/OEBPS/content.opf][manifest]] and [[https://github.com/facundoolano/olano.dev/blob/main/book/src/OEBPS/toc.ncx][table of contents]] with posts and static files listed in the jorge template variables. I used [[https://github.com/javierarce/epub-boilerplate/][this]] epub boilerplate project as a starting point.
+  3. Define an epub-friendly chapter [[https://github.com/facundoolano/olano.dev/blob/main/book/layouts/post.html][layout template]] to replace the base post layout.
+  4. Mark the posts I want to include in the book with a [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/src/blog/maestros-de-la-fatalidad.org#L10][front matter flag]].
+  5. Add a [[https://github.com/facundoolano/olano.dev/blob/main/book/Makefile][Makefile]] with targets to sync posts and images between the website and the ebook project.
+  6. Fix the copied post URLs so [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L16][internal links]] and [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L22-L31][images]] are rendered properly (this was the hackiest part of the process).
+  7. Tweak the [[https://github.com/facundoolano/olano.dev/blob/main/book/src/OEBPS/Styles/styles.css][CSS styles]] to make the website layout render properly in e-reader devices.
+  8. [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L8-L9][Build]] the jorge project, [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L36-L37][zip]] the target directory into an epub file, [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L39-L40][convert]] the epub to a pdf as an alternative format.
+  9. [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/Makefile#L17-L18][Copy the resulting files]] into the parent src/ directory to serve them in the website.
+
+Let's look at some code snippets to illustrate the outline above. The epub manifest in the ~OEBPS/content.opf~ file lists each post as a chapter and each image as a media item:
+
+{% raw %}
+#+begin_src html
+<manifest>
+  <item href="Text/cover.xhtml" id="cover" media-type="application/xhtml+xml" />
+  <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml" />
+  <item href="Styles/styles.css" id="css" media-type="text/css" />
+  <item href="Text/toc.xhtml" id="toc" media-type="application/xhtml+xml" />
+
+  {% for post in site.posts | reverse %}
+  <item href="{{post.path | remove:'OEBPS/'}}" id="{{post.slug}}" media-type="application/xhtml+xml" />
+  {% endfor %}
+
+  {% for file in site.static_files %}
+  {% assign mediatype = file.extname | remove_first:"." %}
+  {% if mediatype == "jpg" or mediatype == "jpeg" %}
+  <item href="{{ file.path | remove:'OEBPS/' }}" id="{{ file.basename }}" media-type="image/jpeg" />
+  {% else if "gif", "png", "webp" contains mediatype %}
+  <item href="{{ file.path | remove:'OEBPS/' }}" id="{{ file.basename }}" media-type="image/{{ mediatype }}" />
+  {% endif %}
+  {% endfor %}
+</manifest>
+#+end_src
+{% endraw %}
+Similar snippets are used for the table of contents.
+
+The book chapters are generated by copying the posts that are marked as ~book: "vol1"~ in their front matter yaml. This way, if I change the selection or if I update the post contents, I only need to run ~make book~ to keep them in sync:
+
+#+begin_src Makefile
+BOOK_FILTER_KEY:=vol1
+posts:
+	cd ../ && jorge meta 'site.posts | where:"book","$(BOOK_FILTER_KEY)" | map:"src_path"' \
+	| jq -r '.[]' | xargs -I {} cp {} book/src/OEBPS/Text
+#+end_src
+
+This relies on a new ~jorge meta~ command to filter posts by their metadata.
+
+Things got a bit complicated to render images, since the relative path to the assets directory isn't the same in the website and the ebook project:
+#+begin_src Makefile
+INLINE_IMAGES:=$(shell grep -oRSh 'static_root*[^"[:space:]]*' src/OEBPS/Text | sort | uniq | sed -E 's|static_root}}/img/||')
+COVER_IMAGES:=$(shell jorge meta 'site.posts | map:"cover-img" | compact' | jq -r '.[]')
+images:
+	rm -rf src/OEBPS/img
+	@for file in $(INLINE_IMAGES) $(COVER_IMAGES); do \
+          echo "copying $$file";\
+	  mkdir -p $$(dirname src/OEBPS/img/$$file) ;\
+          cp ../src/assets/img/$$file "src/OEBPS/img/$$file";\
+        done
+#+end_src
+
+(This could perhaps be simplified by reusing the structure or extracting the paths to config variables).
+
+Finally, the epub is built by packing a zip file (starting with an uncompressed mimetype file), and a pdf is generated with [[https://manual.calibre-ebook.com/generated/en/ebook-convert.html][ebook-convert]]:
+
+#+begin_src Makefile
+$(EPUB_FILENAME): posts images target
+	rm -f $@
+	cd target && zip -q0X ../$@ mimetype
+	cd target && zip -qXr9D ../$@ * -x "*.svn*" -x "*~" -x "*.hg*" -x "*.swp" -x "*.DS_Store"
+
+$(PDF_FILENAME): $(EPUB_FILENAME)
+	ebook-convert $(EPUB_FILENAME) $(PDF_FILENAME) --extra-css "body {line-height: 1.6;}"
+#+end_src
