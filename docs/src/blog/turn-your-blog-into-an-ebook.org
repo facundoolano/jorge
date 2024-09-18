@@ -16,11 +16,11 @@ Since then I've been trying to figure out what ebook generation in [[https://jor
 1. Adding epub knowledge felt like it would double the scope and turn jorge into a mostly ebook-related project, which wasn't in my plans.
 2. I'd have to choose between a very opinionated and simplistic API or one flexible enough to accommodate different use cases, neither of which felt satisfactory.
 
-After [[https://olano.dev/blog/from-rss-to-my-kindle/][working on Kindle support]] for my feed reader and learning that epub files are mostly zipped HTML files, it became apparent that the basic site generation tools I already had should be enough to do the job.
-
-Below are some implementation notes from composing an ebook from a subset of my blog posts, using a secondary jorge project. This code could eventually be extracted out to a sample repository or turned into a built-in project layout.
+On a similar note, I didn't want to extend my site generator with hooks or a plugin system to enable loosely coupled ebook commands, nor did I want to create a standalone program for that purpose.
 
 ------
+
+After [[https://olano.dev/blog/from-rss-to-my-kindle/][working on Kindle support]] for my feed reader and learning that epub files are mostly zipped HTML files, it became apparent that the basic site generation tools I already had should be enough to do the job.
 
 The key reason this feature seemed approachable at all was that my blog post files are site-agnostic. The base website structure is defined by a layout template, and the blog posts only provide the content. I could reuse them without changes by just switching to a new layout template adapted to the epub format.
 
@@ -35,7 +35,37 @@ The necessary work can then be outlined as follows:
   8. [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L8-L9][Build]] the jorge project, [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L36-L37][zip]] the target directory into an epub file, [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/book/Makefile#L39-L40][convert]] the epub to a pdf as an alternative format.
   9. [[https://github.com/facundoolano/olano.dev/blob/36d55236be42f06dc3c56b37b88a032f4953b825/Makefile#L17-L18][Copy the resulting files]] into the parent src/ directory to serve them on the website.
 
-Let's look at some code snippets to illustrate the outline above. The epub manifest in the ~OEBPS/content.opf~ file lists each post as a chapter and each image as a media item:
+------
+Once I had a working version of the book generation Makefile, I realized that I could simplify the process by making some site metadata available to scripts---the lists of posts and tags and site configuration already exposed to templates. So I added a new command for that purpose.
+
+By default, [[https://github.com/facundoolano/jorge/pull/49][~jorge meta~]] dumps the entire site metadata as a JSON to stdout, but I made it also accept [[https://shopify.github.io/liquid/][liquid]] filter expressions, by hooking it to the template rendering [[https://github.com/osteele/liquid/][library]]:
+
+#+begin_src shell
+$ jorge meta 'site.tags|keys'
+["emacs","thoughts","golang","project"]
+#+end_src
+#+begin_src shell
+$ jorge meta 'site.posts | where:"lang","en"|map:"title"' | jq -r '.[]' | head -5
+Are We Living in a Simulation?
+My Software Bookshelf
+Software Possession for Personal Use
+Deconstructing the Role-Playing Video Game
+A Computing Magazine Anthology
+#+end_src
+#+begin_src shell
+$ jorge meta 'site.posts | where:"lang","en" | map:"src_path"' | jq -r '.[]' | head -5
+src/blog/are-we-living-in-a-simulation.org
+src/blog/my-software-bookshelf.org
+src/blog/software-possession-for-personal-use.org
+src/blog/deconstructing-the-role-playing-videogame.org
+src/blog/a-computing-magazine-anthology.org
+#+end_src
+
+
+With the meta subcommand, the jorge plugin system is just bash.
+
+------
+Let's look at some code snippets to illustrate the implementation of the outline above. The epub manifest in the ~OEBPS/content.opf~ file lists each post as a chapter and each image as a media item:
 
 {% raw %}
 #+begin_src html
@@ -70,8 +100,6 @@ posts:
 	cd ../ && jorge meta 'site.posts | where:"book","$(BOOK_FILTER_KEY)" | map:"src_path"' \
 	| jq -r '.[]' | xargs -I {} cp {} book/src/OEBPS/Text
 #+end_src
-
-This relies on the new [[https://github.com/facundoolano/jorge/pull/49][~jorge meta~]] command to filter posts by their metadata.
 
 Things got a bit complicated to render images since the relative path to the assets directory isn't the same in the website and the ebook project:
 #+begin_src Makefile
