@@ -4,7 +4,7 @@ date: 2024-09-18 12:06:09
 layout: post
 lang: en
 tags: []
-excerpt: using the jorge static site generator to pack a blog anthology into an epub file.
+excerpt: using the jorge static site generator to pack a blog anthology as an epub file.
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en
