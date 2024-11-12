@@ -11,6 +11,10 @@ Alternatively, install with go:
 
     $ go install github.com/facundoolano/jorge@latest
 
+ArchLinux users can use an [AUR helper](https://wiki.archlinux.org/title/AUR_helpers), such as `yay`, to install `jorge` directly from [AUR](https://aur.archlinux.org/packages/jorge-git):
+
+    $ yay -S jorge
+
 ## Example usage
 
 Create a new website with `jorge init`:
