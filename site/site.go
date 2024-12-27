@@ -105,6 +105,10 @@ func (site *site) loadLayouts() error {
 			if err != nil {
 				return checkFileError(err)
 			}
+			if templ == nil {
+				return fmt.Errorf("invalid layout file: '%s' is missing front matter '---'."+
+					" Ensure the file starts with '---'", filename)
+			}
 
 			layout_name := strings.TrimSuffix(filename, filepath.Ext(filename))
 			site.layouts[layout_name] = *templ
