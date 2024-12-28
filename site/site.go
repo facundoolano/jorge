@@ -139,7 +139,7 @@ func (site *site) loadDataFiles() error {
 			var data interface{}
 			err = yaml.Unmarshal(yamlContent, &data)
 			if err != nil {
-				return err
+				return fmt.Errorf("invalid yaml format: File '%s', %w", path, err)
 			}
 
 			data_name := strings.TrimSuffix(filename, filepath.Ext(filename))

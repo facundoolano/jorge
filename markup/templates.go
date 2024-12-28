@@ -94,7 +94,7 @@ func Parse(engine *Engine, path string) (*Template, error) {
 	if len(yamlContent) != 0 {
 		err := yaml.Unmarshal([]byte(yamlContent), &metadata)
 		if err != nil {
-			return nil, fmt.Errorf("invalid yaml: %s", err)
+			return nil, fmt.Errorf("invalid yaml format: File '%s', %w", path, err)
 		}
 	}
 
