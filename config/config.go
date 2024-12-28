@@ -81,7 +81,7 @@ func Load(rootDir string) (*Config, error) {
 
 	err = yaml.Unmarshal(yamlContent, &config.overrides)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("invalid yaml format: File '%s', %w", configPath, err)
 	}
 
 	// set user-provided overrides of declared config keys
