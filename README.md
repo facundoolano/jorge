@@ -5,11 +5,12 @@ A personal (small + opinionated) site generator with [org-mode](https://orgmode.
 Download the [latest release binary](https://github.com/facundoolano/jorge/releases/latest) for your platform, for example:
 
     $ wget https://github.com/facundoolano/jorge/releases/latest/download/jorge-darwin-amd64  \
-        -O jorge && chmod +x jorge && mv jorge /usr/local/bin
+        -O jorge && chmod +x jorge && sudo mv jorge /usr/local/bin
 
-Alternatively, install with go:
+Alternatively, install with go (make sure that `$GOPATH/bin` is in your path):
 
     $ go install github.com/facundoolano/jorge@latest
+
 
 ArchLinux users can use an [AUR helper](https://wiki.archlinux.org/title/AUR_helpers), such as `yay`, to install `jorge` directly from [AUR](https://aur.archlinux.org/packages/jorge-git):
 
