@@ -5,7 +5,7 @@
     <generator uri="https://jorge.olano.dev/" version="0.0.1">jorge</generator>
     <link href="{{ page.url | absolute_url}}" rel="self" type="application/atom+xml"/>
     <link href="{{ site.config.url }}" rel="alternate" type="text/html"/>
-    <updated>{{ "now" | date: "%Y-%m-%d %H:%M" }}</updated>
+    <updated>{{ "now" | date: "%Y-%m-%dT%H:%M:%SZ" }}</updated>
     <id>{{ page.url | absolute_url}}</id>
     <title type="html">{{ site.config.name }}</title>
     <author>
@@ -16,8 +16,8 @@
             {% assign post_title = post.title | strip_html | normalize_whitespace | xml_escape %}
             <title type="html">{{ post.title }}</title>
             <link href="{{ post.url | absolute_url }}" rel="alternate" type="text/html" title="{{ post.title }}"/>
-            <published>{{ post.date | date: "%Y-%m-%d %H:%M" }}</published>
-            <updated>{{ post.date | date: "%Y-%m-%d %H:%M" }}</updated>
+            <published>{{ post.date | date: "%Y-%m-%dT%H:%M:%SZ" }}</published>
+            <updated>{{ post.date | date: "%Y-%m-%dT%H:%M:%SZ" }}</updated>
             <id>{{ post.url | absolute_url }}</id>
             <author>
                 <name>{{ post.author | default:site.config.author }}</name>
