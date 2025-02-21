@@ -42,7 +42,18 @@ func loadJekyllFilters(e *liquid.Engine, siteUrl string, includesDir string) {
 		// using goldmark here instead of balckfriday, to avoid an extra dependency
 		var buf bytes.Buffer
 		err := goldmark.Convert([]byte(s), &buf)
-		return buf.String(), err
+		if err != nil {
+			return "", err
+		}
+
+		// wrapping paragraphs are an inconvenient default
+		// FIXME make this an arg? or a different filter?
+		// test behaviour when there are multiple paragraphs
+		result := buf.String()
+		result = strings.TrimSpace(result)
+		result = strings.TrimSuffix(result, "</p>")
+		result = strings.TrimPrefix(result, "<p>")
+		return result, nil
 	})
 
 	e.RegisterFilter("xml_escape", func(s string) (string, error) {
