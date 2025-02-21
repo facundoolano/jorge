@@ -3,7 +3,7 @@ module github.com/facundoolano/jorge
 go 1.22
 
 require (
-	github.com/alecthomas/chroma/v2 v2.5.0
+	github.com/alecthomas/chroma/v2 v2.15.0
 	github.com/alecthomas/kong v0.8.1
 	github.com/elliotchance/orderedmap/v2 v2.2.0
 	github.com/facundoolano/go-org v0.0.0-20240611152452-f50bf800e0ef
@@ -18,7 +18,7 @@ require (
 )
 
 require (
-	github.com/dlclark/regexp2 v1.7.0 // indirect
+	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/tdewolff/parse/v2 v2.7.11 // indirect
 	golang.org/x/sys v0.18.0 // indirect
