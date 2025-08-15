@@ -38,6 +38,9 @@ $ jorge serve
 <br/>
 
 <h2 id="tutorial"><a href="/tutorial" class="title">Tutorial</a></h2>
+<p>Everything you need to know to use jorge is covered in this short tutorial.</p>
+<br/>
+
 <ol start='0'>
 {% for page in site.pages|where:"dir", "/tutorial" %}
     <li>
@@ -47,6 +50,9 @@ $ jorge serve
 </ol>
 <br/>
 <h2 id="devlog"><a class="title" href="/blog">Devlog</a></h2>
+
+<p>Below is a development log documenting the project, from idea to release.</p>
+<br/>
 
 {% for post in site.posts | reverse  %}
 {% include post_preview.html %}
