@@ -42,7 +42,13 @@ Disallow: /
 
 # It doesn't make sense to index these and/or it's expensive:
 User-agent: *
-Disallow: /*?*
+Allow: /
+Allow: /blog/
+Allow: /blog/*
+Allow: /tutorial/
+Allow: /tutorial/*
+Allow: /feed.xml
+Disallow: /*?
 Disallow: /*.tar.gz$
 Disallow: /metrics
 Disallow: /*/*/blame/*
