@@ -64,7 +64,7 @@ func (cmd *Post) Run(ctx *kong.Context) error {
 	}
 
 	// initialize the post front matter
-	content := fmt.Sprintf(DEFAULT_FRONTMATTER, title, now.Format(time.DateTime), config.Lang)
+	content := fmt.Sprintf(DEFAULT_FRONTMATTER, title, now.Format(time.RFC3339), config.Lang)
 
 	// org files need some extra boilerplate
 	if filepath.Ext(path) == ".org" {
