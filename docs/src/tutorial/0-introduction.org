@@ -3,6 +3,8 @@ title: Introduction
 layout: post
 lang: en
 tags: [tutorial]
+aliases:
+    - getting-started
 ---
 #+OPTIONS: toc:nil num:nil
 #+LANGUAGE: en

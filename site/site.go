@@ -384,7 +384,38 @@ func (site *site) buildFile(path string) error {
 	}
 
 	// write the file contents over to target
-	return writeToFile(targetPath, contentReader)
+	err = writeToFile(targetPath, contentReader)
+	if err != nil {
+		return err
+	}
+
+	// write links for each alias
+	if found {
+		for _, alias := range templ.Aliases() {
+			alias, ok := alias.(string)
+			if !ok { continue }
+
+			alias = filepath.Join(site.config.TargetDir, alias)
+
+			err = os.MkdirAll(alias, DIR_RWE_MODE)
+			if err != nil {
+				return err
+			}
+
+			linkPath := filepath.Join(alias, "index.html")
+			// relative link so the files can be relocated, since this isn't just
+			// for devmode
+			var originalRel string
+			originalRel, err = filepath.Rel(alias, targetPath)
+			err = os.Symlink(originalRel, linkPath)
+			if err != nil {
+				return checkFileError(err)
+			}
+			fmt.Println("linked", linkPath, "->", targetPath)
+		}
+	}
+
+	return nil
 }
 
 func (site *site) render(templ *markup.Template) ([]byte, error) {

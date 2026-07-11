@@ -128,6 +128,13 @@ func (templ Template) IsDraft() bool {
 	return false
 }
 
+func (templ Template) Aliases() []interface{} {
+	if aliases, ok := templ.Metadata["aliases"]; ok {
+		return aliases.([]interface{})
+	}
+	return make([]interface{}, 0)
+}
+
 func (templ Template) IsPost() bool {
 	_, ok := templ.Metadata["date"]
 	return ok
