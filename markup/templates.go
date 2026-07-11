@@ -17,6 +17,7 @@ import (
 	"github.com/facundoolano/go-org/org"
 	"github.com/osteele/liquid"
 	"github.com/yuin/goldmark"
+	gm_html "github.com/yuin/goldmark/renderer/html"
 	gm_highlight "github.com/yuin/goldmark-highlighting/v2"
 	"github.com/yuin/goldmark/extension"
 	"gopkg.in/yaml.v3"
@@ -128,6 +129,13 @@ func (templ Template) IsDraft() bool {
 	return false
 }
 
+func (templ Template) AllowUnsafeHTML() bool {
+	if unsafe, ok := templ.Metadata["allow_unsafe_html"]; ok {
+		return unsafe.(bool)
+	}
+	return false
+}
+
 func (templ Template) IsPost() bool {
 	_, ok := templ.Metadata["date"]
 	return ok
@@ -138,13 +146,13 @@ func (templ Template) Render() ([]byte, error) {
 	ctx := map[string]interface{}{
 		"page": templ.Metadata,
 	}
-	return templ.RenderWith(ctx, NO_SYNTAX_HIGHLIGHTING)
+	return templ.RenderWith(ctx, NO_SYNTAX_HIGHLIGHTING, false)
 }
 
 // Renders the liquid template with the given context as bindings.
 // If the template source is org or md, convert them to html after the
 // liquid rendering.
-func (templ Template) RenderWith(context map[string]interface{}, hlTheme string) ([]byte, error) {
+func (templ Template) RenderWith(context map[string]interface{}, hlTheme string, unsafe bool) ([]byte, error) {
 	// liquid rendering
 	content, err := templ.liquidTemplate.Render(context)
 	if err != nil {
@@ -184,6 +192,13 @@ func (templ Template) RenderWith(context map[string]interface{}, hlTheme string)
 					gm_highlight.WithFormatOptions(html.TabWidth(CODE_TABWIDTH)),
 				)))
 		}
+
+		if unsafe || templ.AllowUnsafeHTML() {
+			options = append(options, goldmark.WithRendererOptions(
+				gm_html.WithUnsafe(),
+			))
+		}
+
 		md := goldmark.New(options...)
 		if err := md.Convert(content, &buf); err != nil {
 			return nil, err

@@ -391,7 +391,7 @@ func (site *site) render(templ *markup.Template) ([]byte, error) {
 	ctx := site.AsContext()
 
 	ctx["page"] = templ.Metadata
-	content, err := templ.RenderWith(ctx, site.config.HighlightTheme)
+	content, err := templ.RenderWith(ctx, site.config.HighlightTheme, site.config.AllowUnsafeHTML)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +402,7 @@ func (site *site) render(templ *markup.Template) ([]byte, error) {
 		if layout_templ, ok := site.layouts[layout.(string)]; ok {
 			ctx["layout"] = layout_templ.Metadata
 			ctx["content"] = content
-			content, err = layout_templ.RenderWith(ctx, site.config.HighlightTheme)
+			content, err = layout_templ.RenderWith(ctx, site.config.HighlightTheme, site.config.AllowUnsafeHTML)
 			if err != nil {
 				return nil, err
 			}

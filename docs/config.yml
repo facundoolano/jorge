@@ -2,3 +2,4 @@ name: "jorge"
 author: "Facundo Olano"
 url: "https://jorge.olano.dev"
 description: "jorge is a personal site generator with org-mode support."
+allow_unsafe_html: false

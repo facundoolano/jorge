@@ -36,6 +36,7 @@ type Config struct {
 	LiveReload       bool
 	LinkStatic       bool
 	IncludeDrafts    bool
+	AllowUnsafeHTML  bool
 
 	ServerHost string
 	ServerPort int
@@ -65,6 +66,7 @@ func Load(rootDir string) (*Config, error) {
 		LiveReload:       false,
 		LinkStatic:       false,
 		IncludeDrafts:    false,
+		AllowUnsafeHTML:  false,
 		pageDefaults:     map[string]interface{}{},
 	}
 
@@ -102,6 +104,9 @@ func Load(rootDir string) (*Config, error) {
 		for _, exclusion := range exclusions.([]interface{}) {
 			config.MinifyExclusions = append(config.MinifyExclusions, exclusion.(string))
 		}
+	}
+	if allow_unsafe_html, found := config.overrides["allow_unsafe_html"]; found {
+		config.AllowUnsafeHTML = allow_unsafe_html.(bool)
 	}
 
 	return config, nil

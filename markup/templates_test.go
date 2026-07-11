@@ -178,6 +178,39 @@ tags: ["software", "web"]
 	assertEqual(t, string(content), expected)
 }
 
+func TestRenderUnsafe(t *testing.T) {
+	input := `---
+title: my new post
+---
+# My title
+<script>alert(1);</script>
+`
+
+	file := newFile("test*.md", input)
+	defer os.Remove(file.Name())
+
+	templ, err := Parse(NewEngine("https://olano.dev", "includes"), file.Name())
+	assertEqual(t, err, nil)
+
+	// render without unsafe first
+	content, err := templ.Render()
+	assertEqual(t, err, nil)
+	expected := `<h1>My title</h1>
+<!-- raw HTML omitted -->
+`
+	assertEqual(t, string(content), expected)
+
+	// then turn on unsafe and expect the script tag to work
+	ctx := map[string]interface{}{
+		"page": templ.Metadata,
+	}
+	content, err = templ.RenderWith(ctx, NO_SYNTAX_HIGHLIGHTING, true)
+	assertEqual(t, err, nil)
+	expected = `<h1>My title</h1>
+<script>alert(1);</script>`
+	assertEqual(t, string(content), expected)
+}
+
 // ------ HELPERS --------
 
 func newFile(path string, contents string) *os.File {
