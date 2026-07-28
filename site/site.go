@@ -407,6 +407,9 @@ func (site *site) buildFile(path string) error {
 			// for devmode
 			var originalRel string
 			originalRel, err = filepath.Rel(alias, targetPath)
+			if err != nil {
+				return checkFileError(err)
+			}
 			err = os.Symlink(originalRel, linkPath)
 			if err != nil {
 				return checkFileError(err)
