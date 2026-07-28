@@ -393,7 +393,9 @@ func (site *site) buildFile(path string) error {
 	if found {
 		for _, alias := range templ.Aliases() {
 			alias, ok := alias.(string)
-			if !ok { continue }
+			if !ok {
+				continue
+			}
 
 			alias = filepath.Join(site.config.TargetDir, alias)
 
@@ -403,18 +405,32 @@ func (site *site) buildFile(path string) error {
 			}
 
 			linkPath := filepath.Join(alias, "index.html")
-			// relative link so the files can be relocated, since this isn't just
-			// for devmode
-			var originalRel string
-			originalRel, err = filepath.Rel(alias, targetPath)
-			if err != nil {
-				return checkFileError(err)
+			// relative link to save on build time and space by default when
+			// in devmode, or when configured as such (symlinking may not work
+			// with all servers so we disable it by default)
+			if site.config.LinkAliases {
+				var originalRel string
+				originalRel, err = filepath.Rel(alias, targetPath)
+				if err != nil {
+					return checkFileError(err)
+				}
+				err = os.Symlink(originalRel, linkPath)
+				if err != nil {
+					return checkFileError(err)
+				}
+				fmt.Println("linked", linkPath, "->", targetPath)
+			} else {
+				// re-open the original file so it can be copied
+				var f *os.File
+				f, err = os.Open(targetPath)
+				if err != nil {
+					return checkFileError(err)
+				}
+				err = writeToFile(linkPath, f)
+				if err != nil {
+					return checkFileError(err)
+				}
 			}
-			err = os.Symlink(originalRel, linkPath)
-			if err != nil {
-				return checkFileError(err)
-			}
-			fmt.Println("linked", linkPath, "->", targetPath)
 		}
 	}
 

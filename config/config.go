@@ -35,6 +35,7 @@ type Config struct {
 	MinifyExclusions []string
 	LiveReload       bool
 	LinkStatic       bool
+	LinkAliases      bool
 	IncludeDrafts    bool
 
 	ServerHost string
@@ -64,6 +65,7 @@ func Load(rootDir string) (*Config, error) {
 		MinifyExclusions: make([]string, 0),
 		LiveReload:       false,
 		LinkStatic:       false,
+		LinkAliases:      false,
 		IncludeDrafts:    false,
 		pageDefaults:     map[string]interface{}{},
 	}
@@ -98,6 +100,9 @@ func Load(rootDir string) (*Config, error) {
 	if theme, found := config.overrides["highlight_theme"]; found {
 		config.HighlightTheme = theme.(string)
 	}
+	if link_aliases, found := config.overrides["link_aliases"]; found {
+		config.LinkAliases = link_aliases.(bool)
+	}
 	if exclusions, found := config.overrides["minify_exclusions"]; found {
 		for _, exclusion := range exclusions.([]interface{}) {
 			config.MinifyExclusions = append(config.MinifyExclusions, exclusion.(string))
@@ -122,6 +127,7 @@ func LoadDev(rootDir string, host string, port int, reload bool) (*Config, error
 	config.LiveReload = reload
 	config.Minify = false
 	config.LinkStatic = true
+	config.LinkAliases = true
 	config.IncludeDrafts = true
 	config.SiteUrl = fmt.Sprintf("http://%s:%d", config.ServerHost, config.ServerPort)
 
