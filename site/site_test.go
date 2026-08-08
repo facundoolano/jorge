@@ -707,6 +707,58 @@ layout: base
 </body></html>`)
 }
 
+func TestBuildWithAliases(t *testing.T) {
+	config := newProject()
+	defer os.RemoveAll(config.RootDir)
+
+	// add base layout
+	content := `---
+---
+<html>
+<body>
+{{content}}
+</body>
+</html>`
+	newFile(config.LayoutsDir, "base.html", content)
+
+	content = `---
+layout: base
+aliases:
+  - p2
+---
+* Hello world!`
+	newFile(config.SrcDir, "p1.org", content)
+
+	// build site
+	site, err := load(*config)
+	assertEqual(t, err, nil)
+	err = site.build()
+	assertEqual(t, err, nil)
+
+	// test that p1 appears both in /p1/index.html and /p2/index.html
+	// deliberately not testing whether it's a link or not, since that's mostly
+	// an implementation detail; copying the file would be practically
+	// equivalent except from disk usage
+	targets := []string{"p1", "p2"}
+	for _, target := range targets {
+		output, err := os.ReadFile(filepath.Join(config.TargetDir, target, "index.html"))
+		assertEqual(t, err, nil)
+		assertEqual(t, string(output), `<html><head></head><body>
+<nav>
+<ul>
+<li><a href="#hello-world">Hello world!</a>
+</li>
+</ul>
+</nav>
+<h1 id="hello-world">
+Hello world!
+</h1>
+
+
+</body></html>`)
+	}
+}
+
 // ------ HELPERS --------
 
 func newProject() *config.Config {
