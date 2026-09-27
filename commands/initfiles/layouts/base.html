@@ -44,6 +44,36 @@
         <meta name="twitter:image" content="{{ page.image | absolute_url }}">
         {% endif %}
 
+        {% if page.layout == "post" %}
+        <script type="application/ld+json">
+          {
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              "headline": "{{ page.title}}",
+              "description": "{{ page.excerpt | strip_html | strip_newlines | xml_escape}}",
+              "url": "{{ page.url | absolute_url }}",
+              "inLanguage": "{{ page.lang }}",
+              "author": {
+                  "@type": "Person",
+                  "name": "{{ site.config.author }}"
+              },
+              "datePublished": "{{ page.date | date:'%Y-%m-%d'}}"
+         }
+        </script>
+        {% else %}
+        <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            {% if page.excerpt or site.config.description %}
+            "description": "{{ page.excerpt | default:site.config.description }}"
+            {%endif %}
+            "name": "{{ site.config.name }}",
+            "url": "{{ page.url | absolute_url }}"
+          }
+        </script>
+        {% endif %}
+
     </head>
     <body>
         <div class="content">
